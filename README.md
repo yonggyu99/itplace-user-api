@@ -1,1 +1,1 @@
-# itPlace_public_api
+# 잇플레이 사용자 API 서버입니다.
