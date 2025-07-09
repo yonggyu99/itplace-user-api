@@ -2,13 +2,6 @@ plugins {
     id 'java'
     id 'org.springframework.boot' version '3.4.7'
     id 'io.spring.dependency-management' version '1.1.7'
-    id 'com.github.johnrengelman.shadow' version '8.1.1'
-}
-
-shadowJar {
-    archiveBaseName.set('lambda')
-    archiveClassifier.set('')
-    archiveVersion.set('')
 }
 
 group = 'com.itplace'
@@ -33,9 +26,6 @@ dependencies {
     implementation 'org.springframework.boot:spring-boot-starter-data-redis'
     implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
 
-    // 환경 변수 .env
-    implementation 'me.paulschwarz:spring-dotenv:4.0.0'
-
     // 인증 관련
     implementation 'org.springframework.boot:spring-boot-starter-mail'
     implementation 'com.twilio.sdk:twilio:8.34.0'
@@ -52,10 +42,6 @@ dependencies {
     implementation 'software.amazon.awssdk:core:2.25.21'
     implementation platform('software.amazon.awssdk:bom:2.25.21')
     implementation 'software.amazon.awssdk:personalizeruntime'
-
-    // aws Lambda Java
-    implementation 'com.amazonaws:aws-lambda-java-core:1.2.2'
-    implementation 'com.amazonaws:aws-lambda-java-events:3.11.0'
 
     compileOnly 'org.projectlombok:lombok'
     runtimeOnly 'com.mysql:mysql-connector-j'
