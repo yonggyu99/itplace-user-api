@@ -69,13 +69,9 @@ serverName: green_server
 ---
 
 spring:
-  application:
-    name: itplace-user-api
-
   config:
     activate:
       on-profile: common
-
   security:
     oauth2:
       client:
@@ -102,6 +98,7 @@ spring:
       ddl-auto: update
       naming:
         physical-strategy: org.hibernate.boot.model.naming.PhysicalNamingStrategyStandardImpl
+        implicit-strategy: org.hibernate.boot.model.naming.ImplicitNamingStrategyLegacyJpaImpl
 
   jwt:
     access-token-validity-in-seconds: 3600 # 1시간
