@@ -31,8 +31,10 @@ jobs:
       # 3. Gradle 빌드
       - name: Build with Gradle
         run: |
+          echo ${[secrets.APPLICATION_SECRET}} | base64 --decode > ./src/main/resources/application-secret.yml
           chmod +x ./gradlew
-          ./gradlew build -x test # gradlew 실행 권한을 부여하고, 테스트를 제외하여 빌드합니다.
+          ./gradlew build -x test
+      # gradlew 실행 권한을 부여하고, 테스트를 제외하여 빌드합니다.
 
       # 4. DockerHub 로그인
       - name: Login to DockerHub
