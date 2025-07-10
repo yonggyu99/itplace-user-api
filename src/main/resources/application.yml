@@ -1,10 +1,77 @@
 spring:
-  application:
-    name: itplace-user-api
+  profiles:
+    active: local
+    group:
+      local: local, common, secret
+      blue: blue, common, secret
+      green: green, common, secret
 
+server:
+  env: blue
+
+---
+
+spring:
   config:
-    import: optional:file:.env[.properties]
+    activate:
+      on-profile: local
+  security:
+    oauth2:
+      client:
+        registration:
+          kakao:
+            redirect-uri: ${LOCAL_KAKAO_REDIRECT_URI}
 
+server:
+  port: 8080
+  serverAddress: localhost
+
+serverName: local_server
+
+---
+
+spring:
+  config:
+    activate:
+      on-profile: blue
+  security:
+    oauth2:
+      client:
+        registration:
+          kakao:
+            redirect-uri: ${EC2_KAKAO_REDIRECT_URI}
+
+server:
+  port: 8080
+  serverAddress: 3.34.79.67
+
+serverName: blue_server
+
+---
+
+spring:
+  config:
+    activate:
+      on-profile: green
+  security:
+    oauth2:
+      client:
+        registration:
+          kakao:
+            redirect-uri: ${EC2_KAKAO_REDIRECT_URI}
+
+server:
+  port: 8081
+  serverAddress: 3.34.79.67
+
+serverName: green_server
+
+---
+
+spring:
+  config:
+    activate:
+      on-profile: common
   datasource:
     driver-class-name: com.mysql.cj.jdbc.Driver
     url: ${MYSQL_URL}
@@ -24,6 +91,8 @@ spring:
 
   jwt:
     secret: ${JWT_SECRET}
+    access-token-validity-in-seconds: 3600    # 액세스 토큰 유효기간: 1시간
+    refresh-token-validity-in-seconds: 86400  # 리프레시 토큰 유효기간: 24시간
 
   security:
     oauth2:
@@ -33,7 +102,6 @@ spring:
             client-name: Kakao
             client-id: ${KAKAO_CLIENT_ID}
             client-secret: ${KAKAO_CLIENT_SECRET}
-            redirect-uri: ${KAKAO_REDIRECT_URI}
             authorization-grant-type: authorization_code
             client-authentication-method: client_secret_post
             scope:
@@ -54,9 +122,9 @@ spring:
     properties:
       mail:
         smtp:
-          auth: true            # \uC0AC\uC6A9\uC790 \uC778\uC99D \uC2DC\uB3C4 \uC5EC\uBD80
+          auth: true
           starttls:
-            enable: true        # starttls \uD65C\uC131\uD654 \uC5EC\uBD80
+            enable: true
 
 twilio:
   account-sid: ${TWILIO_ACCOUNT_SID}
