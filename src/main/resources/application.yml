@@ -2,9 +2,9 @@ spring:
   profiles:
     active: local
     group:
-      local: local, secret
-      blue: blue, secret
-      green: green, secret
+      local: local, common, secret
+      blue: blue, common, secret
+      green: green, common, secret
 
 server:
   env: blue
@@ -65,3 +65,10 @@ server:
   serverAddress: 3.34.79.67
 
 serverName: green_server
+
+---
+
+spring:
+  config:
+    activate:
+      on-profile: common
