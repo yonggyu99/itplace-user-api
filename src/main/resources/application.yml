@@ -86,6 +86,9 @@ spring:
       ssl:
         enabled: true
 
+    mongodb:
+      uri: ${MONGODB_URI}
+
   jpa:
     hibernate:
       ddl-auto: update
