@@ -2,9 +2,9 @@ spring:
   profiles:
     active: local
     group:
-      local: local, common, secret
-      blue: blue, common, secret
-      green: green, common, secret
+      local: local, secret
+      blue: blue, secret
+      green: green, secret
 
 server:
   env: blue
@@ -20,7 +20,7 @@ spring:
       client:
         registration:
           kakao:
-            redirect-uri: ${LOCAL_KAKAO_REDIRECT_URI}
+            redirect-uri: http://localhost:8080/login/oauth2/code/kakao
 
 server:
   port: 8080
@@ -39,7 +39,7 @@ spring:
       client:
         registration:
           kakao:
-            redirect-uri: ${EC2_KAKAO_REDIRECT_URI}
+            redirect-uri: http://3.34.79.67/login/oauth2/code/kakao
 
 server:
   port: 8080
@@ -58,82 +58,10 @@ spring:
       client:
         registration:
           kakao:
-            redirect-uri: ${EC2_KAKAO_REDIRECT_URI}
+            redirect-uri: http://3.34.79.67/login/oauth2/code/kakao
 
 server:
   port: 8081
   serverAddress: 3.34.79.67
 
 serverName: green_server
-
----
-
-spring:
-  config:
-    activate:
-      on-profile: common
-  datasource:
-    driver-class-name: com.mysql.cj.jdbc.Driver
-    url: ${MYSQL_URL}
-    username: ${MYSQL_USERNAME}
-    password: ${MYSQL_PASSWORD}
-
-  data:
-    redis:
-      host: ${REDIS_HOST}
-      port: ${REDIS_PORT}
-      timeout: 10000ms
-      ssl:
-        enabled: true
-
-    mongodb:
-      uri: ${MONGODB_URI}
-
-  jpa:
-    hibernate:
-      ddl-auto: update
-      naming:
-        physical-strategy: org.hibernate.boot.model.naming.PhysicalNamingStrategyStandardImpl
-
-  jwt:
-    secret: ${JWT_SECRET}
-    access-token-validity-in-seconds: 3600    # 액세스 토큰 유효기간: 1시간
-    refresh-token-validity-in-seconds: 86400  # 리프레시 토큰 유효기간: 24시간
-
-  security:
-    oauth2:
-      client:
-        registration:
-          kakao:
-            client-name: Kakao
-            client-id: ${KAKAO_CLIENT_ID}
-            client-secret: ${KAKAO_CLIENT_SECRET}
-            authorization-grant-type: authorization_code
-            client-authentication-method: client_secret_post
-            scope:
-              - account_email
-
-        provider:
-          kakao:
-            authorization-uri: https://kauth.kakao.com/oauth/authorize
-            token-uri: https://kauth.kakao.com/oauth/token
-            user-info-uri: https://kapi.kakao.com/v2/user/me
-            user-name-attribute: id
-
-  mail:
-    host: smtp.gmail.com
-    port: 587
-    username: ${SMTP_USERNAME}
-    password: ${SMTP_PASSWORD}
-    properties:
-      mail:
-        smtp:
-          auth: true
-          starttls:
-            enable: true
-
-twilio:
-  account-sid: ${TWILIO_ACCOUNT_SID}
-  auth-token: ${TWILIO_AUTH_TOKEN}
-  verify-service-sid: ${TWILIO_VERIFY_SERVICE_SID}
-  from-phone: ${TWILIO_FROM_PHONE}
