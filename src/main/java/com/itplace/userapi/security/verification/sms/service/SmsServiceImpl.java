@@ -1,7 +1,9 @@
 package com.itplace.userapi.security.verification.sms.service;
 
 import com.itplace.userapi.common.BaseCode;
+import com.itplace.userapi.common.exception.DuplicatePhoneNumberException;
 import com.itplace.userapi.common.exception.SmsVerificationException;
+import com.itplace.userapi.user.repository.UserRepository;
 import java.time.Duration;
 import java.util.Random;
 import lombok.RequiredArgsConstructor;
@@ -16,6 +18,7 @@ import org.springframework.stereotype.Service;
 public class SmsServiceImpl implements SmsService {
 
     private final StringRedisTemplate redisTemplate;
+    private final UserRepository userRepository;
 
     @Value("${twilio.from-phone}")
     private String fromPhone;
@@ -53,6 +56,11 @@ public class SmsServiceImpl implements SmsService {
         if (stored.equals(verificationCode)) {
             // 일치하면 삭제하고 true 반환
             redisTemplate.delete(key);
+
+            if (userRepository.findByPhoneNumber(phoneNumber).isPresent()) {
+                throw new DuplicatePhoneNumberException("이미 가입된 전화번호입니다.");
+            }
+
             String verifiedKey = "verified:" + phoneNumber;
             redisTemplate.opsForValue().set(verifiedKey, "true", Duration.ofSeconds(VERIFIED_TTL_SECONDS));
             System.out.println("인증성공");
