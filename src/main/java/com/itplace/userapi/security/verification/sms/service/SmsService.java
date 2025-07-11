@@ -1,8 +1,13 @@
 package com.itplace.userapi.security.verification.sms.service;
 
+import com.itplace.userapi.security.verification.sms.dto.SmsConfirmRequest;
+import com.itplace.userapi.security.verification.sms.dto.SmsConfirmResponse;
+import com.itplace.userapi.security.verification.sms.dto.SmsVerificationRequest;
+import com.itplace.userapi.security.verification.sms.dto.SmsVerificationResponse;
+
 public interface SmsService {
 
-    void send(String phoneNumber);
+    SmsVerificationResponse send(SmsVerificationRequest request);
 
-    void confirm(String phoneNumber, String verificationCode);
+    SmsConfirmResponse confirm(SmsConfirmRequest request);
 }
