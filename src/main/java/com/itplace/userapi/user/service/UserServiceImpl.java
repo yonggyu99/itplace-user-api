@@ -1,5 +1,6 @@
 package com.itplace.userapi.user.service;
 
+import com.itplace.userapi.common.BaseCode;
 import com.itplace.userapi.common.exception.DuplicateEmailException;
 import com.itplace.userapi.common.exception.DuplicatePhoneNumberException;
 import com.itplace.userapi.common.exception.PasswordMismatchException;
@@ -25,14 +26,14 @@ public class UserServiceImpl implements UserService {
         userRepository.findByEmailOrPhoneNumber(request.getEmail(), request.getPhoneNumber())
                 .ifPresent(user -> {
                     if (user.getEmail().equals(request.getEmail())) {
-                        throw new DuplicateEmailException("이미 사용 중인 이메일입니다.");
+                        throw new DuplicateEmailException(BaseCode.DUPLICATE_EMAIL);
                     } else if (user.getPhoneNumber().equals(request.getPhoneNumber())) {
-                        throw new DuplicatePhoneNumberException("이미 사용 중인 전화번호입니다.");
+                        throw new DuplicatePhoneNumberException(BaseCode.DUPLICATE_PHONE_NUMBER);
                     }
                 });
 
         if (!request.getPassword().equals(request.getPasswordConfirm())) {
-            throw new PasswordMismatchException("비밀번호를 다시 확인해주세요");
+            throw new PasswordMismatchException(BaseCode.PASSWORD_MISMATCH);
         }
 
         User user = User.builder()
