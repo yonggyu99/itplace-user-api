@@ -44,7 +44,7 @@ public class SmsServiceImpl implements SmsService {
         redisTemplate.opsForHash().put(registrationId, "status", "SMS_SENT");
 
         String code = String.format("%06d", new Random().nextInt(900_000) + 100_000);
-        String key = "verify:" + phoneNumber;
+        String key = "verify:" + registrationId + ":" + phoneNumber;
 
         log.info("sms code: {}", code);
 
@@ -68,7 +68,7 @@ public class SmsServiceImpl implements SmsService {
         String phoneNumber = request.getPhoneNumber();
         String code = request.getVerificationCode();
 
-        String key = "verify:" + phoneNumber;
+        String key = "verify:" + registrationId + ":" + phoneNumber;
         String stored = redisTemplate.opsForValue().get(key);
 
         if (stored == null) {
