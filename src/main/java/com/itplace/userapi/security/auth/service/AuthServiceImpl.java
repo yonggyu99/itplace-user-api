@@ -24,6 +24,7 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+
 @Slf4j
 @Service
 @RequiredArgsConstructor
@@ -67,8 +68,7 @@ public class AuthServiceImpl implements AuthService {
         String registrationId = request.getRegistrationId();
         String phoneNumber = request.getPhoneNumber();
         String email = request.getEmail();
-        String registrationKey = "registration:" + registrationId;
-        String status = (String) redisTemplate.opsForHash().get(registrationKey, "status");
+        String status = (String) redisTemplate.opsForHash().get(registrationId, "status");
 
         if (status == null || !status.equals("EMAIL_VERIFIED")) {
             throw new EmailVerificationException(BaseCode.EMAIL_VERIFICATION_NOT_COMPLETED);
@@ -83,9 +83,9 @@ public class AuthServiceImpl implements AuthService {
                     }
                 });
 
-        String storedPhoneNumber = (String) redisTemplate.opsForHash().get(registrationKey, "phoneNumber");
-        String storedEmail = (String) redisTemplate.opsForHash().get(registrationKey, "email");
-        String storedName = (String) redisTemplate.opsForHash().get(registrationKey, "name");
+        String storedPhoneNumber = (String) redisTemplate.opsForHash().get(registrationId, "phoneNumber");
+        String storedEmail = (String) redisTemplate.opsForHash().get(registrationId, "email");
+        String storedName = (String) redisTemplate.opsForHash().get(registrationId, "name");
 
         if (!phoneNumber.equals(storedPhoneNumber) || !email.equals(storedEmail)) {
             throw new EmailVerificationException(BaseCode.MISMATCHED_VERIFIED_DATA);
@@ -105,7 +105,7 @@ public class AuthServiceImpl implements AuthService {
                 .role(Role.USER)
                 .build();
 
-        redisTemplate.delete(registrationKey);
+        redisTemplate.delete(registrationId);
 
         userRepository.save(user);
     }

@@ -29,6 +29,7 @@ public class EmailServiceImpl implements EmailService {
 
     @Override
     public void send(EmailVerificationRequest request) {
+        log.info("EmailVerificationRequest: {}", request);
         String registrationId = request.getRegistrationId();
         String email = request.getEmail();
 
@@ -119,6 +120,7 @@ public class EmailServiceImpl implements EmailService {
 
     @Override
     public void confirm(EmailConfirmRequest request) {
+        log.info("EmailConfirmRequest: {}", request);
         String email = request.getEmail();
         String registrationId = request.getRegistrationId();
         String code = request.getVerificationCode();
