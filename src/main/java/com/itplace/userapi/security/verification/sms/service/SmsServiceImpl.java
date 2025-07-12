@@ -35,6 +35,7 @@ public class SmsServiceImpl implements SmsService {
 
     @Override
     public SmsVerificationResponse send(SmsVerificationRequest request) {
+        log.info("SmsVerificationRequest: {}", request);
         String registrationId = UUID.randomUUID().toString();
         String name = request.getName();
         String phoneNumber = request.getPhoneNumber();
@@ -64,6 +65,7 @@ public class SmsServiceImpl implements SmsService {
 
     @Override
     public SmsConfirmResponse confirm(SmsConfirmRequest request) {
+        log.info("SmsConfirmRequest: {}", request);
         String registrationId = request.getRegistrationId();
         String phoneNumber = request.getPhoneNumber();
         String code = request.getVerificationCode();
