@@ -2,6 +2,7 @@ package com.itplace.userapi.benefit.entity;
 
 import com.itplace.userapi.benefit.entity.enums.*;
 import com.itplace.userapi.common.BaseTimeEntity;
+import com.itplace.userapi.partner.entity.Partner;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
