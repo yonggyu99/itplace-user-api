@@ -20,8 +20,10 @@ public class Partner {
 
     private String partnerName;
 
+    @Column(length = 512)
     private String image;
 
+    @Column(length = 50)
     private String category;
 
 }

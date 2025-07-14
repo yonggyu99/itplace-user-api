@@ -32,6 +32,7 @@ public class Benefit extends BaseTimeEntity {
     @Convert(converter = BenefitTypeConverter.class)
     private BenefitType type;
 
+    @Lob
     private String description;
 
     @Lob
