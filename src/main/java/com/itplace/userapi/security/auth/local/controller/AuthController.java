@@ -1,11 +1,11 @@
-package com.itplace.userapi.security.auth.controller;
+package com.itplace.userapi.security.auth.local.controller;
 
 import com.itplace.userapi.common.ApiResponse;
-import com.itplace.userapi.common.BaseCode;
-import com.itplace.userapi.security.auth.dto.CustomUserDetails;
-import com.itplace.userapi.security.auth.dto.request.LoginRequest;
-import com.itplace.userapi.security.auth.dto.response.TokenResponse;
-import com.itplace.userapi.security.auth.service.AuthService;
+import com.itplace.userapi.security.SecurityCode;
+import com.itplace.userapi.security.auth.local.dto.CustomUserDetails;
+import com.itplace.userapi.security.auth.local.dto.request.LoginRequest;
+import com.itplace.userapi.security.auth.local.dto.response.TokenResponse;
+import com.itplace.userapi.security.auth.local.service.AuthService;
 import com.itplace.userapi.security.verification.jwt.JWTConstants;
 import com.itplace.userapi.user.service.UserService;
 import jakarta.servlet.http.Cookie;
@@ -33,17 +33,15 @@ public class AuthController {
         TokenResponse tokens = authService.login(request);
         response.addCookie(createCookie(JWTConstants.CATEGORY_ACCESS, tokens.getAccessToken()));
         response.addCookie(createCookie(JWTConstants.CATEGORY_REFRESH, tokens.getRefreshToken()));
-        return ApiResponse.ok(BaseCode.LOGIN_SUCCESS);
+        return ApiResponse.ok(SecurityCode.LOGIN_SUCCESS);
     }
 
     @PostMapping("/logout")
     public ApiResponse<Void> logout(@AuthenticationPrincipal CustomUserDetails userDetails, HttpServletResponse response) {
         authService.logout(userDetails.getUser().getId());
-
         response.addCookie(createExpiredCookie("access_token"));
         response.addCookie(createExpiredCookie("refresh_token"));
-
-        return ApiResponse.ok(BaseCode.LOGOUT_SUCCESS);
+        return ApiResponse.ok(SecurityCode.LOGOUT_SUCCESS);
     }
 
     private Cookie createCookie(String key, String value) {

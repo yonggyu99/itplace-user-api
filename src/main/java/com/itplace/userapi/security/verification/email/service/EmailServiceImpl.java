@@ -1,8 +1,8 @@
 package com.itplace.userapi.security.verification.email.service;
 
-import com.itplace.userapi.common.BaseCode;
-import com.itplace.userapi.common.exception.DuplicateEmailException;
-import com.itplace.userapi.common.exception.EmailVerificationException;
+import com.itplace.userapi.security.SecurityCode;
+import com.itplace.userapi.security.exception.DuplicateEmailException;
+import com.itplace.userapi.security.exception.EmailVerificationException;
 import com.itplace.userapi.security.verification.email.dto.EmailConfirmRequest;
 import com.itplace.userapi.security.verification.email.dto.EmailVerificationRequest;
 import com.itplace.userapi.user.repository.UserRepository;
@@ -35,7 +35,7 @@ public class EmailServiceImpl implements EmailService {
 
         String status = (String) redisTemplate.opsForHash().get(registrationId, "status");
         if (status == null || !status.equals("SMS_VERIFIED")) {
-            throw new EmailVerificationException(BaseCode.SMS_VERIFICATION_NOT_COMPLETED);
+            throw new EmailVerificationException(SecurityCode.SMS_VERIFICATION_NOT_COMPLETED);
         }
 
         MimeMessage mimeMessage = javaMailSender.createMimeMessage();
@@ -114,7 +114,7 @@ public class EmailServiceImpl implements EmailService {
         } catch (Exception e) {
             log.error("메일 발송 실패!", e);
             redisTemplate.delete(key);
-            throw new EmailVerificationException(BaseCode.EMAIL_SEND_FAILURE);
+            throw new EmailVerificationException(SecurityCode.EMAIL_SEND_FAILURE);
         }
     }
 
@@ -131,19 +131,19 @@ public class EmailServiceImpl implements EmailService {
         // Check registration status
         String status = (String) redisTemplate.opsForHash().get(registrationId, "status");
         if (status == null || !status.equals("SMS_VERIFIED")) {
-            throw new EmailVerificationException(BaseCode.SMS_VERIFICATION_NOT_COMPLETED);
+            throw new EmailVerificationException(SecurityCode.SMS_VERIFICATION_NOT_COMPLETED);
         }
 
         if (stored == null) {
-            throw new EmailVerificationException(BaseCode.EMAIL_CODE_EXPIRED);
+            throw new EmailVerificationException(SecurityCode.EMAIL_CODE_EXPIRED);
         }
 
         if (!stored.equals(code)) {
-            throw new EmailVerificationException(BaseCode.EMAIL_CODE_MISMATCH);
+            throw new EmailVerificationException(SecurityCode.EMAIL_CODE_MISMATCH);
         }
 
         if (userRepository.findByEmail(email).isPresent()) {
-            throw new DuplicateEmailException(BaseCode.DUPLICATE_EMAIL);
+            throw new DuplicateEmailException(SecurityCode.DUPLICATE_EMAIL);
         }
 
         // 일치하면 삭제하고 인증 완료 상태 저장

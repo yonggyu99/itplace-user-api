@@ -1,14 +1,14 @@
-package com.itplace.userapi.security.auth.service;
+package com.itplace.userapi.security.auth.local.service;
 
-import com.itplace.userapi.common.BaseCode;
-import com.itplace.userapi.common.exception.DuplicateEmailException;
-import com.itplace.userapi.common.exception.DuplicatePhoneNumberException;
-import com.itplace.userapi.common.exception.EmailVerificationException;
-import com.itplace.userapi.common.exception.PasswordMismatchException;
-import com.itplace.userapi.security.auth.dto.CustomUserDetails;
-import com.itplace.userapi.security.auth.dto.request.LoginRequest;
-import com.itplace.userapi.security.auth.dto.request.SignUpRequest;
-import com.itplace.userapi.security.auth.dto.response.TokenResponse;
+import com.itplace.userapi.security.SecurityCode;
+import com.itplace.userapi.security.auth.local.dto.CustomUserDetails;
+import com.itplace.userapi.security.auth.local.dto.request.LoginRequest;
+import com.itplace.userapi.security.auth.local.dto.request.SignUpRequest;
+import com.itplace.userapi.security.auth.local.dto.response.TokenResponse;
+import com.itplace.userapi.security.exception.DuplicateEmailException;
+import com.itplace.userapi.security.exception.DuplicatePhoneNumberException;
+import com.itplace.userapi.security.exception.EmailVerificationException;
+import com.itplace.userapi.security.exception.PasswordMismatchException;
 import com.itplace.userapi.security.verification.jwt.JWTConstants;
 import com.itplace.userapi.security.verification.jwt.JWTUtil;
 import com.itplace.userapi.user.entity.Role;
@@ -71,15 +71,15 @@ public class AuthServiceImpl implements AuthService {
         String status = (String) redisTemplate.opsForHash().get(registrationId, "status");
 
         if (status == null || !status.equals("EMAIL_VERIFIED")) {
-            throw new EmailVerificationException(BaseCode.EMAIL_VERIFICATION_NOT_COMPLETED);
+            throw new EmailVerificationException(SecurityCode.EMAIL_VERIFICATION_NOT_COMPLETED);
         }
 
         userRepository.findByEmailOrPhoneNumber(request.getEmail(), request.getPhoneNumber())
                 .ifPresent(user -> {
                     if (user.getEmail().equals(request.getEmail())) {
-                        throw new DuplicateEmailException(BaseCode.DUPLICATE_EMAIL);
+                        throw new DuplicateEmailException(SecurityCode.DUPLICATE_EMAIL);
                     } else if (user.getPhoneNumber().equals(request.getPhoneNumber())) {
-                        throw new DuplicatePhoneNumberException(BaseCode.DUPLICATE_PHONE_NUMBER);
+                        throw new DuplicatePhoneNumberException(SecurityCode.DUPLICATE_PHONE_NUMBER);
                     }
                 });
 
@@ -88,11 +88,11 @@ public class AuthServiceImpl implements AuthService {
         String storedName = (String) redisTemplate.opsForHash().get(registrationId, "name");
 
         if (!phoneNumber.equals(storedPhoneNumber) || !email.equals(storedEmail)) {
-            throw new EmailVerificationException(BaseCode.MISMATCHED_VERIFIED_DATA);
+            throw new EmailVerificationException(SecurityCode.MISMATCHED_VERIFIED_DATA);
         }
 
         if (!request.getPassword().equals(request.getPasswordConfirm())) {
-            throw new PasswordMismatchException(BaseCode.PASSWORD_MISMATCH);
+            throw new PasswordMismatchException(SecurityCode.PASSWORD_MISMATCH);
         }
 
         User user = User.builder()

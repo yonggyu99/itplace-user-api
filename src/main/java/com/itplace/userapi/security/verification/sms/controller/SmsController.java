@@ -1,7 +1,7 @@
 package com.itplace.userapi.security.verification.sms.controller;
 
 import com.itplace.userapi.common.ApiResponse;
-import com.itplace.userapi.common.BaseCode;
+import com.itplace.userapi.security.SecurityCode;
 import com.itplace.userapi.security.verification.sms.dto.SmsConfirmRequest;
 import com.itplace.userapi.security.verification.sms.dto.SmsConfirmResponse;
 import com.itplace.userapi.security.verification.sms.dto.SmsVerificationRequest;
@@ -24,12 +24,12 @@ public class SmsController {
     @PostMapping("/sms")
     public ApiResponse<SmsVerificationResponse> send(@RequestBody @Validated SmsVerificationRequest request) {
         SmsVerificationResponse data = smsService.send(request);
-        return ApiResponse.of(BaseCode.SMS_SEND_SUCCESS, data);
+        return ApiResponse.of(SecurityCode.SMS_SEND_SUCCESS, data);
     }
 
     @PostMapping("/sms/confirm")
     public ApiResponse<SmsConfirmResponse> confirm(@RequestBody @Validated SmsConfirmRequest request) {
         SmsConfirmResponse data = smsService.confirm(request);
-        return ApiResponse.of(BaseCode.SMS_VERIFICATION_SUCCESS, data);
+        return ApiResponse.of(SecurityCode.SMS_VERIFICATION_SUCCESS, data);
     }
 }
