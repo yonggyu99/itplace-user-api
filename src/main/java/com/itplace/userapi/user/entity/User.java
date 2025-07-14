@@ -36,7 +36,7 @@ import org.springframework.security.core.authority.SimpleGrantedAuthority;
 public class User extends BaseTimeEntity {
 
     @Id
-    @Column(name = "id")
+    @Column(name = "userId")
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
