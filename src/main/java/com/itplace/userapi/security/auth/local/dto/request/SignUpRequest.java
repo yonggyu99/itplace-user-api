@@ -1,4 +1,4 @@
-package com.itplace.userapi.security.auth.dto.request;
+package com.itplace.userapi.security.auth.local.dto.request;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.itplace.userapi.user.entity.Gender;

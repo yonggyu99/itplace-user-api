@@ -1,9 +1,9 @@
-package com.itplace.userapi.security.auth.controller;
+package com.itplace.userapi.security.auth.local.controller;
 
 import com.itplace.userapi.common.ApiResponse;
-import com.itplace.userapi.common.BaseCode;
-import com.itplace.userapi.security.auth.dto.request.SignUpRequest;
-import com.itplace.userapi.security.auth.service.AuthService;
+import com.itplace.userapi.security.SecurityCode;
+import com.itplace.userapi.security.auth.local.dto.request.SignUpRequest;
+import com.itplace.userapi.security.auth.local.service.AuthService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -21,6 +21,6 @@ public class RegistrationController {
     @PostMapping("/signUp")
     public ApiResponse<Void> signUp(@RequestBody @Validated SignUpRequest request) {
         authService.signUp(request);
-        return ApiResponse.ok(BaseCode.SIGNUP_SUCCESS);
+        return ApiResponse.ok(SecurityCode.SIGNUP_SUCCESS);
     }
 }

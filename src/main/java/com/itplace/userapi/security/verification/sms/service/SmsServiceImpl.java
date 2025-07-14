@@ -1,8 +1,8 @@
 package com.itplace.userapi.security.verification.sms.service;
 
-import com.itplace.userapi.common.BaseCode;
-import com.itplace.userapi.common.exception.DuplicatePhoneNumberException;
-import com.itplace.userapi.common.exception.SmsVerificationException;
+import com.itplace.userapi.security.SecurityCode;
+import com.itplace.userapi.security.exception.DuplicatePhoneNumberException;
+import com.itplace.userapi.security.exception.SmsVerificationException;
 import com.itplace.userapi.security.verification.sms.dto.SmsConfirmRequest;
 import com.itplace.userapi.security.verification.sms.dto.SmsConfirmResponse;
 import com.itplace.userapi.security.verification.sms.dto.SmsVerificationRequest;
@@ -75,11 +75,11 @@ public class SmsServiceImpl implements SmsService {
 
         if (stored == null) {
             // 만료되었거나 없음
-            throw new SmsVerificationException(BaseCode.SMS_CODE_EXPIRED);
+            throw new SmsVerificationException(SecurityCode.SMS_CODE_EXPIRED);
         }
 
         if (!stored.equals(code)) {
-            throw new SmsVerificationException(BaseCode.SMS_CODE_MISMATCH);
+            throw new SmsVerificationException(SecurityCode.SMS_CODE_MISMATCH);
         }
 
         // 일치하면 삭제하고 true 반환
@@ -90,11 +90,11 @@ public class SmsServiceImpl implements SmsService {
 
         // registrationId가 유효하지 않거나, phoneNumber가 불일치하거나, 상태가 이상할 경우
         if (storedPhoneNumber == null || !storedPhoneNumber.equals(phoneNumber) || !"SMS_SENT".equals(storedStatus)) {
-            throw new SmsVerificationException(BaseCode.INVALID_REGISTRATION_SESSION); // 적절한 예외 코드 추가 필요
+            throw new SmsVerificationException(SecurityCode.INVALID_REGISTRATION_SESSION);
         }
 
         if (userRepository.findByPhoneNumber(phoneNumber).isPresent()) {
-            throw new DuplicatePhoneNumberException(BaseCode.DUPLICATE_PHONE_NUMBER);
+            throw new DuplicatePhoneNumberException(SecurityCode.DUPLICATE_PHONE_NUMBER);
         }
 
         boolean uplusData = uplusDataRepository.findByPhoneNumber(phoneNumber).isPresent();

@@ -1,7 +1,7 @@
 package com.itplace.userapi.security.verification.email.controller;
 
 import com.itplace.userapi.common.ApiResponse;
-import com.itplace.userapi.common.BaseCode;
+import com.itplace.userapi.security.SecurityCode;
 import com.itplace.userapi.security.verification.email.dto.EmailConfirmRequest;
 import com.itplace.userapi.security.verification.email.dto.EmailVerificationRequest;
 import com.itplace.userapi.security.verification.email.service.EmailService;
@@ -22,12 +22,12 @@ public class EmailController {
     @PostMapping("/email")
     public ApiResponse<Void> send(@RequestBody @Validated EmailVerificationRequest request) {
         emailService.send(request);
-        return ApiResponse.ok(BaseCode.EMAIL_SEND_SUCCESS);
+        return ApiResponse.ok(SecurityCode.EMAIL_SEND_SUCCESS);
     }
 
     @PostMapping("/email/confirm")
     public ApiResponse<Void> confirm(@RequestBody @Validated EmailConfirmRequest request) {
         emailService.confirm(request);
-        return ApiResponse.ok(BaseCode.EMAIL_VERIFICATION_SUCCESS);
+        return ApiResponse.ok(SecurityCode.EMAIL_VERIFICATION_SUCCESS);
     }
 }

@@ -1,6 +1,6 @@
-package com.itplace.userapi.security.auth.service;
+package com.itplace.userapi.security.auth.local.service;
 
-import com.itplace.userapi.security.auth.dto.CustomUserDetails;
+import com.itplace.userapi.security.auth.local.dto.CustomUserDetails;
 import com.itplace.userapi.user.entity.User;
 import com.itplace.userapi.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
