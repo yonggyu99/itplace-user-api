@@ -1,4 +1,4 @@
-package com.itplace.userapi.security.auth.dto.response;
+package com.itplace.userapi.security.auth.local.dto.response;
 
 import lombok.Builder;
 import lombok.Getter;

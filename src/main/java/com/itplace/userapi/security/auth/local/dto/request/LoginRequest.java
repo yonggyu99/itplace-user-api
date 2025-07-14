@@ -1,4 +1,4 @@
-package com.itplace.userapi.security.auth.dto.request;
+package com.itplace.userapi.security.auth.local.dto.request;
 
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;

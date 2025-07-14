@@ -1,4 +1,4 @@
-package com.itplace.userapi.security.auth.dto;
+package com.itplace.userapi.security.auth.local.dto;
 
 import com.itplace.userapi.user.entity.User;
 import java.util.Collection;
