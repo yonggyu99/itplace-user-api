@@ -1,4 +1,4 @@
-package com.itplace.userapi.benefit.entity;
+package com.itplace.userapi.partner.entity;
 
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
@@ -27,4 +27,3 @@ public class Partner {
     private String category;
 
 }
-
