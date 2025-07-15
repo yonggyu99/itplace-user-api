@@ -7,11 +7,12 @@ import com.itplace.userapi.security.auth.local.dto.request.LoginRequest;
 import com.itplace.userapi.security.auth.local.dto.response.TokenResponse;
 import com.itplace.userapi.security.auth.local.service.AuthService;
 import com.itplace.userapi.security.verification.jwt.JWTConstants;
-import com.itplace.userapi.user.service.UserService;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -22,26 +23,28 @@ import org.springframework.web.bind.annotation.RestController;
 @RequiredArgsConstructor
 public class AuthController {
 
-    private final UserService userService;
     private final AuthService authService;
 
-    private static final String ACCESS_TOKEN = "ACCESS_TOKEN";
-    private static final String REFRESH_TOKEN = "REFRESH_TOKEN";
-
     @PostMapping("/login")
-    public ApiResponse<Void> login(@RequestBody LoginRequest request, HttpServletResponse response) {
+    public ResponseEntity<ApiResponse<Void>> login(@RequestBody @Validated LoginRequest request, HttpServletResponse response) {
         TokenResponse tokens = authService.login(request);
         response.addCookie(createCookie(JWTConstants.CATEGORY_ACCESS, tokens.getAccessToken()));
         response.addCookie(createCookie(JWTConstants.CATEGORY_REFRESH, tokens.getRefreshToken()));
-        return ApiResponse.ok(SecurityCode.LOGIN_SUCCESS);
+
+        ApiResponse<Void> body = ApiResponse.of(SecurityCode.LOGIN_SUCCESS, null);
+        return ResponseEntity
+                .status(body.getStatus())
+                .body(body);
     }
 
     @PostMapping("/logout")
-    public ApiResponse<Void> logout(@AuthenticationPrincipal CustomUserDetails userDetails, HttpServletResponse response) {
+    public ResponseEntity<ApiResponse<Void>> logout(@AuthenticationPrincipal CustomUserDetails userDetails, HttpServletResponse response) {
         authService.logout(userDetails.getUser().getId());
-        response.addCookie(createExpiredCookie("access_token"));
-        response.addCookie(createExpiredCookie("refresh_token"));
-        return ApiResponse.ok(SecurityCode.LOGOUT_SUCCESS);
+        response.addCookie(createExpiredCookie(JWTConstants.CATEGORY_ACCESS));
+        response.addCookie(createExpiredCookie(JWTConstants.CATEGORY_REFRESH));
+        ApiResponse<Void> body = ApiResponse.ok(SecurityCode.LOGOUT_SUCCESS);
+        return ResponseEntity.status(body.getStatus())
+                .body(body);
     }
 
     private Cookie createCookie(String key, String value) {

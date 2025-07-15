@@ -8,6 +8,7 @@ import com.itplace.userapi.security.verification.sms.dto.SmsVerificationRequest;
 import com.itplace.userapi.security.verification.sms.dto.SmsVerificationResponse;
 import com.itplace.userapi.security.verification.sms.service.SmsService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -22,14 +23,18 @@ public class SmsController {
     private final SmsService smsService;
 
     @PostMapping("/sms")
-    public ApiResponse<SmsVerificationResponse> send(@RequestBody @Validated SmsVerificationRequest request) {
+    public ResponseEntity<ApiResponse<SmsVerificationResponse>> send(@RequestBody @Validated SmsVerificationRequest request) {
         SmsVerificationResponse data = smsService.send(request);
-        return ApiResponse.of(SecurityCode.SMS_SEND_SUCCESS, data);
+        ApiResponse<SmsVerificationResponse> body = ApiResponse.of(SecurityCode.SMS_SEND_SUCCESS, data);
+        return ResponseEntity.status(body.getStatus())
+                .body(body);
     }
 
     @PostMapping("/sms/confirm")
-    public ApiResponse<SmsConfirmResponse> confirm(@RequestBody @Validated SmsConfirmRequest request) {
+    public ResponseEntity<ApiResponse<SmsConfirmResponse>> confirm(@RequestBody @Validated SmsConfirmRequest request) {
         SmsConfirmResponse data = smsService.confirm(request);
-        return ApiResponse.of(SecurityCode.SMS_VERIFICATION_SUCCESS, data);
+        ApiResponse<SmsConfirmResponse> body = ApiResponse.of(SecurityCode.SMS_VERIFICATION_SUCCESS, data);
+        return ResponseEntity.status(body.getStatus())
+                .body(body);
     }
 }
