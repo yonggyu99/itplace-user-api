@@ -1,13 +1,15 @@
 package com.itplace.userapi.security.auth.oauth.dto;
 
 import com.itplace.userapi.user.entity.Role;
+import lombok.Builder;
 import lombok.Getter;
-import lombok.Setter;
 
 @Getter
-@Setter
+@Builder
 public class OAuth2InfoResponse {
 
+    private String registrationId;
+    private Long userId;
     private String provider;
     private String providerId;
     private String email;

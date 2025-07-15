@@ -18,6 +18,9 @@ import lombok.Setter;
 @Builder
 public class SignUpRequest {
 
+    @NotBlank(message = "등록 ID는 필수 항목입니다.")
+    private String registrationId;
+
     @NotBlank(message = "이름은 필수 항목입니다.")
     private String name;
 
@@ -34,6 +37,7 @@ public class SignUpRequest {
     private String password;
 
     @NotBlank(message = "비밀번호 확인은 필수 항목입니다.")
+    @Size(min = 6, max = 30, message = "비밀번호는 6자 이상 30자 이하로 입력해주세요.")
     private String passwordConfirm;
 
     @NotNull(message = "성별은 필수 항목입니다.")
@@ -46,7 +50,4 @@ public class SignUpRequest {
     @Past(message = "생년월일은 과거 날짜여야 합니다.")
     @JsonFormat(pattern = "yyyy-MM-dd")  // Jackson이 "2025-07-12" 형식의 문자열을 LocalDate로 변환
     private LocalDate birthday;
-
-    @NotBlank(message = "등록 ID는 필수 항목입니다.")
-    private String registrationId;
 }
