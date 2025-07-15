@@ -27,4 +27,3 @@ public class Partner {
     private String category;
 
 }
-
