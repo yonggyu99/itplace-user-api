@@ -1,6 +1,7 @@
 package com.itplace.userapi.security.auth.local.service;
 
 import com.itplace.userapi.security.auth.local.dto.request.LinkLocalToOAuthRequest;
+import com.itplace.userapi.security.auth.local.dto.request.LinkOAuthToLocalRequest;
 import com.itplace.userapi.security.auth.local.dto.request.LoginRequest;
 import com.itplace.userapi.security.auth.local.dto.request.SignUpRequest;
 import com.itplace.userapi.security.auth.local.dto.request.UplusDataRequest;
@@ -24,5 +25,5 @@ public interface AuthService {
 
     void linkLocalToOAuth(LinkLocalToOAuthRequest request);
 
-    void linkOAuthToLocal(String registrationId);
+    void linkOAuthToLocal(LinkOAuthToLocalRequest request);
 }

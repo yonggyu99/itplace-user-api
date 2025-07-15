@@ -3,6 +3,7 @@ package com.itplace.userapi.security.auth.local.service;
 import com.itplace.userapi.security.SecurityCode;
 import com.itplace.userapi.security.auth.local.dto.CustomUserDetails;
 import com.itplace.userapi.security.auth.local.dto.request.LinkLocalToOAuthRequest;
+import com.itplace.userapi.security.auth.local.dto.request.LinkOAuthToLocalRequest;
 import com.itplace.userapi.security.auth.local.dto.request.LoginRequest;
 import com.itplace.userapi.security.auth.local.dto.request.SignUpRequest;
 import com.itplace.userapi.security.auth.local.dto.request.UplusDataRequest;
@@ -166,7 +167,8 @@ public class AuthServiceImpl implements AuthService {
 
     @Override
     @Transactional
-    public void linkOAuthToLocal(String registrationId) {
+    public void linkOAuthToLocal(LinkOAuthToLocalRequest request) {
+        String registrationId = request.getRegistrationId();
         String provider = (String) redisTemplate.opsForHash().get(registrationId, "provider");
         String providerId = (String) redisTemplate.opsForHash().get(registrationId, "providerId");
         String storedPhoneNumber = (String) redisTemplate.opsForHash().get(registrationId, "phoneNumber");

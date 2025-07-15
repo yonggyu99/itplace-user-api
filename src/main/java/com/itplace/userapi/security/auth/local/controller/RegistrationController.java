@@ -3,11 +3,11 @@ package com.itplace.userapi.security.auth.local.controller;
 import com.itplace.userapi.common.ApiResponse;
 import com.itplace.userapi.security.SecurityCode;
 import com.itplace.userapi.security.auth.local.dto.request.LinkLocalToOAuthRequest;
+import com.itplace.userapi.security.auth.local.dto.request.LinkOAuthToLocalRequest;
 import com.itplace.userapi.security.auth.local.dto.request.SignUpRequest;
 import com.itplace.userapi.security.auth.local.dto.request.UplusDataRequest;
 import com.itplace.userapi.security.auth.local.dto.response.UplusDataResponse;
 import com.itplace.userapi.security.auth.local.service.AuthService;
-import java.util.Map;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
@@ -42,8 +42,8 @@ public class RegistrationController {
     }
 
     @PostMapping("/linkOAuth")
-    public ResponseEntity<ApiResponse<Void>> linkOAuth(@RequestBody Map<String, String> req) {
-        authService.linkOAuthToLocal(req.get("registrationId"));
+    public ResponseEntity<ApiResponse<Void>> linkOAuth(@RequestBody LinkOAuthToLocalRequest request) {
+        authService.linkOAuthToLocal(request);
         ApiResponse<Void> body = ApiResponse.ok(SecurityCode.LINK_LOCAL_SUCCESS);
         return ResponseEntity
                 .status(body.getStatus())
