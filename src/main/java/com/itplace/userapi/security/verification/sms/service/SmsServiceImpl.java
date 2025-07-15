@@ -1,15 +1,17 @@
 package com.itplace.userapi.security.verification.sms.service;
 
 import com.itplace.userapi.security.SecurityCode;
-import com.itplace.userapi.security.exception.DuplicatePhoneNumberException;
 import com.itplace.userapi.security.exception.SmsVerificationException;
 import com.itplace.userapi.security.verification.sms.dto.SmsConfirmRequest;
 import com.itplace.userapi.security.verification.sms.dto.SmsConfirmResponse;
 import com.itplace.userapi.security.verification.sms.dto.SmsVerificationRequest;
 import com.itplace.userapi.security.verification.sms.dto.SmsVerificationResponse;
+import com.itplace.userapi.user.entity.User;
+import com.itplace.userapi.user.entity.UserStatus;
 import com.itplace.userapi.user.repository.UplusDataRepository;
 import com.itplace.userapi.user.repository.UserRepository;
 import java.time.Duration;
+import java.util.Optional;
 import java.util.Random;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
@@ -36,7 +38,10 @@ public class SmsServiceImpl implements SmsService {
     @Override
     public SmsVerificationResponse send(SmsVerificationRequest request) {
         log.info("SmsVerificationRequest: {}", request);
-        String registrationId = UUID.randomUUID().toString();
+        String registrationId = request.getRegistrationId();
+        if (registrationId == null || registrationId.isEmpty()) {
+            registrationId = UUID.randomUUID().toString();
+        }
         String name = request.getName();
         String phoneNumber = request.getPhoneNumber();
 
@@ -88,24 +93,24 @@ public class SmsServiceImpl implements SmsService {
         String storedPhoneNumber = (String) redisTemplate.opsForHash().get(registrationId, "phoneNumber");
         String storedStatus = (String) redisTemplate.opsForHash().get(registrationId, "status");
 
-        // registrationId가 유효하지 않거나, phoneNumber가 불일치하거나, 상태가 이상할 경우
+        // registrationId 가 유효하지 않거나, phoneNumber 가 불일치하거나, 상태가 이상할 경우
         if (storedPhoneNumber == null || !storedPhoneNumber.equals(phoneNumber) || !"SMS_SENT".equals(storedStatus)) {
             throw new SmsVerificationException(SecurityCode.INVALID_REGISTRATION_SESSION);
         }
-
-        if (userRepository.findByPhoneNumber(phoneNumber).isPresent()) {
-            throw new DuplicatePhoneNumberException(SecurityCode.DUPLICATE_PHONE_NUMBER);
-        }
-
+        Optional<User> userOpt = userRepository.findByPhoneNumber(phoneNumber);
+        UserStatus userStatus = userOpt.isPresent() ? UserStatus.EXISTING_USER : UserStatus.NEW_USER;
+        boolean isLocalUser = userOpt.map(user -> user.getPassword() != null).orElse(false);
         boolean uplusData = uplusDataRepository.findByPhoneNumber(phoneNumber).isPresent();
 
         redisTemplate.opsForHash().put(registrationId, "status", "SMS_VERIFIED");
         redisTemplate.expire(registrationId, Duration.ofSeconds(VERIFIED_TTL_SECONDS)); // Set TTL for the registration session
 
-        log.info("인증성공");
+        log.info("SMS 인증 성공. UserStatus: {}, isLocalUser: {}, UplusData: {}", userStatus, isLocalUser, uplusData);
 
         return SmsConfirmResponse.builder()
                 .registrationId(registrationId)
+                .userStatus(userStatus)
+                .isLocalUser(isLocalUser)
                 .uplusDataExists(uplusData)
                 .build();
     }
