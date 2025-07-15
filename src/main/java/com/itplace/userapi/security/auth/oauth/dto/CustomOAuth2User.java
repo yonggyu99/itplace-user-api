@@ -3,6 +3,7 @@ package com.itplace.userapi.security.auth.oauth.dto;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Map;
+import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
@@ -11,6 +12,7 @@ import org.springframework.security.oauth2.core.user.OAuth2User;
 @RequiredArgsConstructor
 public class CustomOAuth2User implements OAuth2User {
 
+    @Getter
     private final OAuth2InfoResponse oAuth2InfoResponse;
     private final Map<String, Object> attributes;
 

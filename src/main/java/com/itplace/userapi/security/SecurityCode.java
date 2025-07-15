@@ -19,6 +19,8 @@ public enum SecurityCode implements BaseCode {
 
     SIGNUP_SUCCESS("SIGNUP_SUCCESS", HttpStatus.OK, "성공적으로 회원가입 되었습니다."),
 
+    LINK_LOCAL_SUCCESS("LINK_LOCAL_SUCCESS", HttpStatus.OK, "성공적으로 계정이 연동 되었습니다."),
+
     RENEW_ACCESS_TOKEN("RENEW_ACCESS_TOKEN", HttpStatus.OK, "액세스 토큰이 갱신되었습니다."),
 
     INVALID_INPUT_VALUE("INVALID_INPUT_VALUE", HttpStatus.BAD_REQUEST, "입력값이 올바르지 않습니다."),
@@ -43,7 +45,9 @@ public enum SecurityCode implements BaseCode {
 
     SMS_SEND_FAILURE("SMS_SEND_FAILURE", HttpStatus.INTERNAL_SERVER_ERROR, "문자 인증 코드 발송에 실패했습니다."),
 
-    UPLUS_DATA_EXISTS("UPLUS_DATA_EXISTS", HttpStatus.OK, "Uplus 데이터에 해당 사용자가 존재합니다."),
+    UPLUS_DATA_FOUND("UPLUS_DATA_FOUND", HttpStatus.OK, "Uplus 데이터를 성공적으로 불러왔습니다."),
+
+    UPLUS_DATA_NOT_FOUND("UPLUS_DATA_NOT_FOUND", HttpStatus.BAD_REQUEST, "Uplus 데이터를 불러오지 못했습니다."),
 
     EMAIL_VERIFICATION_SUCCESS("EMAIL_VERIFICATION_SUCCESS", HttpStatus.OK, "이메일 인증에 성공했습니다."),
 
@@ -65,9 +69,23 @@ public enum SecurityCode implements BaseCode {
 
     EMAIL_VERIFICATION_NOT_COMPLETED("EMAIL_VERIFICATION_NOT_COMPLETED", HttpStatus.BAD_REQUEST, "이메일 인증이 완료되지 않았습니다."),
 
-    MISMATCHED_VERIFIED_DATA("MISMATCHED_VERIFIED_DATA", HttpStatus.BAD_REQUEST, "인증된 정보와 일치하지 않습니다.");
+    MISMATCHED_VERIFIED_DATA("MISMATCHED_VERIFIED_DATA", HttpStatus.BAD_REQUEST, "인증된 정보와 일치하지 않습니다."),
+
+    USER_NOT_FOUND("USER_NOT_FOUND", HttpStatus.BAD_REQUEST, "사용자를 찾을 수 없습니다"),
+
+    // OAuth2 로그인 시 추가 정보가 필요함을 나타내는 코드
+    SIGNUP_REQUIRED("SIGNUP_REQUIRED", HttpStatus.OK, "회원가입이 필요합니다. 추가 정보를 입력해주세요.");
 
     private final String code;
     private final HttpStatus status;
     private final String message;
+
+    public static BaseCode fromCode(String code) {
+        for (SecurityCode securityCode : SecurityCode.values()) {
+            if (securityCode.getCode().equals(code)) {
+                return securityCode;
+            }
+        }
+        throw new IllegalArgumentException("No matching SecurityCode for code: " + code);
+    }
 }

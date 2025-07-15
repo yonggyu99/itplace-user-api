@@ -1,5 +1,6 @@
 package com.itplace.userapi.security.config;
 
+import com.itplace.userapi.security.auth.oauth.handler.CustomOAuth2SuccessHandler;
 import com.itplace.userapi.security.auth.oauth.service.CustomOAuth2Service;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
@@ -20,6 +21,7 @@ import org.springframework.security.web.SecurityFilterChain;
 public class SecurityConfig {
 
     private final CustomOAuth2Service customOAuth2Service;
+    private final CustomOAuth2SuccessHandler customOAuth2SuccessHandler;
 
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
@@ -39,7 +41,8 @@ public class SecurityConfig {
         http
                 .oauth2Login(oauth2 -> oauth2
                         .userInfoEndpoint(userInfoEndpointConfig -> userInfoEndpointConfig
-                                .userService(customOAuth2Service)));
+                                .userService(customOAuth2Service))
+                        .successHandler(customOAuth2SuccessHandler));
 
         // 세션 설정 : STATELESS
         http
