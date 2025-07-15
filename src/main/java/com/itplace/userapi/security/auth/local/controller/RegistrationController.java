@@ -2,9 +2,14 @@ package com.itplace.userapi.security.auth.local.controller;
 
 import com.itplace.userapi.common.ApiResponse;
 import com.itplace.userapi.security.SecurityCode;
+import com.itplace.userapi.security.auth.local.dto.request.LinkLocalToOAuthRequest;
 import com.itplace.userapi.security.auth.local.dto.request.SignUpRequest;
+import com.itplace.userapi.security.auth.local.dto.request.UplusDataRequest;
+import com.itplace.userapi.security.auth.local.dto.response.UplusDataResponse;
 import com.itplace.userapi.security.auth.local.service.AuthService;
+import java.util.Map;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -19,8 +24,48 @@ public class RegistrationController {
     private final AuthService authService;
 
     @PostMapping("/signUp")
-    public ApiResponse<Void> signUp(@RequestBody @Validated SignUpRequest request) {
+    public ResponseEntity<ApiResponse<Void>> signUp(@RequestBody @Validated SignUpRequest request) {
         authService.signUp(request);
-        return ApiResponse.ok(SecurityCode.SIGNUP_SUCCESS);
+        ApiResponse<Void> body = ApiResponse.ok(SecurityCode.SIGNUP_SUCCESS);
+        return ResponseEntity
+                .status(body.getStatus())
+                .body(body);
+    }
+
+    @PostMapping("/linkLocal")
+    public ResponseEntity<ApiResponse<Void>> linkLocal(@RequestBody @Validated LinkLocalToOAuthRequest request) {
+        authService.linkLocalToOAuth(request);
+        ApiResponse<Void> body = ApiResponse.ok(SecurityCode.LINK_LOCAL_SUCCESS);
+        return ResponseEntity
+                .status(body.getStatus())
+                .body(body);
+    }
+
+    @PostMapping("/linkOAuth")
+    public ResponseEntity<ApiResponse<Void>> linkOAuth(@RequestBody Map<String, String> req) {
+        authService.linkOAuthToLocal(req.get("registrationId"));
+        ApiResponse<Void> body = ApiResponse.ok(SecurityCode.LINK_LOCAL_SUCCESS);
+        return ResponseEntity
+                .status(body.getStatus())
+                .body(body);
+    }
+
+    @PostMapping("/uplusData")
+    public ResponseEntity<ApiResponse<UplusDataResponse>> uplusData(@RequestBody UplusDataRequest request) {
+        return authService.uplusData(request)
+                .map(data -> {
+                    ApiResponse<UplusDataResponse> body = ApiResponse.of(
+                            SecurityCode.UPLUS_DATA_FOUND, data);
+                    return ResponseEntity
+                            .status(body.getStatus())
+                            .body(body);
+                })
+                .orElseGet(() -> {
+                    ApiResponse<UplusDataResponse> body = ApiResponse.of(
+                            SecurityCode.UPLUS_DATA_NOT_FOUND, null);
+                    return ResponseEntity
+                            .status(body.getStatus())
+                            .body(body);
+                });
     }
 }
