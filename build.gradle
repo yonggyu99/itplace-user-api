@@ -43,6 +43,8 @@ dependencies {
     implementation platform('software.amazon.awssdk:bom:2.25.21')
     implementation 'software.amazon.awssdk:personalizeruntime'
 
+    implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:2.8.9")
+
     compileOnly 'org.projectlombok:lombok'
     runtimeOnly 'com.mysql:mysql-connector-j'
     annotationProcessor 'org.projectlombok:lombok'
