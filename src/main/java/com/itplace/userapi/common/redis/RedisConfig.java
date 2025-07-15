@@ -8,6 +8,7 @@ import org.springframework.data.redis.connection.RedisConnectionFactory;
 import org.springframework.data.redis.connection.lettuce.LettuceConnectionFactory;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.repository.configuration.EnableRedisRepositories;
+import org.springframework.data.redis.serializer.GenericJackson2JsonRedisSerializer;
 import org.springframework.data.redis.serializer.StringRedisSerializer;
 
 @Configuration
@@ -31,8 +32,8 @@ public class RedisConfig {
         redisTemplate.setConnectionFactory(redisConnectionFactory());
         // 키를 문자열로 직렬화하도록 설정
         redisTemplate.setKeySerializer(new StringRedisSerializer());
-        // 값을 문자열로 직렬화하도록 설정
-        redisTemplate.setValueSerializer(new StringRedisSerializer());
+        // 값을 JSON으로 직렬화하도록 설정
+        redisTemplate.setValueSerializer(new GenericJackson2JsonRedisSerializer());
 
         // 설정이 완료된 RedisTemplate 인스턴스를 반환
         return redisTemplate;
