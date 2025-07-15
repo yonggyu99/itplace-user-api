@@ -2,6 +2,8 @@ package com.itplace.userapi.user.entity;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
 import java.time.LocalDate;
@@ -22,6 +24,7 @@ public class UplusData {
     private String phoneNumber;
 
     @Column(name = "gender", length = 5)
+    @Enumerated(EnumType.STRING)
     private Gender gender;
 
     @Column(name = "birthday", length = 8)
