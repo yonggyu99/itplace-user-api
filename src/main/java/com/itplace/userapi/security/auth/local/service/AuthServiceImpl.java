@@ -147,9 +147,13 @@ public class AuthServiceImpl implements AuthService {
                 .role(Role.USER)
                 .build();
 
+        log.info("User 정보: {}", user);
+
         redisTemplate.delete(registrationId);
 
         userRepository.save(user);
+
+        log.info("USER 저장됨");
     }
 
     @Override
