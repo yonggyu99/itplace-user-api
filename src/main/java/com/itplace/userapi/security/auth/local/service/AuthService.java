@@ -5,7 +5,7 @@ import com.itplace.userapi.security.auth.local.dto.request.LinkOAuthToLocalReque
 import com.itplace.userapi.security.auth.local.dto.request.LoginRequest;
 import com.itplace.userapi.security.auth.local.dto.request.SignUpRequest;
 import com.itplace.userapi.security.auth.local.dto.request.UplusDataRequest;
-import com.itplace.userapi.security.auth.local.dto.response.TokenResponse;
+import com.itplace.userapi.security.auth.local.dto.response.LoginWithTokenResponse;
 import com.itplace.userapi.security.auth.local.dto.response.UplusDataResponse;
 import com.itplace.userapi.security.auth.oauth.dto.CustomOAuth2User;
 import com.itplace.userapi.security.auth.oauth.dto.OAuth2LoginResult;
@@ -13,7 +13,7 @@ import java.util.Optional;
 
 public interface AuthService {
 
-    TokenResponse login(LoginRequest request);
+    LoginWithTokenResponse login(LoginRequest request);
 
     void logout(Long userId);
 
