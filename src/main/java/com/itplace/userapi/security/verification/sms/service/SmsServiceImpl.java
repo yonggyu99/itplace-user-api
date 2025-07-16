@@ -52,6 +52,7 @@ public class SmsServiceImpl implements SmsService {
         String code = String.format("%06d", new Random().nextInt(900_000) + 100_000);
         String key = "verify:" + registrationId + ":" + phoneNumber;
 
+        log.info("sms key: {}", key);
         log.info("sms code: {}", code);
 
         redisTemplate.opsForValue().set(key, code, Duration.ofSeconds(KEY_TTL_SECONDS));
