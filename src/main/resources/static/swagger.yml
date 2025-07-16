@@ -1412,7 +1412,7 @@ paths:
   /benefit/{benefitId}:
     get:
       tags:
-        - benefit
+        - Benefit
       summary: 혜택 상세 조회
       description: 혜택 ID를 통해 혜택의 상세 정보를 조회합니다.
       operationId: getBenefitDetail
