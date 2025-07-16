@@ -1,6 +1,7 @@
 package com.itplace.userapi.benefit.controller;
 
 import com.itplace.userapi.benefit.BenefitCode;
+import com.itplace.userapi.benefit.dto.response.BenefitDetailResponse;
 import com.itplace.userapi.benefit.dto.response.BenefitListResponse;
 import com.itplace.userapi.benefit.dto.response.PagedResponse;
 import com.itplace.userapi.benefit.entity.enums.MainCategory;
@@ -12,6 +13,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
@@ -39,6 +41,13 @@ public class BenefitController {
                 mainCategory, category, filter, keyword, userId, pageable
         );
         ApiResponse<PagedResponse<BenefitListResponse>> body = ApiResponse.of(BenefitCode.BENEFIT_LIST_SUCCESS, result);
+        return ResponseEntity.status(body.getStatus()).body(body);
+    }
+
+    @GetMapping("/{benefitId}")
+    public ResponseEntity<ApiResponse<BenefitDetailResponse>> getBenefitDetail(@PathVariable Long benefitId) {
+        BenefitDetailResponse result = benefitService.getBenefitDetail(benefitId);
+        ApiResponse<BenefitDetailResponse> body = ApiResponse.of(BenefitCode.BENEFIT_DETAIL_SUCCESS, result);
         return ResponseEntity.status(body.getStatus()).body(body);
     }
 }
