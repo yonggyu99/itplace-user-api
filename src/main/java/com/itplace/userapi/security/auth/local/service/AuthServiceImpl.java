@@ -106,6 +106,7 @@ public class AuthServiceImpl implements AuthService {
     @Override
     @Transactional
     public void signUp(SignUpRequest request) {
+        log.info("회원가입 시작 request: {}", request);
         String registrationId = request.getRegistrationId();
         String phoneNumber = request.getPhoneNumber();
         String email = request.getEmail();

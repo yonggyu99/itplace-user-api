@@ -12,10 +12,12 @@ import java.time.LocalDate;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
+import lombok.ToString;
 
 @Getter
 @Setter
 @Builder
+@ToString
 public class SignUpRequest {
 
     @NotBlank(message = "등록 ID는 필수 항목입니다.")
