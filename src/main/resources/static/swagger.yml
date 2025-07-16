@@ -1,0 +1,1039 @@
+openapi: 3.0.4
+info:
+  title: itPlace API Document
+  description: |-
+    지도 기반 내 주변 LG유플러스 멤버십 혜택 정보 조회 서비스 'itPlace'의 API 명세서입니다.
+    
+    모든 API 응답은 표준 응답 포맷(ApiResponse)을 따릅니다.
+  version: 1.0.0
+servers:
+  - url: http://itplace-api.kro.kr/
+    description: 개발 서버
+tags:
+  - name: Auth
+    description: 사용자 인증 및 가입 관련 API
+  - name: Verification
+    description: 이메일, 문자 인증 관련 API
+  - name: Benefits
+    description: 제휴사 혜택 정보 조회 관련 API
+  - name: Map
+    description: 지도 기능 관련 API
+
+paths:
+  # =====================================================
+  # 로그인 회원가입 관련 API
+  # =====================================================
+  /auth/login:
+    post:
+      tags:
+        - Auth
+      summary: 자체 로그인
+      description: 사용자의 이메일과 비밀번호로 로그인을 시도하고, 성공 시 이름, 멤버십 등급, JWT 토큰을 발급합니다.
+      operationId: localLogin
+      requestBody:
+        description: 로그인에 필요한 이메일과 비밀번호
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LoginRequest'
+      responses:
+        '200':
+          description: 로그인 성공
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/ApiResponse'
+                  - type: object
+                    properties:
+                      data:
+                        $ref: '#/components/schemas/LoginResponse'
+              example:
+                code: "LOGIN_SUCCESS_200"
+                status: "OK"
+                message: "로그인에 성공했습니다."
+                data:
+                  name: "홍길동"
+                  membershipGrade: "VVIP"
+                  accessToken: "eyJhbGciOiJIUzI1NiJ9.eyJzdWI..."
+                  refreshToken: "ZJQp8a0aZJmGqGqG7aJ..."
+                timestamp: "2025-07-04T14:15:00.123Z"
+        '401':
+          description: 로그인 실패 (자격 증명 오류)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiResponse'
+              example:
+                code: "LOGIN_FAIL_401"
+                status: "UNAUTHORIZED"
+                message: "이메일 또는 비밀번호가 일치하지 않습니다."
+                data: null
+                timestamp: "2025-07-04T14:15:00.456Z"
+
+  /auth/logout:
+    post:
+      tags:
+        - Auth
+      summary: 자체 로그아웃
+      description: 사용자의 이메일과 비밀번호로 로그인을 시도하고, 성공 시 이름, 멤버십 등급, JWT 토큰을 발급합니다.
+      operationId: localLogin
+      requestBody:
+        description: 로그인에 필요한 이메일과 비밀번호
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LoginRequest'
+      responses:
+        '200':
+          description: 로그인 성공
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/ApiResponse'
+                  - type: object
+                    properties:
+                      data:
+                        $ref: '#/components/schemas/LoginResponse'
+              example:
+                code: "LOGIN_SUCCESS_200"
+                status: "OK"
+                message: "로그인에 성공했습니다."
+                data:
+                  name: "홍길동"
+                  membershipGrade: "VVIP"
+                  accessToken: "eyJhbGciOiJIUzI1NiJ9.eyJzdWI..."
+                  refreshToken: "ZJQp8a0aZJmGqGqG7aJ..."
+                timestamp: "2025-07-04T14:15:00.123Z"
+        '401':
+          description: 로그인 실패 (자격 증명 오류)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiResponse'
+              example:
+                code: "LOGIN_FAIL_401"
+                status: "UNAUTHORIZED"
+                message: "이메일 또는 비밀번호가 일치하지 않습니다."
+                data: null
+                timestamp: "2025-07-04T14:15:00.456Z"
+
+  /auth/login/oauth2/code/kakao:
+    get:
+      tags:
+        - Auth
+      summary: 카카오 OAuth2 로그인 콜백
+      description: |
+        **프론트엔드에서 직접 호출하는 API가 아닙니다.**
+        
+        1. 사용자가 프론트엔드에서 카카오 로그인 버튼 클릭
+        2. 카카오 계정으로 로그인 및 동의
+        3. 카카오 인증 서버가 사용자의 브라우저를 이 주소로 리다이렉트시킴
+        
+        서버는 URL에 포함된 `인가 코드`를 사용하여 카카오로부터 사용자 정보를 받아온 후, 자체 서비스 토큰을 발급하여 프론트엔드의 특정 페이지로 다시 리다이렉트시킵니다.
+      operationId: handleKakaoOAuth2Callback
+      parameters:
+        - name: code
+          in: query
+          description: "카카오 인증 서버가 발급한 1회용 인가 코드(Authorization Code)"
+          required: true
+          schema:
+            type: string
+        - name: state
+          in: query
+          description: "CSRF 공격 방지를 위한 상태 값 (필요시 사용)"
+          required: false
+          schema:
+            type: string
+      responses:
+        '302':
+          description: |
+            인증 성공. 
+            서버는 자체 Access Token과 Refresh Token을 쿼리 파라미터에 포함하여 프론트엔드의 지정된 페이지로 리다이렉트시킵니다.
+          headers:
+            Location:
+              description: "리다이렉트 될 프론트엔드 URL. 로그인 성공 핸들러 페이지로 토큰을 전달합니다."
+              schema:
+                type: string
+                format: uri
+              example: "https://my-frontend.com/login-handler?accessToken=eyJhbGciOiJIUzI1NiJ9...&refreshToken=ZJQp8a0aZJmGqGqG7aJ..."
+        '500':
+          description: "카카오 서버와 통신 오류 또는 서버 내부 오류 발생"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiResponse'
+              example:
+                code: "ERROR_500_2"
+                status: "INTERNAL_SERVER_ERROR"
+                message: "소셜 로그인 처리 중 서버에 오류가 발생했습니다."
+                data: null
+                timestamp: "2025-07-04T14:30:00.123Z"
+  /auth/signup:
+    post:
+      tags:
+        - Auth
+      summary: 최종 회원가입
+      description: |
+        이메일, 비밀번호, 이름 등을 사용하여 새로운 사용자를 등록합니다.
+        
+        이메일 인증이 사전에 완료되어야 하며, 인증 시 사용한 정보를 기반으로 가입을 처리합니다.
+      operationId: signUp
+      requestBody:
+        description: 회원가입에 필요한 사용자 정보
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SignUpRequest'
+            example:
+                  registrationId: "f79c2e9c-958d-4925-a562-3b3ad44353c8"
+                  name: "홍길동"
+                  email: "user@example.com"
+                  phoneNumber: "01011112222"
+                  password: "!Password123"
+                  passwordConfirm: "!Password123"
+                  gender: "MALE"
+                  birthday: "20000101"
+                  membershipId: "1234567812345678"
+      responses:
+        '201':
+          description: 회원가입 성공.
+          content:
+            application/json:
+              schema:
+                  $ref: '#/components/schemas/ApiResponse'
+              example:
+                code: "USER_CREATED_201"
+                status: "CREATED"
+                message: "회원가입이 완료되었습니다."
+                data: null
+                timestamp: "2025-07-04T14:25:38.123Z"
+        '400':
+          description: 비밀번호 검증 실패
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiResponse'
+              example:
+                code: "PASSWORD_MISMATCH_400"
+                status: "BAD_REQUEST"
+                message: "비밀번호가 일치하지 않습니다."
+                data: null
+                timestamp: "2025-07-04T14:25:38.456Z"
+        '409':
+          description: 데이터 충돌 (중복된 리소스)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiResponse'
+              examples:
+                emailExists:
+                  summary: 이메일 중복
+                  value:
+                    code: "EMAIL_ALREADY_EXISTS_409"
+                    status: "CONFLICT"
+                    message: "이미 사용 중인 이메일입니다."
+                    data: null
+                    timestamp: "2025-07-04T14:25:38.789Z"
+                phoneNumberExists:
+                  summary: 전화번호 중복
+                  value:
+                    code: "PHONE_NUMBER_ALREADY_EXISTS_409"
+                    status: "CONFLICT"
+                    message: "이미 사용 중인 전화번호입니다."
+                    data: null
+                    timestamp: "2025-07-04T14:25:38.912Z"
+
+  /auth/loadUplusData/:
+    post:
+      tags:
+        - Auth
+      summary: 유플러스 데이터 가져오기
+      description: 유플러스에 기존 데이터가 존재할 경우 해당 데이터를 가져올 것인지 응답을 받습니다.
+      operationId: loadUplusData
+      requestBody:
+        description: 유플러스 데이터를 가지고 오고 싶을 경우
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UplusDataConsentRequest'
+            examples:
+              true:
+                summary: 데이터 가져오기
+                value:
+                  registrationId: "f79c2e9c-958d-4925-a562-3b3ad44353c8"
+                  isUseUplusData: "true"
+              false:
+                summary: 데이터 안 가져오기
+                value:
+                  registrationId: "f79c2e9c-958d-4925-a562-3b3ad44353c8"
+                  isUseUplusData: "false"
+      responses:
+        '200':
+          description: 정상 처리
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/ApiResponse'
+                  - type: object
+                    properties:
+                      data:
+                        $ref: '#/components/schemas/RegistrationDataResponse'
+              examples:
+                true:
+                  summary: 데이터를 가져왔을 때
+                  value:
+                    code: "LOAD_DATA_SUCCESS_200"
+                    status: "OK"
+                    message: "데이터를 가져왔습니다."
+                    data:
+                      registrationId: "f79c2e9c-958d-4925-a562-3b3ad44353c8"
+                      name: "홍길동"
+                      phoneNumber: "01012345678"
+                      gender: "MALE"
+                      birthday: "20000101"
+                      membershipId: "1234567812345678"
+                    timestamp: "2025-07-04T11:27:06.789Z"
+                false:
+                  summary: 데이터를 안 가져왔을 때
+                  value:
+                    code: "LOAD_DATA_SUCCESS_200"
+                    status: "OK"
+                    message: "데이터를 가져오지 않았습니다."
+                    data:
+                      registrationId: "f79c2e9c-958d-4925-a562-3b3ad44353c8"
+                      name: "홍길동"
+                      phoneNumber: "01012345678"
+                      gender: null
+                      birthday: null
+                      membershipId: null
+                    timestamp: "2025-07-04T11:27:06.789Z"
+        '500':
+          description: 서버 오류
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiResponse'
+              example:
+                  code: "INTERNAL_SERVER_ERROR_500"
+                  status: "INTERNAL_SERVER_ERROR"
+                  message: "서버 오류가 발생했습니다."
+                  data: null
+                  timestamp: "2025-07-04T12:23:00.456Z"
+
+  # /auth/find-email:
+  #   post:
+  #     tags:
+  #       - Auth
+  #     summary: 아이디(이메일) 찾기
+  #     description: 사용자 전화번호를 인증하여 가입된 이메일을 찾습니다.
+  #     operationId: findEmail
+  #     requestBody:
+  #       description: type, target, code 를 서버로 보내서 인증을 시도합니다.
+  #       required: true
+  #       content:
+  #         application/json:
+  #           schema:
+  #             $ref: '#/components/schemas/VerificationConfirmRequest'
+  #           example:
+  #             type: "sms"
+  #             target: "01011112222"
+  #             code: "123456"
+  #     responses:
+  #       '200':
+  #         description: 인증 성공
+  #         content:
+  #           application/json:
+  #             schema:
+  #               allOf:
+  #                 - $ref: '#/components/schemas/ApiResponse'
+  #                 - type: object
+  #                   properties:
+  #                     data:
+  #                       $ref: '#/components/schemas/FindEmailResponse'
+  #             example:
+  #               code: "FIND_EMAIL_SUCCESS_200"
+  #               status: "OK"
+  #               message: "가입된 이메일을 찾았습니다."
+  #               data:
+  #                 email: "user@example.com"
+  #               timestamp: "2025-07-04T11:27:06.789Z"
+  
+  /auth/password-reset:
+    post:
+      tags:
+        - Auth
+      summary: 비밀번호 재설정 링크 전송
+      description: |
+            가입된 사용자 이메일 주소로 비밀번호 재설정 링크를 전송합니다.
+
+            **[주의 사항]** 이 API는 사용자 열거 공격(User Enumeration Attack)을 방지하기 위해,
+
+            요청된 이메일이 DB에 존재하지 않더라도 항상 성공한 것처럼 동일한 응답을 반환합니다.
+
+            실제 메일 발송은 이메일이 DB에 존재할 경우에만 내부적으로 처리됩니다.
+      operationId: requestPasswordReset
+      requestBody:
+        description: 인증 코드 확인에 필요한 정보
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PasswordResetRequest'
+            example:
+              summary: 이메일 인증
+              value:
+                type: "email"
+                target: "user@example.com"
+      responses:
+        '200':
+          description: 요청 처리 완료. 이메일의 실제 존재 여부와 관계없이 항상 이 응답을 반환합니다.
+          content:
+            application/json:
+              schema:
+                 $ref: '#/components/schemas/ApiResponse'
+              example:
+                 code: "PASSWORD_RESET_REQUEST_ACCEPTED_200"
+                 status: "OK"
+                 message: "요청이 정상적으로 처리되었습니다. 입력하신 이메일의 메일함을 확인해주세요."
+                 data: null
+                 timestamp: "2025-07-04T11:27:06.789Z"
+
+  /auth/password-reset/confirm:
+    post:
+      tags:
+        - Auth
+      summary: 비밀번호 최종 재설정
+      description: |
+        보안 토큰을 이용하여 사용자의 비밀번호를 새로운 비밀번호로 최종 변경합니다.
+
+        **보안 노트:**
+        1. 요청에 포함된 토큰은 유효성(존재 여부, 만료 시간, 사용 여부)을 검증합니다.
+        2. 비밀번호 변경 성공 시, 해당 토큰은 즉시 무효화(삭제 또는 '사용됨' 처리)됩니다.
+        3. 보안을 위해, 비밀번호 변경 성공 시 해당 사용자의 모든 기존 로그인 세션(Refresh Token 등)을 무효화하는 것을 강력히 권장합니다.
+      operationId: resetPasswordConfirm
+      requestBody:
+        description: 비밀번호 재설정에 필요한 보안 토큰과 새로운 비밀번호 정보
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PasswordResetConfirmRequest'
+      responses:
+        '200':
+          description: 비밀번호 변경 성공
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiResponse'
+              example:
+                code: "PASSWORD_RESET_SUCCESS_200"
+                status: "OK"
+                message: "비밀번호가 성공적으로 변경되었습니다. 다시 로그인해주세요."
+                data: null
+                timestamp: "2025-07-05T13:10:15.123Z"
+        '400':
+          description: 잘못된 요청. 토큰이 유효하지 않거나, 비밀번호 정책 위반 등.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiResponse'
+              examples:
+                tokenInvalid:
+                  summary: 유효하지 않은 토큰
+                  value:
+                    code: "INVALID_RESET_TOKEN_400"
+                    status: "BAD_REQUEST"
+                    message: "요청이 유효하지 않거나 만료되었습니다."
+                    data: null
+                    timestamp: "2025-07-05T13:10:15.456Z"
+                passwordMismatch:
+                  summary: 비밀번호 불일치
+                  value:
+                    code: "PASSWORD_MISMATCH_400"
+                    status: "BAD_REQUEST"
+                    message: "비밀번호가 일치하지 않습니다."
+                    data: null
+                    timestamp: "2025-07-05T13:10:15.567Z"
+                passwordPolicyFailed:
+                  summary: 비밀번호 정책 위반
+                  value:
+                    code: "PASSWORD_POLICY_VIOLATION_400"
+                    status: "BAD_REQUEST"
+                    message: "비밀번호는 8자 이상, 영문, 숫자, 특수문자를 포함해야 합니다."
+                    data: null
+                    timestamp: "2025-07-05T13:10:15.678Z"
+
+  # =====================================================
+  # 이메일, 문자 인증 관련 API
+  # =====================================================
+  /verification/sms:
+    post:
+      tags:
+        - Verification
+      summary: 문자 인증 코드 발송 요청
+      description: 회원가입을 위해 SMS로 인증 코드를 발송합니다.
+      operationId: requestSmsVerificationCode
+      requestBody:
+        description: 인증 코드 발송에 필요한 정보
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SmsVerificationRequest'
+            example:
+                name: "홍길동"
+                phoneNumber: "01012345678"
+      responses:
+        '201':
+          description: 인증 코드 발송 성공
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiResponse'
+              example:
+                  code: "SMS_CODE_SEND_201"
+                  status: "CREATED"
+                  message: "문자 인증 코드가 성공적으로 발송되었습니다."
+                  data: null
+                  timestamp: "2025-07-04T11:27:06.789Z"                    
+        '400':
+          description: 잘못된 요청 (입력값 형식 오류)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiResponse'
+              example:
+                  code: "PHONE_NUMBER_PATTERN_ERROR_400"
+                  status: "BAD_REQUEST"
+                  message: "올바른 전화번호 형식이 아닙니다."
+                  data: null
+                  timestamp: "2025-07-04T12:23:00.456Z"
+        '409':
+          description: 데이터 충돌 (이미 가입된 리소스)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiResponse'
+              example:
+                  code: "PHONE_NUMBER_ALREADY_EXISTS_409"
+                  status: "CONFLICT"
+                  message: "이미 가입된 전화번호입니다."
+                  data: null
+                  timestamp: "2025-07-04T12:23:00.789Z"
+
+  /verification/sms/confirm:
+    post:
+      tags:
+        - Verification
+      summary: 문자 인증 코드 확인
+      description: 서버에서 발송된 인증 코드와 동일한지 확인합니다.
+      operationId: confirmSmsVerificationCode
+      requestBody:
+        description: 인증 코드 확인에 필요한 정보
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SmsConfirmRequest'
+            example:
+                name: "홍길동"
+                phoneNumber: "01012345678"  
+                code: "123456"
+      responses:
+        '200':
+          description: 인증 성공
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/ApiResponse'
+                  - type: object
+                    properties:
+                      data:
+                        $ref: '#/components/schemas/SmsConfirmResponse'
+              example:
+                  code: "SMS_CODE_CONFIRM_200"
+                  status: "OK"
+                  message: "휴대폰 번호가 성공적으로 인증되었습니다."
+                  data:
+                    registrationId: "f79c2e9c-958d-4925-a562-3b3ad44353c8"
+                    uplusDataFound: "true"
+                  timestamp: "2025-07-04T11:27:06.789Z"
+        '400':
+          description: 잘못된 인증 번호
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiResponse'
+              example:
+                  code: "SMS_CODE_INCORRECT_400"
+                  status: "BAD_REQUEST"
+                  message: "올바른 문자 인증 코드가 아닙니다."
+                  data: null
+                  timestamp: "2025-07-04T12:23:00.456Z"
+        '410':
+          description: 인증 코드 입력 시간 초과
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiResponse'
+              example:
+                  code: "SMS_CODE_GONE_410"
+                  status: "GONE"
+                  message: "문자 인증 코드가 만료되었습니다."
+                  data: null
+                  timestamp: "2025-07-04T12:23:00.789Z"
+
+  /verification/email:
+    post:
+      tags:
+        - Verification
+      summary: 이메일 인증 코드 발송 요청
+      description: 회원가입을 위해 SMS로 인증 코드를 발송합니다.
+      operationId: requestEmailVerificationCode
+      requestBody:
+        description: 인증 코드 발송에 필요한 정보
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/EmailVerificationRequest'
+            example:
+                email: "user@example.com"
+      responses:
+        '201':
+          description: 인증 코드 발송 성공
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiResponse'
+              example:
+                  code: "EMAIL_CODE_SEND_201"
+                  status: "CREATED"
+                  message: "이메일 인증 코드가 성공적으로 발송되었습니다."
+                  data: null
+                  timestamp: "2025-07-04T11:27:06.789Z"                    
+        '400':
+          description: 잘못된 요청 (입력값 형식 오류)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiResponse'
+              example:
+                  code: "EMAIL_PATTERN_ERROR_400"
+                  status: "BAD_REQUEST"
+                  message: "올바른 이메일 형식이 아닙니다."
+                  data: null
+                  timestamp: "2025-07-04T12:23:00.456Z"
+
+  /verification/email/confirm:
+    post:
+      tags:
+        - Verification
+      summary: 이메일 인증 코드 확인
+      description: 서버에서 발송된 인증 코드와 동일한지 확인합니다.
+      operationId: confirmEmailVerificationCode
+      requestBody:
+        description: 인증 코드 확인에 필요한 정보
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/EmailConfirmRequest'
+            example:
+                email: "user@example.com"
+                code: "123456"
+      responses:
+        '200':
+          description: 인증 성공
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/ApiResponse'
+                  - type: object
+                    properties:
+                      data:
+                        $ref: '#/components/schemas/EmailConfirmResponse'
+              example:
+                  code: "EMAIL_CODE_CONFIRM_200"
+                  status: "OK"
+                  message: "이메일이 성공적으로 인증되었습니다."
+                  data: null
+                  timestamp: "2025-07-04T11:27:06.789Z"
+        '400':
+          description: 잘못된 인증 번호
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiResponse'
+              example:
+                  code: "EMAIL_CODE_INCORRECT_400"
+                  status: "BAD_REQUEST"
+                  message: "올바른 이메일 인증 코드가 아닙니다."
+                  data: null
+                  timestamp: "2025-07-04T12:23:00.456Z"
+        '409':
+          description: 데이터 충돌 (이미 가입된 리소스)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiResponse'
+              example:
+                  code: "EMAIL_ALREADY_EXISTS_409"
+                  status: "CONFLICT"
+                  message: "이미 가입된 이메일입니다."
+                  data: null
+                  timestamp: "2025-07-04T12:23:00.789Z"
+        '410':
+          description: 인증 코드 입력 시간 초과
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiResponse'
+              example:
+                  code: "EMAIL_CODE_GONE_410"
+                  status: "GONE"
+                  message: "이메일 인증 코드가 만료되었습니다."
+                  data: null
+                  timestamp: "2025-07-04T12:23:00.789Z"
+
+components:
+  schemas:
+    # ----------------------------------------------------
+    # API 표준 응답 포맷
+    # ----------------------------------------------------
+    ApiResponse:
+      type: object
+      properties:
+        code:
+          type: string
+          description: "서버에서 정의한 응답 코드"
+          example: "SUCCESS_200_1"
+        status:
+          type: string
+          description: "HTTP 상태 메시지"
+          example: "OK"
+        message:
+          type: string
+          description: "응답에 대한 설명 메시지"
+          example: "요청이 정상적으로 처리되었습니다."
+        data:
+          type: object
+          description: "실제 응답 데이터 (nullable)"
+          nullable: true
+        timestamp:
+          type: string
+          format: date-time
+          description: "응답 시간"
+
+    # ----------------------------------------------------
+    # Request DTOs
+    # ----------------------------------------------------
+              
+    SignUpRequest:
+      type: object
+      required: [registrationId, name, email, password, passwordConfirm, phoneNumber, gender, birthday, membershipId]
+      properties:
+        registrationId:
+          type: string
+          format: email
+          description: "아이디로 사용할 이메일 주소"
+          example: "user@example.com"
+        name:
+          type: string
+          description: "이름"
+          example: "홍길동"
+        email:
+          type: string
+          format: email
+          description: "아이디로 사용할 이메일 주소"
+          example: "user@example.com"
+        password:
+          type: string
+          format: password
+          description: "비밀번호 (영문, 숫자, 특수문자 포함 8자 이상)"
+          example: "!Password123"
+          minLength: 8
+        passwordConfirm:
+          type: string
+          format: password
+          description: "비밀번호 확인"
+          example: "!Password123"
+        phoneNumber:
+          type: string
+          format: phoneNumber
+          description: "전화번호"
+          example: "01011112222"
+        gender:
+          type: string
+          description: "성별"
+          enum: [MALE, FEMALE]
+          example: "MALE"
+        birthday:
+          type: string
+          description: "생년월일"
+          example: "20000101"
+        membershipId:
+          type: string
+          description: "멤버십 번호 16자리"
+          example: "1234567812345678"
+
+    PasswordResetRequest:
+      type: object
+      required: [email]
+      properties:
+        email:
+          type: string
+          format: email
+          description: "비밀번호 재설정 링크를 받을 이메일 주소"
+          example: "user@example.com"
+
+    PasswordResetConfirmRequest:
+      type: object
+      required: [token, password, passwordConfirm]
+      properties:
+        token:
+          type: string
+          format: UUID
+          description: "사용자가 이메일 링크를 통해 전달받은 비밀번호 재설정용 보안 토큰"
+        password:
+          type: string
+          format: password
+          description: "새롭게 설정할 비밀번호 (보안 정책에 부합해야 함)"
+          example: "!NewPassword123"
+        passwordConfirm:
+          type: string
+          format: password
+          description: "새로운 비밀번호 확인"
+          example: "!NewPassword123"
+
+    SmsVerificationRequest:
+      type: object
+      description: "문자 인증 코드 발송 요청 DTO"
+      required: [name, phoneNumber]
+      properties:
+        name:
+          type: string
+          description: "가입자 이름"
+          example: "홍길동"
+        phoneNumber:
+          type: string
+          description: "인증을 진행할 전화번호"
+          example: "01012345678"
+
+    SmsConfirmRequest:
+      type: object
+      description: "문자 인증 코드 확인 요청 DTO"
+      required: [name, phoneNumber, verificationCode]
+      properties:
+        name:
+          type: string
+          description: "가입자 이름"
+          example: "홍길동"
+        phoneNumber:
+          type: string
+          description: "인증을 진행할 전화번호"
+          example: "01012345678"
+        verificationCode:
+          type: string
+          description: "인증코드"
+          example: "123456"
+
+    SmsConfirmResponse:
+      type: object
+      description: "문자 인증 코드 확인 응답 DTO"
+      required: [registrationId, uplusDataFound]
+      properties:
+        registrationId:
+          type: string
+          format: UUID
+          description: "회원가입 세션 Id"
+          example: "f79c2e9c-958d-4925-a562-3b3ad44353c8"
+        uplusDataFound:
+          type: boolean
+          description: "Uplus 데이터 존재 유무"
+          example: "true"
+
+    UplusDataConsentRequest:
+      type: object
+      description: "유플러스 더미 데이터 사용 유무"
+      required: [registrationId, isUseUplusData]
+      properties:
+        registrationId:
+          type: string
+          format: UUID
+          description: "회원가입 세션 Id"
+          example: "f79c2e9c-958d-4925-a562-3b3ad44353c8"
+        uplusDataFound:
+          type: boolean
+          description: "Uplus 데이터 사용 유무"
+          example: "true"
+
+    EmailVerificationRequest:
+      type: object
+      description: "이메일 인증 코드 발송 요청 DTO"
+      required: [email]
+      properties:
+        email:
+          type: string
+          format: email
+          description: "아이디로 사용할 이메일"
+          example: "user@example.com"
+
+    EmailConfirmRequest:
+      type: object
+      description: "이메일 인증 코드 확인 요청 DTO"
+      required: [email, verificationCode]
+      properties:
+        email:
+          type: string
+          format: email
+          description: "아이디로 사용할 이메일"
+          example: "user@example.com"
+        verificationCode:
+          type: string
+          description: "인증 번호"
+          example: "123456"
+
+    EmailConfirmResponse:
+      type: object
+      description: "이메일 인증 코드 확인 요청 DTO"
+      required: [registrationId, email, verificationCode]
+      properties:
+        registrationId:
+          type: string
+          format: UUID
+          description: "회원가입 세션 Id"
+          example: "f79c2e9c-958d-4925-a562-3b3ad44353c8"
+        email:
+          type: string
+          description: "인증을 진행할 전화번호"
+          example: "01012345678"
+        verificationCode:
+          type: string
+          description: "인증코드"
+          example: "123456"
+          
+    LoginRequest:
+      type: object
+      required: [email, password]
+      properties:
+        email:
+          type: string
+          format: email
+          example: "user@example.com"
+        password:
+          type: string
+          format: password
+          example: "!Password123"
+
+    # ----------------------------------------------------
+    # Response DTOs
+    # ----------------------------------------------------
+
+    LoginResponse:
+      type: object
+      required: [name, accessToken, refreshToken]
+      properties:
+        name:
+          type: string
+          format: email
+          example: "user@example.com"
+        membershipGrade:
+          type: string
+          example: "user@example.com"
+          enum: [VVIP, VIP, BASIC]
+        accessToken:
+          type: string
+          example: "eyJhbGciOiJIUzI1NiJ9.eyJzdWI..."
+        refreshToken:
+          type: string
+          example: "ZJQp8a0aZJmGqGqG7aJ..."
+    
+    FindEmailResponse:
+      type: object
+      required: [email]
+      properties:
+        name:
+          type: string
+          format: email
+          example: "user@example.com"
+
+    BenefitResultResponse:
+      type: object
+      required: [name, accessToken, refreshToken]
+      properties:
+        tabType:
+          type: string
+          example: "VIP 콕"
+        title:
+          type: string
+          example: "할리스"
+        category:
+          type: string
+          example: "카페/음료"
+        description:
+          type: string
+          example: "할리스 아메리카노 R사이즈 1잔 무료 제공 (ICE/HOT 선택 가능)"
+        keywords:
+          type: array
+          example: ["스타벅스", "커피", "무료"]
+
+    RecommendedResponse:
+      type: object
+      required: [name, accessToken, refreshToken]
+      properties:
+        benefitId:
+          type: integer
+          example: "101"
+        benefitName:
+          type: string
+          example: "스타벅스 아메리카노 무료"
+        partnerName:
+          type: string
+          example: "스타벅스"
+        category:
+          type: string
+          example: "카페"
+        type:
+          type: string
+          example: ["스타벅스", "커피", "무료"]
+        description:
+          type: string
+          example: "VIP 콕"
+        image:
+          type: string
+          example: "VIP 콕"
+
+    RegistrationDataResponse:
+      type: object
+      required: [registrationId]
+      properties:
+        registrationId:
+          type: string
+          format: UUID
+          example: "f79c2e9c-958d-4925-a562-3b3ad44353c8"
+        name:
+          type: string
+          example: "홍길동"
+        phoneNumber:
+          type: string
+          example: "01012345678"
+        gender:
+          type: string
+          enum: [MALE, FEMALE]
+          example: "MALE"
+        birthday:
+          type: string
+          example: "20000101"
+        membershipId:
+          type: integer
+          example: "1234567812345678"
