@@ -6,6 +6,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
 import java.util.Optional;
+import java.util.List;
 
 public interface BenefitRepository extends JpaRepository<Benefit, Long> {
     @Query("""
@@ -16,4 +17,5 @@ public interface BenefitRepository extends JpaRepository<Benefit, Long> {
 """)
     Optional<Benefit> findDetailById(@Param("benefitId") Long benefitId);
 
+    List<Benefit> findAllByPartner_PartnerId(Long PartnerId);
 }

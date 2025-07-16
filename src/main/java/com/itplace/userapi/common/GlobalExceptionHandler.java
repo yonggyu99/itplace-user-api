@@ -1,5 +1,6 @@
 package com.itplace.userapi.common;
 
+import com.itplace.userapi.map.exception.StoreKeywordException;
 import com.itplace.userapi.security.SecurityCode;
 import com.itplace.userapi.security.exception.EmailVerificationException;
 import com.itplace.userapi.security.exception.SmsVerificationException;
@@ -22,6 +23,11 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(EmailVerificationException.class)
     public ApiResponse<?> handleEmailVerificationException(EmailVerificationException ex) {
+        return ApiResponse.of(ex.getCode(), null);
+    }
+
+    @ExceptionHandler(StoreKeywordException.class)
+    public ApiResponse<?> handleStoreKeywordException(StoreKeywordException ex) {
         return ApiResponse.of(ex.getCode(), null);
     }
 }
