@@ -708,7 +708,9 @@ paths:
                 message: "이메일 인증 코드가 만료되었습니다."
                 data: null
                 timestamp: "2025-07-04T12:23:00.789Z"
-  
+# =====================================================
+# 즐겨찾기
+# ===================================================== 
   /favorites:
     post:
       tags:
@@ -737,6 +739,43 @@ paths:
                 data: null
                 timestamp: '2025-07-04T14:06:54.631Z'
 
+        '404':
+          description: 사용자 또는 혜택을 찾을 수 없음
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiResponse'
+              examples:
+                userNotFound:
+                  summary: 사용자 없음
+                  value:
+                    code: USER_NOT_FOUND
+                    status: NOT_FOUND
+                    message: 사용자를 찾을 수 없습니다.
+                    data: null
+                    timestamp: '2025-07-16T15:00:00.000Z'
+                benefitNotFound:
+                  summary: 혜택 없음
+                  value:
+                    code: BENEFIT_NOT_FOUND
+                    status: NOT_FOUND
+                    message: 존재하지 않는 혜택입니다.
+                    data: null
+                    timestamp: '2025-07-16T15:00:00.000Z'
+
+        '409':
+          description: 이미 즐겨찾기에 등록된 경우
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiResponse'
+              example:
+                code: FAVORITE_ALREADY_EXISTS
+                status: CONFLICT
+                message: 이미 즐겨찾기에 등록된 혜택입니다.
+                data: null
+                timestamp: '2025-07-16T15:00:00.000Z'
+
     delete:
       tags:
         - Favorites
@@ -763,6 +802,30 @@ paths:
                 message: 즐겨찾기 삭제가 완료되었습니다.
                 data: null
                 timestamp: '2025-07-07T12:00:00Z'
+
+        '404':
+          description: 사용자 또는 혜택을 찾을 수 없음
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiResponse'
+              examples:
+                userNotFound:
+                  summary: 사용자 없음
+                  value:
+                    code: USER_NOT_FOUND
+                    status: NOT_FOUND
+                    message: 사용자를 찾을 수 없습니다.
+                    data: null
+                    timestamp: '2025-07-16T15:00:00.000Z'
+                benefitNotFound:
+                  summary: 혜택 없음
+                  value:
+                    code: BENEFIT_NOT_FOUND
+                    status: NOT_FOUND
+                    message: 존재하지 않는 혜택입니다.
+                    data: null
+                    timestamp: '2025-07-16T15:00:00.000Z'
 
   /favorites/{userId}:
     get:
@@ -833,6 +896,18 @@ paths:
                       currentPage: 0
                       hasNext: false
                     timestamp: '2025-07-04T15:30:00.000Z'
+        '404':
+          description: 사용자 없음
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiResponse'
+              example:
+                code: USER_NOT_FOUND
+                status: NOT_FOUND
+                message: 사용자를 찾을 수 없습니다.
+                data: null
+                timestamp: '2025-07-16T15:00:00.000Z'
 
   /favorites/{userId}/search:
     get:
@@ -874,6 +949,19 @@ paths:
                     partnerImage: "https://itplacepartners.s3.ap-northeast-2.amazonaws.com/img/hollys.png"
                 timestamp: '2025-07-15T02:20:54.631Z'
 
+        '404':
+          description: 사용자 없음
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiResponse'
+              example:
+                code: USER_NOT_FOUND
+                status: NOT_FOUND
+                message: 사용자를 찾을 수 없습니다.
+                data: null
+                timestamp: '2025-07-16T15:00:00.000Z'
+
   /favorites/benefits/{benefitId}:
     get:
       tags:
@@ -912,6 +1000,19 @@ paths:
                       context: "무료 예매 연 3회 / 1+1 예매 연 9회(총 12회)\r\n(월 1회 사용 가능, CGV/메가박스 중 택 1)\r\n※ 1+1이란? 1매 유료로 구매 시, 1매 무료 제공"
                       discountValue: 14000
                 timestamp: '2025-07-15T12:00:00Z'
+
+        '404':
+          description: 혜택 없음
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiResponse'
+              example:
+                code: BENEFIT_NOT_FOUND
+                status: NOT_FOUND
+                message: 존재하지 않는 혜택입니다.
+                data: null
+                timestamp: '2025-07-16T15:00:00.000Z'
 
   # =====================================================
   # 마이페이지
