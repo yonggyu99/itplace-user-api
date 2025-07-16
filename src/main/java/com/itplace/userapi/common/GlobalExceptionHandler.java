@@ -1,10 +1,10 @@
 package com.itplace.userapi.common;
 
-import com.itplace.userapi.map.exception.StoreKeywordException;
+import com.itplace.userapi.common.exception.BusinessException;
 import com.itplace.userapi.security.SecurityCode;
-import com.itplace.userapi.security.exception.EmailVerificationException;
-import com.itplace.userapi.security.exception.SmsVerificationException;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
@@ -12,22 +12,20 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 @RestControllerAdvice
 public class GlobalExceptionHandler {
     @ExceptionHandler(IllegalStateException.class)
-    public ApiResponse<?> handleIllegalStateException(IllegalStateException ex) {
-        return ApiResponse.of(SecurityCode.Test, null);
+    public ResponseEntity<ApiResponse<?>> handleIllegalStateException(IllegalStateException ex) {
+        ApiResponse<Void> body = ApiResponse.of(SecurityCode.Test, null);
+        return new ResponseEntity<>(body, HttpStatus.OK);
     }
 
-    @ExceptionHandler(SmsVerificationException.class)
-    public ApiResponse<?> handleSmsVerificationException(SmsVerificationException ex) {
-        return ApiResponse.of(ex.getCode(), null);
+    @ExceptionHandler(RuntimeException.class)
+    public ResponseEntity<ApiResponse<?>> handleRuntimeException(IllegalStateException ex) {
+        ApiResponse<Void> body = ApiResponse.of(SecurityCode.Test, null);
+        return new ResponseEntity<>(body, body.getStatus());
     }
 
-    @ExceptionHandler(EmailVerificationException.class)
-    public ApiResponse<?> handleEmailVerificationException(EmailVerificationException ex) {
-        return ApiResponse.of(ex.getCode(), null);
-    }
-
-    @ExceptionHandler(StoreKeywordException.class)
-    public ApiResponse<?> handleStoreKeywordException(StoreKeywordException ex) {
-        return ApiResponse.of(ex.getCode(), null);
+    @ExceptionHandler(BusinessException.class)
+    public ResponseEntity<ApiResponse<?>> handleBusinessException(BusinessException ex) {
+        ApiResponse<Void> body = ApiResponse.of(ex.getCode(), null);
+        return new ResponseEntity<>(body, body.getStatus());
     }
 }
