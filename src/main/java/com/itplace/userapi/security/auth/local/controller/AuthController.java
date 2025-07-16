@@ -4,7 +4,8 @@ import com.itplace.userapi.common.ApiResponse;
 import com.itplace.userapi.security.SecurityCode;
 import com.itplace.userapi.security.auth.local.dto.CustomUserDetails;
 import com.itplace.userapi.security.auth.local.dto.request.LoginRequest;
-import com.itplace.userapi.security.auth.local.dto.response.TokenResponse;
+import com.itplace.userapi.security.auth.local.dto.response.LoginResponse;
+import com.itplace.userapi.security.auth.local.dto.response.LoginWithTokenResponse;
 import com.itplace.userapi.security.auth.local.service.AuthService;
 import com.itplace.userapi.security.verification.jwt.JWTConstants;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -28,15 +29,19 @@ public class AuthController {
     private final AuthService authService;
 
     @PostMapping("/login")
-    public ResponseEntity<ApiResponse<Void>> login(@RequestBody @Validated LoginRequest request, HttpServletResponse response) {
-        TokenResponse tokens = authService.login(request);
-        response.addCookie(createCookie(JWTConstants.CATEGORY_ACCESS, tokens.getAccessToken()));
-        response.addCookie(createCookie(JWTConstants.CATEGORY_REFRESH, tokens.getRefreshToken()));
+    public ResponseEntity<ApiResponse<LoginResponse>> login(@RequestBody @Validated LoginRequest request, HttpServletResponse response) {
+        LoginWithTokenResponse loginWithTokenResponse = authService.login(request);
 
-        ApiResponse<Void> body = ApiResponse.of(SecurityCode.LOGIN_SUCCESS, null);
-        return ResponseEntity
-                .status(body.getStatus())
-                .body(body);
+        response.addCookie(createCookie(JWTConstants.CATEGORY_ACCESS, loginWithTokenResponse.getAccessToken()));
+        response.addCookie(createCookie(JWTConstants.CATEGORY_REFRESH, loginWithTokenResponse.getRefreshToken()));
+
+        LoginResponse loginResponse = LoginResponse.builder()
+                .name(loginWithTokenResponse.getName())
+                .membershipGrade(loginWithTokenResponse.getMembershipGrade())
+                .build();
+
+        ApiResponse<LoginResponse> body = ApiResponse.of(SecurityCode.LOGIN_SUCCESS, loginResponse);
+        return new ResponseEntity<>(body, body.getStatus());
     }
 
     @PostMapping("/logout")
@@ -45,8 +50,7 @@ public class AuthController {
         response.addCookie(createExpiredCookie(JWTConstants.CATEGORY_ACCESS));
         response.addCookie(createExpiredCookie(JWTConstants.CATEGORY_REFRESH));
         ApiResponse<Void> body = ApiResponse.ok(SecurityCode.LOGOUT_SUCCESS);
-        return ResponseEntity.status(body.getStatus())
-                .body(body);
+        return new ResponseEntity<>(body, body.getStatus());
     }
 
     private Cookie createCookie(String key, String value) {
