@@ -14,7 +14,7 @@ tags:
     description: 사용자 인증 및 가입 관련 API
   - name: Verification
     description: 이메일, 문자 인증 관련 API
-  - name: Benefits
+  - name: Benefit
     description: 제휴사 혜택 정보 조회 관련 API
   - name: Map
     description: 지도 기능 관련 API
@@ -1376,6 +1376,194 @@ paths:
                     message: 검색 키워드가 필요합니다.
                     data: null
                     timestamp: '2025-07-15T11:00:00.000Z'
+
+  # =====================================================
+  # 혜택 관련 기능 API
+  # =====================================================
+  /benefit:
+    get:
+      tags:
+        - Benefit
+      summary: 전체 혜택 페이지에서 혜택 조회
+      description: 대분류, 카테고리, 정렬(인기순), 필터링, 검색, 페이징 조건에 따라 혜택을 조회합니다.
+      operationId: getBenefits
+      parameters:
+        - name: mainCategory
+          in: query
+          description: VIP콕/기본혜택
+          required: true
+          schema:
+            type: string
+            enum: [ VIP_COCK, BASIC_BENEFIT ]
+
+        - name: category
+          in: query
+          description: 카테고리 이름(엑티비티, 푸드, ...)
+          required: false
+          schema:
+            type: string
+
+        - name: filter
+          in: query
+          description: 온라인/오프라인 필터
+          required: false
+          schema:
+            type: string
+            enum: [ ONLINE, OFFLINE ]
+
+        - name: sort
+          in: query
+          description: 인기순 정렬. 기본 정렬도 인기순이지만 필터 선택을 통한 안가순 정렬도 가능.
+          required: false
+          schema:
+            type: string
+            default: POPULARITY
+
+        - name: keyword
+          in: query
+          description: 검색어(혜택이름에서 결과를 찾음)
+          required: false
+          schema:
+            type: string
+
+        - name: userId
+          in: query
+          description: 로그인한 사용자 id
+          required: true
+          schema:
+            type: integer
+            format: int64
+
+        - name: page
+          in: query
+          description: 페이지 번호 (0부터 시작)
+          required: false
+          schema:
+            type: integer
+            default: 0
+
+        - name: size
+          in: query
+          description: 한 페이지당 결과 수. 기본값은 12
+          required: false
+          schema:
+            type: integer
+            default: 12
+
+      responses:
+        '200':
+          description: 혜택 목록 조회 성공
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/ApiResponse'
+                  - type: object
+                    properties:
+                      data:
+                        $ref: '#/components/schemas/PagedResponse_BenefitListResponse'
+              example:
+                data:
+                  content:
+                    - benefitId: 34
+                      benefitName: "배스킨라빈스"
+                      mainCategory: "BASIC_BENEFIT"
+                      usageType: "OFFLINE"
+                      category: "푸드"
+                      image: ""
+                      tierBenefits:
+                        - grade: "BASIC"
+                          context: "패밀리 사이즈(5가지 맛) 4천원 할인"
+                          isAll: true
+                        - grade: "VIP"
+                          context: "패밀리 사이즈(5가지 맛) 4천원 할인"
+                          isAll: true
+                        - grade: "VVIP"
+                          context: "패밀리 사이즈(5가지 맛) 4천원 할인"
+                          isAll: true
+                      isFavorite: true
+                      favoriteCount: 1200
+                    - benefitId: 30
+                      benefitName: "GS25"
+                      mainCategory: "BASIC_BENEFIT"
+                      usageType: "OFFLINE"
+                      category: "생활/편의"
+                      image: ""
+                      tierBenefits:
+                        - grade: "BASIC"
+                          context: "1천원 당 50원 할인 \r\n일 최대 1만원까지 할인 가능\r\n월 최대 10만원까지 할인 가능\r\n※제휴사 지정하는 행사상품은 할인제외"
+                          isAll: false
+                        - grade: "VIP"
+                          context: "1천원 당 100원 할인 \r\n일 최대 2만원까지 할인 가능\r\n월 최대 10만원까지 할인 가능\r\n※제휴사 지정하는 행사상품은 할인제외"
+                          isAll: false
+                        - grade: "VVIP"
+                          context: "1천원 당 100원 할인 \r\n일 최대 2만원까지 할인 가능\r\n월 최대 10만원까지 할인 가능\r\n※제휴사 지정하는 행사상품은 할인제외"
+                          isAll: false
+                      isFavorite: true
+                      favoriteCount: 1000
+                  currentPage: 0
+                  totalPages: 11
+                  totalElements: 121
+                  hasNext: true
+                code: BENEFIT_LIST_SUCCESS
+                status: OK
+                message: 혜택 목록 조회에 성공했습니다.
+                timestamp: '2025-07-04T15:30:00.000Z'
+
+  /benefit/{benefitId}:
+    get:
+      tags:
+        - Benefit
+      summary: 혜택 상세 조회
+      description: 혜택 ID를 통해 혜택의 상세 정보를 조회합니다.
+      operationId: getBenefitDetail
+      parameters:
+        - name: benefitId
+          in: path
+          required: true
+          description: 조회할 혜택의 ID
+          schema:
+            type: integer
+            format: int64
+      responses:
+        '200':
+          description: 혜택 상세 조회 성공
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/ApiResponse'
+                  - type: object
+                    properties:
+                      data:
+                        $ref: '#/components/schemas/BenefitDetailResponse'
+              example:
+                data:
+                  benefitId: 26
+                  benefitName: "딸기콩"
+                  description: "딸기콩은 웅진씽크빅에서 만든 국내 최대 어린이 오디오북 플랫폼으로 7,000여 개의 어린이 전문 콘텐츠를 기반으로 아이의 연령과 관심 영역에 맞춘 큐레이션을 제공합니다."
+                  benefitLimit: "VIP콕 내 제휴사 통합 월 1회, 연 12회 가능"
+                  manual: "멤버십앱 VIP 특별혜택 > 혜택 > 딸기콩 > 하단 '바로가기' 클릭 > 딸기콩 연동 후 등록\n\n\n\n\n*꼭 확인하세요\n\n\n- 딸기콩 구독권 또는 쿠폰 보유 시, 혜택 적용이 불가합니다.\n\n- 딸기콩 구독권 또는 쿠폰을 보유하고 계실 경우 딸기콩 1:1 문의 또는 웅진 고객센터(1577-1500)를 통해 혜택 적용이 가능합니다.\n\n- 본 혜택은 U+멤버십 혜택이 매달 자동 적용되지 않으며, 고객님께서 해당 페이지를 통해 매달 직접 신청하셔야 합니다.\n\n- 만 19세 이상 고객만 가입할 수 있습니다. \n\n\n\n대표문의\n\n딸기콩 고객센터 1577-1500"
+                  url: "https://www.ddalgicong.com/login/login.html"
+                  partnerName: "딸기콩"
+                  image: ""
+                code: BENEFIT_DETAIL_SUCCESS
+                status: OK
+                message: 혜택 상세 조회에 성공했습니다.
+                timestamp: '2025-07-16T12:00:00.000Z'
+
+        '404':
+          description: 혜택을 찾을 수 없습니다
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiResponse'
+              example:
+                data: null
+                code: BENEFIT_NOT_FOUND
+                status: NOT_FOUND
+                message: 존재하지 않는 혜택입니다.
+                timestamp: '2025-07-16T12:00:00.000Z'
 components:
   schemas:
     # ----------------------------------------------------
@@ -1921,3 +2109,83 @@ components:
           type: string
         context:
           type: string
+
+    BenefitListResponse:
+      type: object
+      properties:
+        benefitId:
+          type: integer
+          format: int64
+        benefitName:
+          type: string
+        mainCategory:
+          type: string
+          enum: [ VIP_COCK, BASIC_BENEFIT ]
+        usageType:
+          type: string
+          enum: [ ONLINE, OFFLINE, BOTH ]
+        category:
+          type: string
+        image:
+          type: string
+          format: uri
+        tierBenefits:
+          type: array
+          items:
+            $ref: '#/components/schemas/TierBenefitInfo'
+        isFavorite:
+          type: boolean
+        favoriteCount:
+          type: integer
+          format: int64
+
+    TierBenefitInfo:
+      type: object
+      properties:
+        grade:
+          type: string
+          enum: [ BASIC, VIP, VVIP, VIP콕 ]
+        context:
+          type: string
+        isAll:
+          type: boolean
+
+    PagedResponse_BenefitListResponse:
+      type: object
+      properties:
+        content:
+          type: array
+          items:
+            $ref: '#/components/schemas/BenefitListResponse'
+        currentPage:
+          type: integer
+        totalPages:
+          type: integer
+        totalElements:
+          type: integer
+          format: int64
+        hasNext:
+          type: boolean
+
+    BenefitDetailResponse:
+      type: object
+      properties:
+        benefitId:
+          type: integer
+          format: int64
+        benefitName:
+          type: string
+        description:
+          type: string
+        benefitLimit:
+          type: string
+        manual:
+          type: string
+        url:
+          type: string
+          format: uri
+        partnerName:
+          type: string
+        image:
+          type: string
+          format: uri

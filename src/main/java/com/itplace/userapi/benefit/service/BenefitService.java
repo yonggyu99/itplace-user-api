@@ -1,5 +1,6 @@
 package com.itplace.userapi.benefit.service;
 
+import com.itplace.userapi.benefit.dto.response.BenefitDetailResponse;
 import com.itplace.userapi.benefit.dto.response.BenefitListResponse;
 import com.itplace.userapi.benefit.dto.response.PagedResponse;
 import com.itplace.userapi.benefit.entity.enums.MainCategory;
@@ -15,4 +16,6 @@ public interface BenefitService {
             Long userId,
             Pageable pageable
     );
+
+    BenefitDetailResponse getBenefitDetail(Long benefitId);
 }

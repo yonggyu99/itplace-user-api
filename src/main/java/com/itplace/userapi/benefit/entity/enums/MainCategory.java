@@ -1,8 +1,9 @@
 package com.itplace.userapi.benefit.entity.enums;
 
-import lombok.Getter;
-
+import com.itplace.userapi.benefit.BenefitCode;
+import com.itplace.userapi.benefit.exception.InvalidEnumException;
 import java.util.Arrays;
+import lombok.Getter;
 
 @Getter
 public enum MainCategory {
@@ -11,12 +12,14 @@ public enum MainCategory {
 
     private final String label;
 
-    MainCategory(String label) { this.label = label; }
+    MainCategory(String label) {
+        this.label = label;
+    }
 
     public static MainCategory fromLabel(String label) {
         return Arrays.stream(values())
                 .filter(c -> c.label.equals(label))
                 .findFirst()
-                .orElseThrow(() -> new IllegalArgumentException("Unknown mainCategory: " + label));
+                .orElseThrow(() -> new InvalidEnumException(BenefitCode.MAIN_CATEGORY_NOT_FOUND));
     }
 }

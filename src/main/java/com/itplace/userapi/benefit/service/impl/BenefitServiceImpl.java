@@ -1,5 +1,7 @@
 package com.itplace.userapi.benefit.service.impl;
 
+import com.itplace.userapi.benefit.BenefitCode;
+import com.itplace.userapi.benefit.dto.response.BenefitDetailResponse;
 import com.itplace.userapi.benefit.dto.response.BenefitListResponse;
 import com.itplace.userapi.benefit.dto.response.PagedResponse;
 import com.itplace.userapi.benefit.dto.response.TierBenefitInfo;
@@ -7,17 +9,22 @@ import com.itplace.userapi.benefit.entity.Benefit;
 import com.itplace.userapi.benefit.entity.TierBenefit;
 import com.itplace.userapi.benefit.entity.enums.MainCategory;
 import com.itplace.userapi.benefit.entity.enums.UsageType;
+import com.itplace.userapi.benefit.exception.BenefitNotFoundException;
 import com.itplace.userapi.benefit.repository.BenefitRepository;
 import com.itplace.userapi.benefit.repository.TierBenefitRepository;
 import com.itplace.userapi.benefit.service.BenefitService;
 import com.itplace.userapi.favorite.repository.FavoriteRepository;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.Set;
+import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
-
-import java.util.*;
-import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -100,5 +107,22 @@ public class BenefitServiceImpl implements BenefitService {
                 benefitPage.getTotalElements(),
                 benefitPage.hasNext()
         );
+    }
+
+    @Override
+    public BenefitDetailResponse getBenefitDetail(Long benefitId) {
+        Benefit benefit = benefitRepository.findBenefitWithPartnerById(benefitId)
+                .orElseThrow(() -> new BenefitNotFoundException(BenefitCode.BENEFIT_NOT_FOUND));
+
+        return BenefitDetailResponse.builder()
+                .benefitId(benefit.getBenefitId())
+                .benefitName(benefit.getBenefitName())
+                .description(benefit.getDescription())
+                .benefitLimit(benefit.getBenefitLimit().trim())
+                .manual(benefit.getManual().trim())
+                .url(benefit.getUrl().trim())
+                .partnerName(benefit.getPartner().getPartnerName())
+                .image(benefit.getPartner().getImage())
+                .build();
     }
 }

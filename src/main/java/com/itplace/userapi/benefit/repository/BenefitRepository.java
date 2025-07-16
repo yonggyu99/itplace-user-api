@@ -47,4 +47,13 @@ public interface BenefitRepository extends JpaRepository<Benefit, Long> {
             @Param("keyword") String keyword,
             Pageable pageable
     );
+
+    @Query("""
+                SELECT b
+                FROM Benefit b
+                JOIN FETCH b.partner p
+                WHERE b.benefitId = :benefitId
+            """)
+    Optional<Benefit> findBenefitWithPartnerById(@Param("benefitId") Long benefitId);
+
 }
