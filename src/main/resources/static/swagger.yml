@@ -20,6 +20,8 @@ tags:
     description: 지도 기능 관련 API
   - name: Favorites
     description: 즐겨찾기 관련 API
+  - name: User
+    description: 사용자 마이페이지 관련 API
 
 paths:
   # =====================================================
@@ -192,22 +194,22 @@ paths:
             schema:
               $ref: '#/components/schemas/SignUpRequest'
             example:
-                  registrationId: "f79c2e9c-958d-4925-a562-3b3ad44353c8"
-                  name: "홍길동"
-                  email: "user@example.com"
-                  phoneNumber: "01011112222"
-                  password: "!Password123"
-                  passwordConfirm: "!Password123"
-                  gender: "MALE"
-                  birthday: "20000101"
-                  membershipId: "1234567812345678"
+              registrationId: "f79c2e9c-958d-4925-a562-3b3ad44353c8"
+              name: "홍길동"
+              email: "user@example.com"
+              phoneNumber: "01011112222"
+              password: "!Password123"
+              passwordConfirm: "!Password123"
+              gender: "MALE"
+              birthday: "20000101"
+              membershipId: "1234567812345678"
       responses:
         '201':
           description: 회원가입 성공.
           content:
             application/json:
               schema:
-                  $ref: '#/components/schemas/ApiResponse'
+                $ref: '#/components/schemas/ApiResponse'
               example:
                 code: "USER_CREATED_201"
                 status: "CREATED"
@@ -323,11 +325,11 @@ paths:
               schema:
                 $ref: '#/components/schemas/ApiResponse'
               example:
-                  code: "INTERNAL_SERVER_ERROR_500"
-                  status: "INTERNAL_SERVER_ERROR"
-                  message: "서버 오류가 발생했습니다."
-                  data: null
-                  timestamp: "2025-07-04T12:23:00.456Z"
+                code: "INTERNAL_SERVER_ERROR_500"
+                status: "INTERNAL_SERVER_ERROR"
+                message: "서버 오류가 발생했습니다."
+                data: null
+                timestamp: "2025-07-04T12:23:00.456Z"
 
   # /auth/find-email:
   #   post:
@@ -373,13 +375,13 @@ paths:
         - Auth
       summary: 비밀번호 재설정 링크 전송
       description: |
-            가입된 사용자 이메일 주소로 비밀번호 재설정 링크를 전송합니다.
-
-            **[주의 사항]** 이 API는 사용자 열거 공격(User Enumeration Attack)을 방지하기 위해,
-
-            요청된 이메일이 DB에 존재하지 않더라도 항상 성공한 것처럼 동일한 응답을 반환합니다.
-
-            실제 메일 발송은 이메일이 DB에 존재할 경우에만 내부적으로 처리됩니다.
+        가입된 사용자 이메일 주소로 비밀번호 재설정 링크를 전송합니다.
+        
+        **[주의 사항]** 이 API는 사용자 열거 공격(User Enumeration Attack)을 방지하기 위해,
+        
+        요청된 이메일이 DB에 존재하지 않더라도 항상 성공한 것처럼 동일한 응답을 반환합니다.
+        
+        실제 메일 발송은 이메일이 DB에 존재할 경우에만 내부적으로 처리됩니다.
       operationId: requestPasswordReset
       requestBody:
         description: 인증 코드 확인에 필요한 정보
@@ -399,13 +401,13 @@ paths:
           content:
             application/json:
               schema:
-                 $ref: '#/components/schemas/ApiResponse'
+                $ref: '#/components/schemas/ApiResponse'
               example:
-                 code: "PASSWORD_RESET_REQUEST_ACCEPTED_200"
-                 status: "OK"
-                 message: "요청이 정상적으로 처리되었습니다. 입력하신 이메일의 메일함을 확인해주세요."
-                 data: null
-                 timestamp: "2025-07-04T11:27:06.789Z"
+                code: "PASSWORD_RESET_REQUEST_ACCEPTED_200"
+                status: "OK"
+                message: "요청이 정상적으로 처리되었습니다. 입력하신 이메일의 메일함을 확인해주세요."
+                data: null
+                timestamp: "2025-07-04T11:27:06.789Z"
 
   /auth/password-reset/confirm:
     post:
@@ -490,8 +492,8 @@ paths:
             schema:
               $ref: '#/components/schemas/SmsVerificationRequest'
             example:
-                name: "홍길동"
-                phoneNumber: "01012345678"
+              name: "홍길동"
+              phoneNumber: "01012345678"
       responses:
         '201':
           description: 인증 코드 발송 성공
@@ -500,11 +502,11 @@ paths:
               schema:
                 $ref: '#/components/schemas/ApiResponse'
               example:
-                  code: "SMS_CODE_SEND_201"
-                  status: "CREATED"
-                  message: "문자 인증 코드가 성공적으로 발송되었습니다."
-                  data: null
-                  timestamp: "2025-07-04T11:27:06.789Z"                    
+                code: "SMS_CODE_SEND_201"
+                status: "CREATED"
+                message: "문자 인증 코드가 성공적으로 발송되었습니다."
+                data: null
+                timestamp: "2025-07-04T11:27:06.789Z"
         '400':
           description: 잘못된 요청 (입력값 형식 오류)
           content:
@@ -512,11 +514,11 @@ paths:
               schema:
                 $ref: '#/components/schemas/ApiResponse'
               example:
-                  code: "PHONE_NUMBER_PATTERN_ERROR_400"
-                  status: "BAD_REQUEST"
-                  message: "올바른 전화번호 형식이 아닙니다."
-                  data: null
-                  timestamp: "2025-07-04T12:23:00.456Z"
+                code: "PHONE_NUMBER_PATTERN_ERROR_400"
+                status: "BAD_REQUEST"
+                message: "올바른 전화번호 형식이 아닙니다."
+                data: null
+                timestamp: "2025-07-04T12:23:00.456Z"
         '409':
           description: 데이터 충돌 (이미 가입된 리소스)
           content:
@@ -524,11 +526,11 @@ paths:
               schema:
                 $ref: '#/components/schemas/ApiResponse'
               example:
-                  code: "PHONE_NUMBER_ALREADY_EXISTS_409"
-                  status: "CONFLICT"
-                  message: "이미 가입된 전화번호입니다."
-                  data: null
-                  timestamp: "2025-07-04T12:23:00.789Z"
+                code: "PHONE_NUMBER_ALREADY_EXISTS_409"
+                status: "CONFLICT"
+                message: "이미 가입된 전화번호입니다."
+                data: null
+                timestamp: "2025-07-04T12:23:00.789Z"
 
   /verification/sms/confirm:
     post:
@@ -545,9 +547,9 @@ paths:
             schema:
               $ref: '#/components/schemas/SmsConfirmRequest'
             example:
-                name: "홍길동"
-                phoneNumber: "01012345678"  
-                code: "123456"
+              name: "홍길동"
+              phoneNumber: "01012345678"
+              code: "123456"
       responses:
         '200':
           description: 인증 성공
@@ -561,13 +563,13 @@ paths:
                       data:
                         $ref: '#/components/schemas/SmsConfirmResponse'
               example:
-                  code: "SMS_CODE_CONFIRM_200"
-                  status: "OK"
-                  message: "휴대폰 번호가 성공적으로 인증되었습니다."
-                  data:
-                    registrationId: "f79c2e9c-958d-4925-a562-3b3ad44353c8"
-                    uplusDataFound: "true"
-                  timestamp: "2025-07-04T11:27:06.789Z"
+                code: "SMS_CODE_CONFIRM_200"
+                status: "OK"
+                message: "휴대폰 번호가 성공적으로 인증되었습니다."
+                data:
+                  registrationId: "f79c2e9c-958d-4925-a562-3b3ad44353c8"
+                  uplusDataFound: "true"
+                timestamp: "2025-07-04T11:27:06.789Z"
         '400':
           description: 잘못된 인증 번호
           content:
@@ -575,11 +577,11 @@ paths:
               schema:
                 $ref: '#/components/schemas/ApiResponse'
               example:
-                  code: "SMS_CODE_INCORRECT_400"
-                  status: "BAD_REQUEST"
-                  message: "올바른 문자 인증 코드가 아닙니다."
-                  data: null
-                  timestamp: "2025-07-04T12:23:00.456Z"
+                code: "SMS_CODE_INCORRECT_400"
+                status: "BAD_REQUEST"
+                message: "올바른 문자 인증 코드가 아닙니다."
+                data: null
+                timestamp: "2025-07-04T12:23:00.456Z"
         '410':
           description: 인증 코드 입력 시간 초과
           content:
@@ -587,11 +589,11 @@ paths:
               schema:
                 $ref: '#/components/schemas/ApiResponse'
               example:
-                  code: "SMS_CODE_GONE_410"
-                  status: "GONE"
-                  message: "문자 인증 코드가 만료되었습니다."
-                  data: null
-                  timestamp: "2025-07-04T12:23:00.789Z"
+                code: "SMS_CODE_GONE_410"
+                status: "GONE"
+                message: "문자 인증 코드가 만료되었습니다."
+                data: null
+                timestamp: "2025-07-04T12:23:00.789Z"
 
   /verification/email:
     post:
@@ -608,7 +610,7 @@ paths:
             schema:
               $ref: '#/components/schemas/EmailVerificationRequest'
             example:
-                email: "user@example.com"
+              email: "user@example.com"
       responses:
         '201':
           description: 인증 코드 발송 성공
@@ -617,11 +619,11 @@ paths:
               schema:
                 $ref: '#/components/schemas/ApiResponse'
               example:
-                  code: "EMAIL_CODE_SEND_201"
-                  status: "CREATED"
-                  message: "이메일 인증 코드가 성공적으로 발송되었습니다."
-                  data: null
-                  timestamp: "2025-07-04T11:27:06.789Z"                    
+                code: "EMAIL_CODE_SEND_201"
+                status: "CREATED"
+                message: "이메일 인증 코드가 성공적으로 발송되었습니다."
+                data: null
+                timestamp: "2025-07-04T11:27:06.789Z"
         '400':
           description: 잘못된 요청 (입력값 형식 오류)
           content:
@@ -629,11 +631,11 @@ paths:
               schema:
                 $ref: '#/components/schemas/ApiResponse'
               example:
-                  code: "EMAIL_PATTERN_ERROR_400"
-                  status: "BAD_REQUEST"
-                  message: "올바른 이메일 형식이 아닙니다."
-                  data: null
-                  timestamp: "2025-07-04T12:23:00.456Z"
+                code: "EMAIL_PATTERN_ERROR_400"
+                status: "BAD_REQUEST"
+                message: "올바른 이메일 형식이 아닙니다."
+                data: null
+                timestamp: "2025-07-04T12:23:00.456Z"
 
   /verification/email/confirm:
     post:
@@ -650,8 +652,8 @@ paths:
             schema:
               $ref: '#/components/schemas/EmailConfirmRequest'
             example:
-                email: "user@example.com"
-                code: "123456"
+              email: "user@example.com"
+              code: "123456"
       responses:
         '200':
           description: 인증 성공
@@ -665,11 +667,11 @@ paths:
                       data:
                         $ref: '#/components/schemas/EmailConfirmResponse'
               example:
-                  code: "EMAIL_CODE_CONFIRM_200"
-                  status: "OK"
-                  message: "이메일이 성공적으로 인증되었습니다."
-                  data: null
-                  timestamp: "2025-07-04T11:27:06.789Z"
+                code: "EMAIL_CODE_CONFIRM_200"
+                status: "OK"
+                message: "이메일이 성공적으로 인증되었습니다."
+                data: null
+                timestamp: "2025-07-04T11:27:06.789Z"
         '400':
           description: 잘못된 인증 번호
           content:
@@ -677,11 +679,11 @@ paths:
               schema:
                 $ref: '#/components/schemas/ApiResponse'
               example:
-                  code: "EMAIL_CODE_INCORRECT_400"
-                  status: "BAD_REQUEST"
-                  message: "올바른 이메일 인증 코드가 아닙니다."
-                  data: null
-                  timestamp: "2025-07-04T12:23:00.456Z"
+                code: "EMAIL_CODE_INCORRECT_400"
+                status: "BAD_REQUEST"
+                message: "올바른 이메일 인증 코드가 아닙니다."
+                data: null
+                timestamp: "2025-07-04T12:23:00.456Z"
         '409':
           description: 데이터 충돌 (이미 가입된 리소스)
           content:
@@ -689,11 +691,11 @@ paths:
               schema:
                 $ref: '#/components/schemas/ApiResponse'
               example:
-                  code: "EMAIL_ALREADY_EXISTS_409"
-                  status: "CONFLICT"
-                  message: "이미 가입된 이메일입니다."
-                  data: null
-                  timestamp: "2025-07-04T12:23:00.789Z"
+                code: "EMAIL_ALREADY_EXISTS_409"
+                status: "CONFLICT"
+                message: "이미 가입된 이메일입니다."
+                data: null
+                timestamp: "2025-07-04T12:23:00.789Z"
         '410':
           description: 인증 코드 입력 시간 초과
           content:
@@ -701,11 +703,11 @@ paths:
               schema:
                 $ref: '#/components/schemas/ApiResponse'
               example:
-                  code: "EMAIL_CODE_GONE_410"
-                  status: "GONE"
-                  message: "이메일 인증 코드가 만료되었습니다."
-                  data: null
-                  timestamp: "2025-07-04T12:23:00.789Z"
+                code: "EMAIL_CODE_GONE_410"
+                status: "GONE"
+                message: "이메일 인증 코드가 만료되었습니다."
+                data: null
+                timestamp: "2025-07-04T12:23:00.789Z"
   
   /favorites:
     post:
@@ -776,10 +778,10 @@ paths:
           description: 사용자 ID
           schema:
             type: integer
-        - name : category
+        - name: category
           in: query
           required: false
-          schema: 
+          schema:
             type: string
             default: null
           description: 카테고리 설정 없을 시 전체 조회
@@ -910,6 +912,369 @@ paths:
                       context: "무료 예매 연 3회 / 1+1 예매 연 9회(총 12회)\r\n(월 1회 사용 가능, CGV/메가박스 중 택 1)\r\n※ 1+1이란? 1매 유료로 구매 시, 1매 무료 제공"
                       discountValue: 14000
                 timestamp: '2025-07-15T12:00:00Z'
+
+  # =====================================================
+  # 마이페이지
+  # =====================================================
+
+  /users/{userId}:
+    get:
+      tags:
+        - User
+      summary: 사용자 정보 조회
+      description: 사용자 ID를 기반으로 사용자의 기본 정보와 멤버십 정보를 조회합니다.
+      parameters:
+        - name: userId
+          in: path
+          required: true
+          description: 조회할 사용자의 ID
+          schema:
+            type: integer
+            format: int64
+            example: 1
+      responses:
+        '200':
+          description: 사용자 정보 조회 성공
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/ApiResponse'
+                  - type: object
+                    properties:
+                      data:
+                        $ref: '#/components/schemas/UserInfoDto'
+              examples:
+                success:
+                  summary: 사용자 정보 조회 성공 예시
+                  value:
+                    code: USER_INFO_SUCCESS
+                    status: OK
+                    message: 사용자 정보 조회에 성공했습니다.
+                    data:
+                      id: 1
+                      name: "홍길동"
+                      email: "hong@example.com"
+                      phoneNumber: "010-1234-5678"
+                      gender: "MALE"
+                      birthday: "1990-01-01"
+                      membershipId: "M001"
+                      grade: "GOLD"
+                    timestamp: '2025-07-16T10:00:00.000Z'
+        '404':
+          description: 사용자를 찾을 수 없음
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiResponse'
+              examples:
+                user_not_found:
+                  summary: 사용자 없음 에러
+                  value:
+                    code: USER_NOT_FOUND
+                    status: NOT_FOUND
+                    message: 사용자를 찾을 수 없습니다.
+                    data: null
+                    timestamp: '2025-07-16T10:00:00.000Z'
+  # =====================================================
+  # 지도 관련 기능 API
+  # =====================================================
+  /maps/nearby:
+    get:
+      tags:
+        - Map
+      summary: 사용자 위치 기반 전체 지점 목록 조회
+      description: 사용자의 위치(위도, 경도)를 기반으로 지정된 반경 내의 모든 지점을 조회합니다.
+      parameters:
+        - name: lat
+          in: query
+          required: true
+          description: 위도 좌표
+          schema:
+            type: number
+            format: double
+            example: 37.5665
+        - name: lng
+          in: query
+          required: true
+          description: 경도 좌표
+          schema:
+            type: number
+            format: double
+            example: 126.9780
+        - name: radiusMeters
+          in: query
+          required: true
+          description: 검색 반경 (미터 단위)
+          schema:
+            type: number
+            format: double
+            minimum: 0
+            example: 1000
+      responses:
+        '200':
+          description: 전체 지점 목록 조회 성공
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/ApiResponse'
+                  - type: object
+                    properties:
+                      data:
+                        type: array
+                        items:
+                          $ref: '#/components/schemas/StoreDetailDto'
+              examples:
+                success:
+                  summary: 전체 지점 목록 조회 성공 예시
+                  value:
+                    code: STORE_LIST_SUCCESS
+                    status: OK
+                    message: 지점 목록 조회에 성공했습니다.
+                    data:
+                      - store:
+                          storeId: 1
+                          storeName: "스타벅스 강남점"
+                          business: "커피전문점"
+                          city: "서울특별시"
+                          town: "강남구"
+                          legalDong: "역삼동"
+                          address: "서울특별시 강남구 역삼동 123-45"
+                          roadName: "강남대로"
+                          roadAddress: "서울특별시 강남구 강남대로 456"
+                          postCode: "06234"
+                        partner:
+                          partnerId: 101
+                          partnerName: "스타벅스"
+                          image: "https://example.com/starbucks-logo.png"
+                          category: "카페"
+                        tierBenefit:
+                          - grade: "BRONZE"
+                            context: "5% 할인"
+                          - grade: "SILVER"
+                            context: "10% 할인"
+                          - grade: "GOLD"
+                            context: "15% 할인"
+                        distance: 0.5
+                    timestamp: '2025-07-15T11:00:00.000Z'
+  /maps/nearby/category:
+    get:
+      tags:
+        - Map
+      summary: 사용자 위치 기반 카테고리별 지점 목록 조회
+      description: 사용자의 위치를 기반으로 지정된 반경 내의 특정 카테고리 지점을 조회합니다. 카테고리가 null, 빈 문자열, 또는 "전체"인 경우 모든 지점을 반환합니다.
+      parameters:
+        - name: lat
+          in: query
+          required: true
+          description: 위도 좌표
+          schema:
+            type: number
+            format: double
+            example: 37.5665
+        - name: lng
+          in: query
+          required: true
+          description: 경도 좌표
+          schema:
+            type: number
+            format: double
+            example: 126.9780
+        - name: radiusMeters
+          in: query
+          required: true
+          description: 검색 반경 (미터 단위)
+          schema:
+            type: number
+            format: double
+            minimum: 0
+            example: 1000
+        - name: category
+          in: query
+          required: false
+          description: 카테고리 필터 (null, 빈 문자열, 또는 "전체"이면 모든 카테고리 반환)
+          schema:
+            type: string
+            example: "카페"
+      responses:
+        '200':
+          description: 카테고리별 지점 목록 조회 성공
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/ApiResponse'
+                  - type: object
+                    properties:
+                      data:
+                        type: array
+                        items:
+                          $ref: '#/components/schemas/StoreDetailDto'
+              examples:
+                success:
+                  summary: 카페 카테고리 지점 목록 조회 성공 예시
+                  value:
+                    code: STORE_LIST_SUCCESS
+                    status: OK
+                    message: 지점 목록 조회에 성공했습니다.
+                    data:
+                      - store:
+                          storeId: 1
+                          storeName: "스타벅스 강남점"
+                          business: "커피전문점"
+                          city: "서울특별시"
+                          town: "강남구"
+                          legalDong: "역삼동"
+                          address: "서울특별시 강남구 역삼동 123-45"
+                          roadName: "강남대로"
+                          roadAddress: "서울특별시 강남구 강남대로 456"
+                          postCode: "06234"
+                        partner:
+                          partnerId: 101
+                          partnerName: "스타벅스"
+                          image: "https://example.com/starbucks-logo.png"
+                          category: "카페"
+                        tierBenefit:
+                          - grade: "BRONZE"
+                            context: "5% 할인"
+                          - grade: "SILVER"
+                            context: "10% 할인"
+                          - grade: "GOLD"
+                            context: "15% 할인"
+                        distance: 0.5
+                      - store:
+                          storeId: 2
+                          storeName: "투썸플레이스 역삼점"
+                          business: "커피전문점"
+                          city: "서울특별시"
+                          town: "강남구"
+                          legalDong: "역삼동"
+                          address: "서울특별시 강남구 역삼동 678-90"
+                          roadName: "테헤란로"
+                          roadAddress: "서울특별시 강남구 테헤란로 123"
+                          postCode: "06233"
+                        partner:
+                          partnerId: 102
+                          partnerName: "투썸플레이스"
+                          image: "https://example.com/twosome-logo.png"
+                          category: "카페"
+                        tierBenefit:
+                          - grade: "BRONZE"
+                            context: "3% 할인"
+                          - grade: "SILVER"
+                            context: "7% 할인"
+                        distance: 0.8
+                    timestamp: '2025-07-15T11:00:00.000Z'
+
+  /maps/nearby/search:
+    get:
+      tags:
+        - Map
+      summary: 사용자 위치 기반 키워드로 지점 검색
+      description: 사용자의 위치를 기반으로 지정된 반경 내의 지점 중 키워드를 기반으로 검색합니다. 키워드가 지점이름, 제휴사이름, 직종, 카테고리 중 하나라도 포함되어있으면 조회됩니다.
+      parameters:
+        - name: lat
+          in: query
+          required: true
+          description: 위도 좌표
+          schema:
+            type: number
+            format: double
+            example: 37.5665
+        - name: lng
+          in: query
+          required: true
+          description: 경도 좌표
+          schema:
+            type: number
+            format: double
+            example: 126.9780
+        - name: radiusMeters
+          in: query
+          required: true
+          description: 검색 반경 (미터 단위)
+          schema:
+            type: number
+            format: double
+            minimum: 0
+            example: 1000
+        - name: category
+          in: query
+          required: false
+          description: 카테고리 필터 (선택사항)
+          schema:
+            type: string
+            example: "카페"
+        - name: keyword
+          in: query
+          required: true
+          description: 검색 키워드 (지점명, 제휴사명, 업종, 카테고리에서 검색)
+          schema:
+            type: string
+            example: "스타벅스"
+      responses:
+        '200':
+          description: 키워드 검색 성공
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/ApiResponse'
+                  - type: object
+                    properties:
+                      data:
+                        type: array
+                        items:
+                          $ref: '#/components/schemas/StoreDetailDto'
+              examples:
+                success:
+                  summary: 스타벅스 키워드 검색 성공 예시
+                  value:
+                    code: STORE_LIST_SUCCESS
+                    status: OK
+                    message: 지점 목록 조회에 성공했습니다.
+                    data:
+                      - store:
+                          storeId: 1
+                          storeName: "스타벅스 강남점"
+                          business: "커피전문점"
+                          city: "서울특별시"
+                          town: "강남구"
+                          legalDong: "역삼동"
+                          address: "서울특별시 강남구 역삼동 123-45"
+                          roadName: "강남대로"
+                          roadAddress: "서울특별시 강남구 강남대로 456"
+                          postCode: "06234"
+                        partner:
+                          partnerId: 101
+                          partnerName: "스타벅스"
+                          image: "https://example.com/starbucks-logo.png"
+                          category: "카페"
+                        tierBenefit:
+                          - grade: "BRONZE"
+                            context: "5% 할인"
+                          - grade: "SILVER"
+                            context: "10% 할인"
+                          - grade: "GOLD"
+                            context: "15% 할인"
+                        distance: 0.5
+                    timestamp: '2025-07-15T11:00:00.000Z'
+        '400':
+          description: 키워드 누락 또는 잘못된 요청 파라미터
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiResponse'
+              examples:
+                keyword_required:
+                  summary: 키워드 누락 에러
+                  value:
+                    code: KEYWORD_REQUIRED
+                    status: BAD_REQUEST
+                    message: 검색 키워드가 필요합니다.
+                    data: null
+                    timestamp: '2025-07-15T11:00:00.000Z'
 components:
   schemas:
     # ----------------------------------------------------
@@ -938,14 +1303,14 @@ components:
           type: string
           format: date-time
           description: "응답 시간"
-
-    # ----------------------------------------------------
-    # Request DTOs
-    # ----------------------------------------------------
-              
+          
+          # ----------------------------------------------------
+          # Request DTOs
+          # ----------------------------------------------------
+    
     SignUpRequest:
       type: object
-      required: [registrationId, name, email, password, passwordConfirm, phoneNumber, gender, birthday, membershipId]
+      required: [ registrationId, name, email, password, passwordConfirm, phoneNumber, gender, birthday, membershipId ]
       properties:
         registrationId:
           type: string
@@ -980,7 +1345,7 @@ components:
         gender:
           type: string
           description: "성별"
-          enum: [MALE, FEMALE]
+          enum: [ MALE, FEMALE ]
           example: "MALE"
         birthday:
           type: string
@@ -993,7 +1358,7 @@ components:
 
     PasswordResetRequest:
       type: object
-      required: [email]
+      required: [ email ]
       properties:
         email:
           type: string
@@ -1003,7 +1368,7 @@ components:
 
     PasswordResetConfirmRequest:
       type: object
-      required: [token, password, passwordConfirm]
+      required: [ token, password, passwordConfirm ]
       properties:
         token:
           type: string
@@ -1023,7 +1388,7 @@ components:
     SmsVerificationRequest:
       type: object
       description: "문자 인증 코드 발송 요청 DTO"
-      required: [name, phoneNumber]
+      required: [ name, phoneNumber ]
       properties:
         name:
           type: string
@@ -1037,7 +1402,7 @@ components:
     SmsConfirmRequest:
       type: object
       description: "문자 인증 코드 확인 요청 DTO"
-      required: [name, phoneNumber, verificationCode]
+      required: [ name, phoneNumber, verificationCode ]
       properties:
         name:
           type: string
@@ -1055,7 +1420,7 @@ components:
     SmsConfirmResponse:
       type: object
       description: "문자 인증 코드 확인 응답 DTO"
-      required: [registrationId, uplusDataFound]
+      required: [ registrationId, uplusDataFound ]
       properties:
         registrationId:
           type: string
@@ -1070,7 +1435,7 @@ components:
     UplusDataConsentRequest:
       type: object
       description: "유플러스 더미 데이터 사용 유무"
-      required: [registrationId, isUseUplusData]
+      required: [ registrationId, isUseUplusData ]
       properties:
         registrationId:
           type: string
@@ -1085,7 +1450,7 @@ components:
     EmailVerificationRequest:
       type: object
       description: "이메일 인증 코드 발송 요청 DTO"
-      required: [email]
+      required: [ email ]
       properties:
         email:
           type: string
@@ -1096,7 +1461,7 @@ components:
     EmailConfirmRequest:
       type: object
       description: "이메일 인증 코드 확인 요청 DTO"
-      required: [email, verificationCode]
+      required: [ email, verificationCode ]
       properties:
         email:
           type: string
@@ -1111,7 +1476,7 @@ components:
     EmailConfirmResponse:
       type: object
       description: "이메일 인증 코드 확인 요청 DTO"
-      required: [registrationId, email, verificationCode]
+      required: [ registrationId, email, verificationCode ]
       properties:
         registrationId:
           type: string
@@ -1126,10 +1491,10 @@ components:
           type: string
           description: "인증코드"
           example: "123456"
-          
+    
     LoginRequest:
       type: object
-      required: [email, password]
+      required: [ email, password ]
       properties:
         email:
           type: string
@@ -1146,7 +1511,7 @@ components:
 
     LoginResponse:
       type: object
-      required: [name, accessToken, refreshToken]
+      required: [ name, accessToken, refreshToken ]
       properties:
         name:
           type: string
@@ -1155,7 +1520,7 @@ components:
         membershipGrade:
           type: string
           example: "user@example.com"
-          enum: [VVIP, VIP, BASIC]
+          enum: [ VVIP, VIP, BASIC ]
         accessToken:
           type: string
           example: "eyJhbGciOiJIUzI1NiJ9.eyJzdWI..."
@@ -1165,7 +1530,7 @@ components:
     
     FindEmailResponse:
       type: object
-      required: [email]
+      required: [ email ]
       properties:
         name:
           type: string
@@ -1174,7 +1539,7 @@ components:
 
     BenefitResultResponse:
       type: object
-      required: [name, accessToken, refreshToken]
+      required: [ name, accessToken, refreshToken ]
       properties:
         tabType:
           type: string
@@ -1190,11 +1555,11 @@ components:
           example: "할리스 아메리카노 R사이즈 1잔 무료 제공 (ICE/HOT 선택 가능)"
         keywords:
           type: array
-          example: ["스타벅스", "커피", "무료"]
+          example: [ "스타벅스", "커피", "무료" ]
 
     RecommendedResponse:
       type: object
-      required: [name, accessToken, refreshToken]
+      required: [ name, accessToken, refreshToken ]
       properties:
         benefitId:
           type: integer
@@ -1210,7 +1575,7 @@ components:
           example: "카페"
         type:
           type: string
-          example: ["스타벅스", "커피", "무료"]
+          example: [ "스타벅스", "커피", "무료" ]
         description:
           type: string
           example: "VIP 콕"
@@ -1220,7 +1585,7 @@ components:
 
     RegistrationDataResponse:
       type: object
-      required: [registrationId]
+      required: [ registrationId ]
       properties:
         registrationId:
           type: string
@@ -1234,7 +1599,7 @@ components:
           example: "01012345678"
         gender:
           type: string
-          enum: [MALE, FEMALE]
+          enum: [ MALE, FEMALE ]
           example: "MALE"
         birthday:
           type: string
@@ -1321,3 +1686,137 @@ components:
           type: integer
         hasNext:
           type: boolean
+
+    UserInfoDto:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+          description: 사용자 ID
+          example: 1
+        name:
+          type: string
+          description: 사용자 이름
+          example: "홍길동"
+        email:
+          type: string
+          format: email
+          description: 사용자 이메일
+          example: "hong@example.com"
+        phoneNumber:
+          type: string
+          description: 사용자 전화번호
+          example: "010-1234-5678"
+        gender:
+          type: string
+          description: 사용자 성별
+          enum: [ MALE, FEMALE, OTHER ]
+          example: "MALE"
+        birthday:
+          type: string
+          format: date
+          description: 사용자 생년월일
+          example: "1990-01-01"
+        membershipId:
+          type: string
+          description: 멤버십 ID (없는 경우 null)
+          example: "M001"
+          nullable: true
+        grade:
+          type: string
+          description: 멤버십 등급 (없는 경우 null)
+          enum: [ BRONZE, SILVER, GOLD, PLATINUM ]
+          example: "GOLD"
+          nullable: true
+
+    StoreDetailDto:
+      type: object
+      properties:
+        store:
+          $ref: '#/components/schemas/StoreDto'
+        partner:
+          $ref: '#/components/schemas/PartnerDto'
+        tierBenefit:
+          type: array
+          items:
+            $ref: '#/components/schemas/TierBenefitDto'
+        distance:
+          type: number
+          format: double
+          description: 사용자 위치로부터의 거리 (km)
+          example: 0.5
+
+    StoreDto:
+      type: object
+      properties:
+        storeId:
+          type: integer
+          format: int64
+          description: 지점 ID
+          example: 1
+        storeName:
+          type: string
+          description: 지점명
+          example: "스타벅스 강남점"
+        business:
+          type: string
+          description: 업종
+          example: "커피전문점"
+        city:
+          type: string
+          description: 시
+          example: "서울특별시"
+        town:
+          type: string
+          description: 구
+          example: "강남구"
+        legalDong:
+          type: string
+          description: 법정동
+          example: "역삼동"
+        address:
+          type: string
+          description: 지번주소
+          example: "서울특별시 강남구 역삼동 123-45"
+        roadName:
+          type: string
+          description: 도로명
+          example: "강남대로"
+        roadAddress:
+          type: string
+          description: 도로명주소
+          example: "서울특별시 강남구 강남대로 456"
+        postCode:
+          type: string
+          description: 우편번호
+          example: "06234"
+
+    PartnerDto:
+      type: object
+      properties:
+        partnerId:
+          type: integer
+          format: int64
+          description: 파트너 ID
+          example: 101
+        partnerName:
+          type: string
+          description: 파트너명
+          example: "스타벅스"
+        image:
+          type: string
+          description: 파트너 이미지 URL
+          example: "https://example.com/starbucks-logo.png"
+        category:
+          type: string
+          description: 카테고리
+          example: "카페"
+
+    TierBenefitDto:
+      type: object
+      properties:
+        grade:
+          type: string
+        context:
+          type: string
