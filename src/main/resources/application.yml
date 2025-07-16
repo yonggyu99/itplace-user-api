@@ -89,3 +89,7 @@ spring:
           auth: true
           starttls:
             enable: true
+
+springdoc:
+  swagger-ui:
+    url: /swagger.yml
