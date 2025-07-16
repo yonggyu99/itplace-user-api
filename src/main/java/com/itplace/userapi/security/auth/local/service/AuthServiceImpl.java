@@ -15,6 +15,7 @@ import com.itplace.userapi.security.auth.oauth.dto.OAuth2LoginResult;
 import com.itplace.userapi.security.exception.DuplicateEmailException;
 import com.itplace.userapi.security.exception.DuplicatePhoneNumberException;
 import com.itplace.userapi.security.exception.EmailVerificationException;
+import com.itplace.userapi.security.exception.InvalidCredentialsException;
 import com.itplace.userapi.security.exception.PasswordMismatchException;
 import com.itplace.userapi.security.exception.UserNotFoundException;
 import com.itplace.userapi.security.verification.jwt.JWTConstants;
@@ -31,6 +32,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -54,23 +56,27 @@ public class AuthServiceImpl implements AuthService {
 
     @Override
     public TokenResponse login(LoginRequest request) {
-        Authentication authentication = authenticationManager
-                .authenticate(new UsernamePasswordAuthenticationToken(request.getEmail(), request.getPassword()));
+        try {
+            Authentication authentication = authenticationManager
+                    .authenticate(new UsernamePasswordAuthenticationToken(request.getEmail(), request.getPassword()));
 
-        CustomUserDetails userDetails = (CustomUserDetails) authentication.getPrincipal();
-        User user = userDetails.getUser();
-        Long userId = user.getId();
-        Role role = user.getRole();
+            CustomUserDetails userDetails = (CustomUserDetails) authentication.getPrincipal();
+            User user = userDetails.getUser();
+            Long userId = user.getId();
+            Role role = user.getRole();
 
-        String accessToken = jwtUtil.createToken(userId, role, JWTConstants.CATEGORY_ACCESS, null, null, user.getEmail());
-        String refreshToken = jwtUtil.createToken(userId, role, JWTConstants.CATEGORY_REFRESH, null, null, user.getEmail());
+            String accessToken = jwtUtil.createToken(userId, role, JWTConstants.CATEGORY_ACCESS, null, null, user.getEmail());
+            String refreshToken = jwtUtil.createToken(userId, role, JWTConstants.CATEGORY_REFRESH, null, null, user.getEmail());
 
-        redisTemplate.opsForValue().set("RT:" + userId, refreshToken, 7, TimeUnit.DAYS);
+            redisTemplate.opsForValue().set("RT:" + userId, refreshToken, 7, TimeUnit.DAYS);
 
-        return TokenResponse.builder()
-                .accessToken(accessToken)
-                .refreshToken(refreshToken)
-                .build();
+            return TokenResponse.builder()
+                    .accessToken(accessToken)
+                    .refreshToken(refreshToken)
+                    .build();
+        } catch (BadCredentialsException e) {
+            throw new InvalidCredentialsException(SecurityCode.LOGIN_FAIL);
+        }
     }
 
     @Override
