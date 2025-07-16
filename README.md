@@ -52,46 +52,46 @@
 <table align="center">
   <tr>
     <td align="center">
-      <img src="https://avatars.githubusercontent.com/u/username1?v=4" width="150px" alt="팀원1"/>
+      <img src="https://avatars.githubusercontent.com/u/173465217?v=4" width="150px" alt="팀원1"/>
       <br>
       <b>허승현</b>
       <br>
       <sub>팀장 | 제휴처 AI 추천 시스템</sub>
       <br>
-      <a href="https://github.com/username1">
+      <a href="https://github.com/HSH-11">
         <img src="https://img.shields.io/badge/GitHub-181717?style=flat-square&logo=GitHub&logoColor=white">
       </a>
     </td>
     <td align="center">
-      <img src="https://avatars.githubusercontent.com/u/username2?v=4" width="150px" alt="팀원2"/>
+      <img src="https://avatars.githubusercontent.com/u/50799519?v=4" width="150px" alt="팀원2"/>
       <br>
       <b>이희용</b>
       <br>
       <sub>인증/권한 관리</sub>
       <br>
-      <a href="https://github.com/username2">
+      <a href="https://github.com/eddie-backdev">
         <img src="https://img.shields.io/badge/GitHub-181717?style=flat-square&logo=GitHub&logoColor=white">
       </a>
     </td>
     <td align="center">
-      <img src="https://avatars.githubusercontent.com/u/username3?v=4" width="150px" alt="팀원3"/>
+      <img src="https://avatars.githubusercontent.com/u/135448774?v=4" width="150px" alt="팀원3"/>
       <br>
       <b>정현경</b>
       <br>
       <sub>제휴처 제공 시스템</sub>
       <br>
-      <a href="https://github.com/username3">
+      <a href="https://github.com/hyunnk">
         <img src="https://img.shields.io/badge/GitHub-181717?style=flat-square&logo=GitHub&logoColor=white">
       </a>
     </td>
     <td align="center">
-      <img src="https://avatars.githubusercontent.com/u/username4?v=4" width="150px" alt="팀원4"/>
+      <img src="https://avatars.githubusercontent.com/u/130213698?v=4" width="150px" alt="팀원4"/>
       <br>
       <b>하령경</b>
       <br>
       <sub>관리자 시스템(통계, 로그)</sub>
       <br>
-      <a href="https://github.com/username4">
+      <a href="https://github.com/rxgx424">
         <img src="https://img.shields.io/badge/GitHub-181717?style=flat-square&logo=GitHub&logoColor=white">
       </a>
     </td>
