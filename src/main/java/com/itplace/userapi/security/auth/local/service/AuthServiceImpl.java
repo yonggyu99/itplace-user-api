@@ -111,15 +111,20 @@ public class AuthServiceImpl implements AuthService {
         String email = request.getEmail();
         String status = (String) redisTemplate.opsForHash().get(registrationId, "status");
 
+        log.info("status: {}", status);
+
         if (status == null || !status.equals("EMAIL_VERIFIED")) {
+            log.info("이메일 인증 안됨");
             throw new EmailVerificationException(SecurityCode.EMAIL_VERIFICATION_NOT_COMPLETED);
         }
 
         userRepository.findByEmailOrPhoneNumber(request.getEmail(), request.getPhoneNumber())
                 .ifPresent(user -> {
                     if (user.getEmail().equals(request.getEmail())) {
+                        log.info("이메일 중복");
                         throw new DuplicateEmailException(SecurityCode.DUPLICATE_EMAIL);
                     } else if (user.getPhoneNumber().equals(request.getPhoneNumber())) {
+                        log.info("전화번호 중복");
                         throw new DuplicatePhoneNumberException(SecurityCode.DUPLICATE_PHONE_NUMBER);
                     }
                 });
@@ -129,10 +134,12 @@ public class AuthServiceImpl implements AuthService {
         String storedName = (String) redisTemplate.opsForHash().get(registrationId, "name");
 
         if (!phoneNumber.equals(storedPhoneNumber) || !email.equals(storedEmail)) {
+            log.info("폰번호나 이메일이 레디스에 저장된 값이랑 다름");
             throw new EmailVerificationException(SecurityCode.MISMATCHED_VERIFIED_DATA);
         }
 
         if (!request.getPassword().equals(request.getPasswordConfirm())) {
+            log.info("비밀번호가 일치하지 않음");
             throw new PasswordMismatchException(SecurityCode.PASSWORD_MISMATCH);
         }
 
