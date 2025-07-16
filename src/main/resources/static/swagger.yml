@@ -1282,7 +1282,7 @@ paths:
   /benefit:
     get:
       tags:
-        - benefit
+        - Benefit
       summary: 전체 혜택 페이지에서 혜택 조회
       description: 대분류, 카테고리, 정렬(인기순), 필터링, 검색, 페이징 조건에 따라 혜택을 조회합니다.
       operationId: getBenefits
