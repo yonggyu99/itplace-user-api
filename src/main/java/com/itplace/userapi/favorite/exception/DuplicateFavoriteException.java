@@ -1,15 +1,16 @@
-package com.itplace.userapi.benefit.exception;
+package com.itplace.userapi.favorite.exception;
 
 import com.itplace.userapi.common.BaseCode;
 import com.itplace.userapi.common.exception.BusinessException;
 import lombok.Getter;
 
 @Getter
-public class BenefitNotFoundException extends BusinessException {
+public class DuplicateFavoriteException extends BusinessException {
     private final BaseCode code;
 
-    public BenefitNotFoundException(BaseCode code) {
+    public DuplicateFavoriteException(BaseCode code) {
         super(code.getMessage());
         this.code = code;
     }
 }
+
