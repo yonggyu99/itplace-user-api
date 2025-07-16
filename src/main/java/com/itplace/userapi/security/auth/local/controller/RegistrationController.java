@@ -46,13 +46,13 @@ public class RegistrationController {
     @PostMapping("/linkOAuth")
     public ResponseEntity<ApiResponse<Void>> linkOAuth(@RequestBody LinkOAuthToLocalRequest request) {
         authService.linkOAuthToLocal(request);
-        ApiResponse<Void> body = ApiResponse.ok(SecurityCode.LINK_LOCAL_SUCCESS);
+        ApiResponse<Void> body = ApiResponse.ok(SecurityCode.LINK_OAUTH_SUCCESS);
         return ResponseEntity
                 .status(body.getStatus())
                 .body(body);
     }
 
-    @PostMapping("/uplusData")
+    @PostMapping("/loadUplusData")
     public ResponseEntity<ApiResponse<UplusDataResponse>> uplusData(@RequestBody UplusDataRequest request) {
         return authService.uplusData(request)
                 .map(data -> {

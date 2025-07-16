@@ -7,6 +7,7 @@ import com.itplace.userapi.security.auth.local.dto.request.LinkOAuthToLocalReque
 import com.itplace.userapi.security.auth.local.dto.request.LoginRequest;
 import com.itplace.userapi.security.auth.local.dto.request.SignUpRequest;
 import com.itplace.userapi.security.auth.local.dto.request.UplusDataRequest;
+import com.itplace.userapi.security.auth.local.dto.response.LoginWithTokenResponse;
 import com.itplace.userapi.security.auth.local.dto.response.TokenResponse;
 import com.itplace.userapi.security.auth.local.dto.response.UplusDataResponse;
 import com.itplace.userapi.security.auth.oauth.dto.CustomOAuth2User;
@@ -55,13 +56,16 @@ public class AuthServiceImpl implements AuthService {
 
 
     @Override
-    public TokenResponse login(LoginRequest request) {
+    public LoginWithTokenResponse login(LoginRequest request) {
         try {
             Authentication authentication = authenticationManager
                     .authenticate(new UsernamePasswordAuthenticationToken(request.getEmail(), request.getPassword()));
 
             CustomUserDetails userDetails = (CustomUserDetails) authentication.getPrincipal();
             User user = userDetails.getUser();
+            String name = user.getName();
+            // 변경 필요
+            String membershipId = user.getMembershipId();
             Long userId = user.getId();
             Role role = user.getRole();
 
@@ -70,9 +74,11 @@ public class AuthServiceImpl implements AuthService {
 
             redisTemplate.opsForValue().set("RT:" + userId, refreshToken, 7, TimeUnit.DAYS);
 
-            return TokenResponse.builder()
+            return LoginWithTokenResponse.builder()
                     .accessToken(accessToken)
                     .refreshToken(refreshToken)
+                    .name(name)
+                    .membershipGrade(null)
                     .build();
         } catch (BadCredentialsException e) {
             throw new InvalidCredentialsException(SecurityCode.LOGIN_FAIL);
