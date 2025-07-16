@@ -7,7 +7,7 @@ info:
     모든 API 응답은 표준 응답 포맷(ApiResponse)을 따릅니다.
   version: 1.0.0
 servers:
-  - url: http://itplace-api.kro.kr/api/v1
+  - url: http://itplace-api.kro.kr/
     description: 개발 서버
 tags:
   - name: Auth
@@ -18,6 +18,10 @@ tags:
     description: 제휴사 혜택 정보 조회 관련 API
   - name: Map
     description: 지도 기능 관련 API
+  - name: Favorites
+    description: 즐겨찾기 관련 API
+  - name: User
+    description: 사용자 마이페이지 관련 API
 
 paths:
   # =====================================================
@@ -144,22 +148,22 @@ paths:
             schema:
               $ref: '#/components/schemas/SignUpRequest'
             example:
-                  registrationId: "f79c2e9c-958d-4925-a562-3b3ad44353c8"
-                  name: "홍길동"
-                  email: "user@example.com"
-                  phoneNumber: "01011112222"
-                  password: "!Password123"
-                  passwordConfirm: "!Password123"
-                  gender: "MALE"
-                  birthday: "20000101"
-                  membershipId: "1234567812345678"
+              registrationId: "f79c2e9c-958d-4925-a562-3b3ad44353c8"
+              name: "홍길동"
+              email: "user@example.com"
+              phoneNumber: "01011112222"
+              password: "!Password123"
+              passwordConfirm: "!Password123"
+              gender: "MALE"
+              birthday: "20000101"
+              membershipId: "1234567812345678"
       responses:
         '201':
           description: 회원가입 성공.
           content:
             application/json:
               schema:
-                  $ref: '#/components/schemas/ApiResponse'
+                $ref: '#/components/schemas/ApiResponse'
               example:
                 code: "SIGNUP_SUCCESS"
                 status: "OK"
@@ -542,9 +546,9 @@ paths:
             schema:
               $ref: '#/components/schemas/SmsConfirmRequest'
             example:
-                name: "홍길동"
-                phoneNumber: "01012345678"  
-                code: "123456"
+              name: "홍길동"
+              phoneNumber: "01012345678"
+              code: "123456"
       responses:
         '200':
           description: 인증 성공
@@ -605,7 +609,7 @@ paths:
             schema:
               $ref: '#/components/schemas/EmailVerificationRequest'
             example:
-                email: "user@example.com"
+              email: "user@example.com"
       responses:
         '201':
           description: 인증 코드 발송 성공
@@ -614,11 +618,11 @@ paths:
               schema:
                 $ref: '#/components/schemas/ApiResponse'
               example:
-                  code: "EMAIL_CODE_SEND_201"
-                  status: "CREATED"
-                  message: "이메일 인증 코드가 성공적으로 발송되었습니다."
-                  data: null
-                  timestamp: "2025-07-04T11:27:06.789Z"                    
+                code: "EMAIL_CODE_SEND_201"
+                status: "CREATED"
+                message: "이메일 인증 코드가 성공적으로 발송되었습니다."
+                data: null
+                timestamp: "2025-07-04T11:27:06.789Z"
         '400':
           description: 잘못된 요청 (입력값 형식 오류)
           content:
@@ -647,8 +651,8 @@ paths:
             schema:
               $ref: '#/components/schemas/EmailConfirmRequest'
             example:
-                email: "user@example.com"
-                code: "123456"
+              email: "user@example.com"
+              code: "123456"
       responses:
         '200':
           description: 인증 성공
@@ -662,11 +666,11 @@ paths:
                       data:
                         $ref: '#/components/schemas/EmailConfirmResponse'
               example:
-                  code: "EMAIL_CODE_CONFIRM_200"
-                  status: "OK"
-                  message: "이메일이 성공적으로 인증되었습니다."
-                  data: null
-                  timestamp: "2025-07-04T11:27:06.789Z"
+                code: "EMAIL_CODE_CONFIRM_200"
+                status: "OK"
+                message: "이메일이 성공적으로 인증되었습니다."
+                data: null
+                timestamp: "2025-07-04T11:27:06.789Z"
         '400':
           description: 잘못된 인증 번호
           content:
@@ -699,11 +703,678 @@ paths:
                 $ref: '#/components/schemas/ApiResponse'
               example:
                   code: "EMAIL_CODE_EXPIRED"
-                  status: "GONE"
+                  status: "BAD_REQUEST"
                   message: "이메일 인증 코드가 만료되었습니다."
                   data: null
                   timestamp: "2025-07-04T12:23:00.789Z"
+# =====================================================
+# 즐겨찾기
+# =====================================================
+  /favorites:
+    post:
+      tags:
+        - Favorites
+      summary: 즐겨찾기 등록
+      description: 사용자의 즐겨찾기 목록에 제휴처를 추가합니다.
+      operationId: addFavorite
+      requestBody:
+        description: 사용자 ID와 혜택 ID를 포함한 요청 객체
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/FavoriteRequest'
+      responses:
+        '200':
+          description: 즐겨찾기 등록 성공
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiResponse'
+              example:
+                code: FAVORITE_ADD_SUCCESS
+                status: OK
+                message: 즐겨찾기 등록이 완료되었습니다
+                data: null
+                timestamp: '2025-07-04T14:06:54.631Z'
 
+        '404':
+          description: 사용자 또는 혜택을 찾을 수 없음
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiResponse'
+              examples:
+                userNotFound:
+                  summary: 사용자 없음
+                  value:
+                    code: USER_NOT_FOUND
+                    status: NOT_FOUND
+                    message: 사용자를 찾을 수 없습니다.
+                    data: null
+                    timestamp: '2025-07-16T15:00:00.000Z'
+                benefitNotFound:
+                  summary: 혜택 없음
+                  value:
+                    code: BENEFIT_NOT_FOUND
+                    status: NOT_FOUND
+                    message: 존재하지 않는 혜택입니다.
+                    data: null
+                    timestamp: '2025-07-16T15:00:00.000Z'
+
+        '409':
+          description: 이미 즐겨찾기에 등록된 경우
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiResponse'
+              example:
+                code: FAVORITE_ALREADY_EXISTS
+                status: CONFLICT
+                message: 이미 즐겨찾기에 등록된 혜택입니다.
+                data: null
+                timestamp: '2025-07-16T15:00:00.000Z'
+
+    delete:
+      tags:
+        - Favorites
+      summary: 즐겨찾기 삭제
+      description: 사용자 ID와 혜택 ID를 기반으로 즐겨찾기를 삭제합니다.
+      operationId: removeFavorite
+      requestBody:
+        description: 사용자 ID와 혜택 ID를 포함한 요청 객체
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/FavoriteRequest'
+      responses:
+        '200':
+          description: 즐겨찾기 삭제 성공
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiResponse'
+              example:
+                code: FAVORITE_DELETE_SUCCESS
+                status: OK
+                message: 즐겨찾기 삭제가 완료되었습니다.
+                data: null
+                timestamp: '2025-07-07T12:00:00Z'
+
+        '404':
+          description: 사용자 또는 혜택을 찾을 수 없음
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiResponse'
+              examples:
+                userNotFound:
+                  summary: 사용자 없음
+                  value:
+                    code: USER_NOT_FOUND
+                    status: NOT_FOUND
+                    message: 사용자를 찾을 수 없습니다.
+                    data: null
+                    timestamp: '2025-07-16T15:00:00.000Z'
+                benefitNotFound:
+                  summary: 혜택 없음
+                  value:
+                    code: BENEFIT_NOT_FOUND
+                    status: NOT_FOUND
+                    message: 존재하지 않는 혜택입니다.
+                    data: null
+                    timestamp: '2025-07-16T15:00:00.000Z'
+
+  /favorites/{userId}:
+    get:
+      tags:
+        - Favorites
+      summary: 즐겨찾기한 혜택 목록 조회 - 페이징, 필터링(VIP 콕, 기본 혜택)
+      description: 사용자가 즐겨찾기한 혜택 목록을 보여줍니다.
+      operationId: getFavorites
+      parameters:
+        - name: userId
+          in: path
+          required: true
+          description: 사용자 ID
+          schema:
+            type: integer
+        - name: category
+          in: query
+          required: false
+          schema:
+            type: string
+            default: null
+          description: 카테고리 설정 없을 시 전체 조회
+        - name: page
+          in: query
+          required: false
+          schema:
+            type: integer
+            default: 0
+          description: 조회할 페이지 번호 (0부터 시작)
+        - name: size
+          in: query
+          required: false
+          schema:
+            type: integer
+            default: 6
+          description: 페이지당 항목 수 (기본 6개)
+      responses:
+        '200':
+          description: 즐겨찾기 목록 조회 성공
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/ApiResponse'
+                  - type: object
+                    properties:
+                      data:
+                        $ref: '#/components/schemas/PageResult'
+              examples:
+                success:
+                  summary: 즐겨찾기 목록 예시
+                  value:
+                    code: FAVORITE_BENEFIT_SUCCESS
+                    status: OK
+                    message: 즐겨찾기 목록 조회에 성공했습니다.
+                    data:
+                      content:
+                        - benefitId: 1
+                          benefitName: CGV
+                          partnerName: CGV
+                          partnerImage: S3객체URL
+                        - benefitId: 2
+                          benefitName: GS25
+                          partnerName: GS25
+                          partnerImage: S3객체URL
+                      totalElements: 2
+                      totalPages: 1
+                      currentPage: 0
+                      hasNext: false
+                    timestamp: '2025-07-04T15:30:00.000Z'
+        '404':
+          description: 사용자 없음
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiResponse'
+              example:
+                code: USER_NOT_FOUND
+                status: NOT_FOUND
+                message: 사용자를 찾을 수 없습니다.
+                data: null
+                timestamp: '2025-07-16T15:00:00.000Z'
+
+  /favorites/{userId}/search:
+    get:
+      tags:
+        - Favorites
+      summary: 즐겨찾기 혜택 이름 검색
+      description: 특정 사용자의 즐겨찾기 목록에서 혜택 이름으로 검색합니다.
+      operationId: searchFavorites
+      parameters:
+        - name: userId
+          in: path
+          required: true
+          description: 사용자 ID
+          schema:
+            type: integer
+            example: 1
+        - name: keyword
+          in: query
+          required: true
+          description: 검색할 혜택 이름 키워드
+          schema:
+            type: string
+            example: "할리스"
+      responses:
+        '200':
+          description: 즐겨찾기 검색 성공
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiResponse'
+              example:
+                code: FAVORITE_BENEFIT_SEARCH_SUCCESS
+                status: OK
+                message: 즐겨찾기 검색이 완료되었습니다
+                data:
+                  - benefitId: 1
+                    benefitName: "할리스"
+                    partnerName: "할리스"
+                    partnerImage: "https://itplacepartners.s3.ap-northeast-2.amazonaws.com/img/hollys.png"
+                timestamp: '2025-07-15T02:20:54.631Z'
+
+        '404':
+          description: 사용자 없음
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiResponse'
+              example:
+                code: USER_NOT_FOUND
+                status: NOT_FOUND
+                message: 사용자를 찾을 수 없습니다.
+                data: null
+                timestamp: '2025-07-16T15:00:00.000Z'
+
+  /favorites/benefits/{benefitId}:
+    get:
+      tags:
+        - Favorites
+      summary: 즐겨찾기 혜택 상세 조회
+      description: 혜택 ID를 기반으로 상세 정보를 조회합니다.
+      operationId: getBenefitDetail
+      parameters:
+        - name: benefitId
+          in: path
+          required: true
+          description: 혜택 ID
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: 혜택 상세 조회 성공
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiResponse'
+              example:
+                code: FAVORITE_BENEFIT_DETAIL_SUCCESS
+                status: OK
+                message: 혜택 상세 정보 조회 성공
+                data:
+                  benefitId: 3
+                  benefitName: "CGV"
+                  benefitDescription: "영화 그 이상의 감동 CGV"
+                  benefitLimit: "VVIP/VIP 등급 전용\r VIP콕 내 무료예매 연3회/1+1예매 연9회(총 12회)\r (월 1회 사용 가능, CGV/메가박스 중 택 1)"
+                  partnerName: "CGV"
+                  partnerImage: "https://itplacepartners.s3.ap-northeast-2.amazonaws.com/img/cgv.png"
+                  tiers:
+                    - grade: VIP콕
+                      isAll: false
+                      context: "무료 예매 연 3회 / 1+1 예매 연 9회(총 12회)\r\n(월 1회 사용 가능, CGV/메가박스 중 택 1)\r\n※ 1+1이란? 1매 유료로 구매 시, 1매 무료 제공"
+                      discountValue: 14000
+                timestamp: '2025-07-15T12:00:00Z'
+
+        '404':
+          description: 혜택 없음
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiResponse'
+              example:
+                code: BENEFIT_NOT_FOUND
+                status: NOT_FOUND
+                message: 존재하지 않는 혜택입니다.
+                data: null
+                timestamp: '2025-07-16T15:00:00.000Z'
+
+  # =====================================================
+  # 마이페이지
+  # =====================================================
+
+  /users/{userId}:
+    get:
+      tags:
+        - User
+      summary: 사용자 정보 조회
+      description: 사용자 ID를 기반으로 사용자의 기본 정보와 멤버십 정보를 조회합니다.
+      parameters:
+        - name: userId
+          in: path
+          required: true
+          description: 조회할 사용자의 ID
+          schema:
+            type: integer
+            format: int64
+            example: 1
+      responses:
+        '200':
+          description: 사용자 정보 조회 성공
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/ApiResponse'
+                  - type: object
+                    properties:
+                      data:
+                        $ref: '#/components/schemas/UserInfoDto'
+              examples:
+                success:
+                  summary: 사용자 정보 조회 성공 예시
+                  value:
+                    code: USER_INFO_SUCCESS
+                    status: OK
+                    message: 사용자 정보 조회에 성공했습니다.
+                    data:
+                      id: 1
+                      name: "홍길동"
+                      email: "hong@example.com"
+                      phoneNumber: "010-1234-5678"
+                      gender: "MALE"
+                      birthday: "1990-01-01"
+                      membershipId: "M001"
+                      grade: "GOLD"
+                    timestamp: '2025-07-16T10:00:00.000Z'
+        '404':
+          description: 사용자를 찾을 수 없음
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiResponse'
+              examples:
+                user_not_found:
+                  summary: 사용자 없음 에러
+                  value:
+                    code: USER_NOT_FOUND
+                    status: NOT_FOUND
+                    message: 사용자를 찾을 수 없습니다.
+                    data: null
+                    timestamp: '2025-07-16T10:00:00.000Z'
+  # =====================================================
+  # 지도 관련 기능 API
+  # =====================================================
+  /maps/nearby:
+    get:
+      tags:
+        - Map
+      summary: 사용자 위치 기반 전체 지점 목록 조회
+      description: 사용자의 위치(위도, 경도)를 기반으로 지정된 반경 내의 모든 지점을 조회합니다.
+      parameters:
+        - name: lat
+          in: query
+          required: true
+          description: 위도 좌표
+          schema:
+            type: number
+            format: double
+            example: 37.5665
+        - name: lng
+          in: query
+          required: true
+          description: 경도 좌표
+          schema:
+            type: number
+            format: double
+            example: 126.9780
+        - name: radiusMeters
+          in: query
+          required: true
+          description: 검색 반경 (미터 단위)
+          schema:
+            type: number
+            format: double
+            minimum: 0
+            example: 1000
+      responses:
+        '200':
+          description: 전체 지점 목록 조회 성공
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/ApiResponse'
+                  - type: object
+                    properties:
+                      data:
+                        type: array
+                        items:
+                          $ref: '#/components/schemas/StoreDetailDto'
+              examples:
+                success:
+                  summary: 전체 지점 목록 조회 성공 예시
+                  value:
+                    code: STORE_LIST_SUCCESS
+                    status: OK
+                    message: 지점 목록 조회에 성공했습니다.
+                    data:
+                      - store:
+                          storeId: 1
+                          storeName: "스타벅스 강남점"
+                          business: "커피전문점"
+                          city: "서울특별시"
+                          town: "강남구"
+                          legalDong: "역삼동"
+                          address: "서울특별시 강남구 역삼동 123-45"
+                          roadName: "강남대로"
+                          roadAddress: "서울특별시 강남구 강남대로 456"
+                          postCode: "06234"
+                        partner:
+                          partnerId: 101
+                          partnerName: "스타벅스"
+                          image: "https://example.com/starbucks-logo.png"
+                          category: "카페"
+                        tierBenefit:
+                          - grade: "BRONZE"
+                            context: "5% 할인"
+                          - grade: "SILVER"
+                            context: "10% 할인"
+                          - grade: "GOLD"
+                            context: "15% 할인"
+                        distance: 0.5
+                    timestamp: '2025-07-15T11:00:00.000Z'
+  /maps/nearby/category:
+    get:
+      tags:
+        - Map
+      summary: 사용자 위치 기반 카테고리별 지점 목록 조회
+      description: 사용자의 위치를 기반으로 지정된 반경 내의 특정 카테고리 지점을 조회합니다. 카테고리가 null, 빈 문자열, 또는 "전체"인 경우 모든 지점을 반환합니다.
+      parameters:
+        - name: lat
+          in: query
+          required: true
+          description: 위도 좌표
+          schema:
+            type: number
+            format: double
+            example: 37.5665
+        - name: lng
+          in: query
+          required: true
+          description: 경도 좌표
+          schema:
+            type: number
+            format: double
+            example: 126.9780
+        - name: radiusMeters
+          in: query
+          required: true
+          description: 검색 반경 (미터 단위)
+          schema:
+            type: number
+            format: double
+            minimum: 0
+            example: 1000
+        - name: category
+          in: query
+          required: false
+          description: 카테고리 필터 (null, 빈 문자열, 또는 "전체"이면 모든 카테고리 반환)
+          schema:
+            type: string
+            example: "카페"
+      responses:
+        '200':
+          description: 카테고리별 지점 목록 조회 성공
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/ApiResponse'
+                  - type: object
+                    properties:
+                      data:
+                        type: array
+                        items:
+                          $ref: '#/components/schemas/StoreDetailDto'
+              examples:
+                success:
+                  summary: 카페 카테고리 지점 목록 조회 성공 예시
+                  value:
+                    code: STORE_LIST_SUCCESS
+                    status: OK
+                    message: 지점 목록 조회에 성공했습니다.
+                    data:
+                      - store:
+                          storeId: 1
+                          storeName: "스타벅스 강남점"
+                          business: "커피전문점"
+                          city: "서울특별시"
+                          town: "강남구"
+                          legalDong: "역삼동"
+                          address: "서울특별시 강남구 역삼동 123-45"
+                          roadName: "강남대로"
+                          roadAddress: "서울특별시 강남구 강남대로 456"
+                          postCode: "06234"
+                        partner:
+                          partnerId: 101
+                          partnerName: "스타벅스"
+                          image: "https://example.com/starbucks-logo.png"
+                          category: "카페"
+                        tierBenefit:
+                          - grade: "BRONZE"
+                            context: "5% 할인"
+                          - grade: "SILVER"
+                            context: "10% 할인"
+                          - grade: "GOLD"
+                            context: "15% 할인"
+                        distance: 0.5
+                      - store:
+                          storeId: 2
+                          storeName: "투썸플레이스 역삼점"
+                          business: "커피전문점"
+                          city: "서울특별시"
+                          town: "강남구"
+                          legalDong: "역삼동"
+                          address: "서울특별시 강남구 역삼동 678-90"
+                          roadName: "테헤란로"
+                          roadAddress: "서울특별시 강남구 테헤란로 123"
+                          postCode: "06233"
+                        partner:
+                          partnerId: 102
+                          partnerName: "투썸플레이스"
+                          image: "https://example.com/twosome-logo.png"
+                          category: "카페"
+                        tierBenefit:
+                          - grade: "BRONZE"
+                            context: "3% 할인"
+                          - grade: "SILVER"
+                            context: "7% 할인"
+                        distance: 0.8
+                    timestamp: '2025-07-15T11:00:00.000Z'
+
+  /maps/nearby/search:
+    get:
+      tags:
+        - Map
+      summary: 사용자 위치 기반 키워드로 지점 검색
+      description: 사용자의 위치를 기반으로 지정된 반경 내의 지점 중 키워드를 기반으로 검색합니다. 키워드가 지점이름, 제휴사이름, 직종, 카테고리 중 하나라도 포함되어있으면 조회됩니다.
+      parameters:
+        - name: lat
+          in: query
+          required: true
+          description: 위도 좌표
+          schema:
+            type: number
+            format: double
+            example: 37.5665
+        - name: lng
+          in: query
+          required: true
+          description: 경도 좌표
+          schema:
+            type: number
+            format: double
+            example: 126.9780
+        - name: radiusMeters
+          in: query
+          required: true
+          description: 검색 반경 (미터 단위)
+          schema:
+            type: number
+            format: double
+            minimum: 0
+            example: 1000
+        - name: category
+          in: query
+          required: false
+          description: 카테고리 필터 (선택사항)
+          schema:
+            type: string
+            example: "카페"
+        - name: keyword
+          in: query
+          required: true
+          description: 검색 키워드 (지점명, 제휴사명, 업종, 카테고리에서 검색)
+          schema:
+            type: string
+            example: "스타벅스"
+      responses:
+        '200':
+          description: 키워드 검색 성공
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/ApiResponse'
+                  - type: object
+                    properties:
+                      data:
+                        type: array
+                        items:
+                          $ref: '#/components/schemas/StoreDetailDto'
+              examples:
+                success:
+                  summary: 스타벅스 키워드 검색 성공 예시
+                  value:
+                    code: STORE_LIST_SUCCESS
+                    status: OK
+                    message: 지점 목록 조회에 성공했습니다.
+                    data:
+                      - store:
+                          storeId: 1
+                          storeName: "스타벅스 강남점"
+                          business: "커피전문점"
+                          city: "서울특별시"
+                          town: "강남구"
+                          legalDong: "역삼동"
+                          address: "서울특별시 강남구 역삼동 123-45"
+                          roadName: "강남대로"
+                          roadAddress: "서울특별시 강남구 강남대로 456"
+                          postCode: "06234"
+                        partner:
+                          partnerId: 101
+                          partnerName: "스타벅스"
+                          image: "https://example.com/starbucks-logo.png"
+                          category: "카페"
+                        tierBenefit:
+                          - grade: "BRONZE"
+                            context: "5% 할인"
+                          - grade: "SILVER"
+                            context: "10% 할인"
+                          - grade: "GOLD"
+                            context: "15% 할인"
+                        distance: 0.5
+                    timestamp: '2025-07-15T11:00:00.000Z'
+        '400':
+          description: 키워드 누락 또는 잘못된 요청 파라미터
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiResponse'
+              examples:
+                keyword_required:
+                  summary: 키워드 누락 에러
+                  value:
+                    code: KEYWORD_REQUIRED
+                    status: BAD_REQUEST
+                    message: 검색 키워드가 필요합니다.
+                    data: null
+                    timestamp: '2025-07-15T11:00:00.000Z'
 components:
   schemas:
     # ----------------------------------------------------
@@ -733,10 +1404,10 @@ components:
           format: date-time
           description: "응답 시간"
 
-    # ----------------------------------------------------
-    # Request DTOs
-    # ----------------------------------------------------
-              
+          # ----------------------------------------------------
+          # Request DTOs
+          # ----------------------------------------------------
+
     SignUpRequest:
       type: object
       required: [registrationId, name, email, password, passwordConfirm, phoneNumber, gender, birthday, membershipId]
@@ -920,7 +1591,7 @@ components:
           type: string
           description: "인증코드"
           example: "123456"
-          
+
     LoginRequest:
       type: object
       required: [email, password]
@@ -1073,3 +1744,216 @@ components:
         membershipId:
           type: integer
           example: "1234567812345678"
+
+
+    FavoriteRequest:
+      type: object
+      properties:
+        userId:
+          type: integer
+          example: 1
+        benefitId:
+          type: integer
+          example: 100
+
+    FavoriteResponse:
+      type: object
+      properties:
+        benefitId:
+          type: integer
+          example: 100
+        benefitName:
+          type: string
+          example: "CGV"
+        partnerName:
+          type: string
+          example: "CGV"
+        partnerImage:
+          type: string
+          example: "https://example.com/image.png"
+
+    TierBenefitDetail:
+      type: object
+      properties:
+        grade:
+          type: string
+          example: "VIP콕"
+        isAll:
+          type: boolean
+          example: false
+        context:
+          type: string
+          example: "무료 예매 연 3회 / 1+1 예매 연 9회(총 12회)\r\n(월 1회 사용 가능, CGV/메가박스 중 택 1)\r\n※ 1+1이란? 1매 유료로 구매 시, 1매 무료 제공"
+        discountValue:
+          type: integer
+          example: 14000
+
+    FavoriteDetailResponse:
+      type: object
+      properties:
+        benefitId:
+          type: integer
+        benefitName:
+          type: string
+        benefitDescription:
+          type: string
+        benefitLimit:
+          type: string
+        partnerName:
+          type: string
+        partnerImage:
+          type: string
+        tiers:
+          type: array
+          items:
+            $ref: '#/components/schemas/TierBenefitDetail'
+
+    PageResult:
+      type: object
+      properties:
+        content:
+          type: array
+          items:
+            $ref: '#/components/schemas/FavoriteResponse'
+        totalElements:
+          type: integer
+        totalPages:
+          type: integer
+        currentPage:
+          type: integer
+        hasNext:
+          type: boolean
+
+    UserInfoDto:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+          description: 사용자 ID
+          example: 1
+        name:
+          type: string
+          description: 사용자 이름
+          example: "홍길동"
+        email:
+          type: string
+          format: email
+          description: 사용자 이메일
+          example: "hong@example.com"
+        phoneNumber:
+          type: string
+          description: 사용자 전화번호
+          example: "010-1234-5678"
+        gender:
+          type: string
+          description: 사용자 성별
+          enum: [ MALE, FEMALE, OTHER ]
+          example: "MALE"
+        birthday:
+          type: string
+          format: date
+          description: 사용자 생년월일
+          example: "1990-01-01"
+        membershipId:
+          type: string
+          description: 멤버십 ID (없는 경우 null)
+          example: "M001"
+          nullable: true
+        grade:
+          type: string
+          description: 멤버십 등급 (없는 경우 null)
+          enum: [ BRONZE, SILVER, GOLD, PLATINUM ]
+          example: "GOLD"
+          nullable: true
+
+    StoreDetailDto:
+      type: object
+      properties:
+        store:
+          $ref: '#/components/schemas/StoreDto'
+        partner:
+          $ref: '#/components/schemas/PartnerDto'
+        tierBenefit:
+          type: array
+          items:
+            $ref: '#/components/schemas/TierBenefitDto'
+        distance:
+          type: number
+          format: double
+          description: 사용자 위치로부터의 거리 (km)
+          example: 0.5
+
+    StoreDto:
+      type: object
+      properties:
+        storeId:
+          type: integer
+          format: int64
+          description: 지점 ID
+          example: 1
+        storeName:
+          type: string
+          description: 지점명
+          example: "스타벅스 강남점"
+        business:
+          type: string
+          description: 업종
+          example: "커피전문점"
+        city:
+          type: string
+          description: 시
+          example: "서울특별시"
+        town:
+          type: string
+          description: 구
+          example: "강남구"
+        legalDong:
+          type: string
+          description: 법정동
+          example: "역삼동"
+        address:
+          type: string
+          description: 지번주소
+          example: "서울특별시 강남구 역삼동 123-45"
+        roadName:
+          type: string
+          description: 도로명
+          example: "강남대로"
+        roadAddress:
+          type: string
+          description: 도로명주소
+          example: "서울특별시 강남구 강남대로 456"
+        postCode:
+          type: string
+          description: 우편번호
+          example: "06234"
+
+    PartnerDto:
+      type: object
+      properties:
+        partnerId:
+          type: integer
+          format: int64
+          description: 파트너 ID
+          example: 101
+        partnerName:
+          type: string
+          description: 파트너명
+          example: "스타벅스"
+        image:
+          type: string
+          description: 파트너 이미지 URL
+          example: "https://example.com/starbucks-logo.png"
+        category:
+          type: string
+          description: 카테고리
+          example: "카페"
+
+    TierBenefitDto:
+      type: object
+      properties:
+        grade:
+          type: string
+        context:
+          type: string

@@ -1,5 +1,7 @@
 package com.itplace.userapi.user.service;
 
-public interface UserService {
+import com.itplace.userapi.user.dto.UserInfoDto;
 
+public interface UserService {
+    UserInfoDto getUserInfo(Long userId);
 }

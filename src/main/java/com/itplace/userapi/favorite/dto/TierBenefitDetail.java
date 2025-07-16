@@ -6,7 +6,7 @@ import lombok.Data;
 
 @Builder
 @Data
-public class TierBenefitDetailDto {
+public class TierBenefitDetail {
     private Grade grade;
     private Boolean isAll;
     private String context;

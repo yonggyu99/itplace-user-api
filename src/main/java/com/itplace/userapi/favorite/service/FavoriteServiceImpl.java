@@ -1,25 +1,30 @@
 package com.itplace.userapi.favorite.service;
 
+import com.itplace.userapi.benefit.BenefitCode;
 import com.itplace.userapi.benefit.entity.Benefit;
 import com.itplace.userapi.benefit.entity.enums.MainCategory;
-import com.itplace.userapi.partner.entity.Partner;
+import com.itplace.userapi.benefit.exception.BenefitNotFoundException;
 import com.itplace.userapi.benefit.repository.BenefitRepository;
-import com.itplace.userapi.favorite.dto.FavoriteDetailResponseDto;
-import com.itplace.userapi.favorite.dto.FavoriteRequestDto;
-import com.itplace.userapi.favorite.dto.FavoriteResponseDto;
-import com.itplace.userapi.favorite.dto.TierBenefitDetailDto;
+import com.itplace.userapi.favorite.dto.FavoriteDetailResponse;
+import com.itplace.userapi.favorite.dto.FavoriteRequest;
+import com.itplace.userapi.favorite.dto.FavoriteResponse;
+import com.itplace.userapi.favorite.dto.TierBenefitDetail;
 import com.itplace.userapi.favorite.entity.Favorite;
+import com.itplace.userapi.favorite.enums.FavoriteCode;
+import com.itplace.userapi.favorite.exception.DuplicateFavoriteException;
 import com.itplace.userapi.favorite.repository.FavoriteRepository;
+import com.itplace.userapi.partner.entity.Partner;
+import com.itplace.userapi.security.SecurityCode;
+import com.itplace.userapi.security.exception.UserNotFoundException;
 import com.itplace.userapi.user.entity.User;
 import com.itplace.userapi.user.repository.UserRepository;
+import java.util.List;
+import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
-import java.util.List;
-import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -31,14 +36,14 @@ public class FavoriteServiceImpl implements FavoriteService {
     private final BenefitRepository benefitRepository;
 
     @Override
-    public void addFavorite(FavoriteRequestDto request) {
+    public void addFavorite(FavoriteRequest request) {
         User user = userRepository.findById(request.getUserId())
-                .orElseThrow(() -> new IllegalArgumentException("사용자를 찾을 수 없어요"));
+                .orElseThrow(() -> new UserNotFoundException(SecurityCode.USER_NOT_FOUND));
         Benefit benefit = benefitRepository.findById(request.getBenefitId())
-                .orElseThrow(() -> new IllegalArgumentException("혜택 및 제휴처를 찾을 수 없어요"));
+                .orElseThrow(() -> new BenefitNotFoundException(BenefitCode.BENEFIT_NOT_FOUND));
 
         if (favoriteRepository.existsByUserAndBenefit(user, benefit)) {
-            throw new IllegalStateException("이미 존재하는 즐겨찾기 항목입니다!");
+            throw new DuplicateFavoriteException(FavoriteCode.FAVORITE_ALREADY_EXISTS);
         }
 
         Favorite favorite = Favorite.builder()
@@ -50,20 +55,20 @@ public class FavoriteServiceImpl implements FavoriteService {
     }
 
     @Override
-    public void removeFavorite(FavoriteRequestDto request) {
+    public void removeFavorite(FavoriteRequest request) {
         User user = userRepository.findById(request.getUserId())
-                .orElseThrow(() -> new IllegalArgumentException("사용자를 찾을 수 없어요"));
+                .orElseThrow(() -> new UserNotFoundException(SecurityCode.USER_NOT_FOUND));
         Benefit benefit = benefitRepository.findById(request.getBenefitId())
-                .orElseThrow(() -> new IllegalArgumentException("혜택 및 제휴처를 찾을 수 없어요"));
+                .orElseThrow(() -> new BenefitNotFoundException(BenefitCode.BENEFIT_NOT_FOUND));
 
         favoriteRepository.deleteByUserAndBenefit(user, benefit);
     }
 
     @Override
     @Transactional(readOnly = true)
-    public Page<FavoriteResponseDto> getFavorites(Long userId, String category, Pageable pageable) {
+    public Page<FavoriteResponse> getFavorites(Long userId, String category, Pageable pageable) {
         User user = userRepository.findById(userId)
-                .orElseThrow(() -> new IllegalArgumentException("사용자를 찾을 수 없어요"));
+                .orElseThrow(() -> new UserNotFoundException(SecurityCode.USER_NOT_FOUND));
 
         Page<Favorite> favorites;
 
@@ -71,34 +76,34 @@ public class FavoriteServiceImpl implements FavoriteService {
             MainCategory mainCategory = MainCategory.fromLabel(category);
             favorites = favoriteRepository.findByUserAndBenefit_MainCategory(user, mainCategory, pageable);
         } else {
-            favorites = favoriteRepository.findByUser(user,pageable);
+            favorites = favoriteRepository.findByUser(user, pageable);
         }
 
         return favorites.map(fav -> {
-                    Benefit benefit = fav.getBenefit();
-                    Partner partner = benefit.getPartner();
+            Benefit benefit = fav.getBenefit();
+            Partner partner = benefit.getPartner();
 
-                    return FavoriteResponseDto.builder()
-                            .benefitId(benefit.getBenefitId())
-                            .benefitName(benefit.getBenefitName())
-                            .partnerName(partner != null ? partner.getPartnerName() : null)
-                            .partnerImage(partner != null ? partner.getImage() : null)
-                            .build();
-                });
+            return FavoriteResponse.builder()
+                    .benefitId(benefit.getBenefitId())
+                    .benefitName(benefit.getBenefitName())
+                    .partnerName(partner != null ? partner.getPartnerName() : null)
+                    .partnerImage(partner != null ? partner.getImage() : null)
+                    .build();
+        });
     }
 
     @Override
     @Transactional(readOnly = true)
-    public List<FavoriteResponseDto> searchFavorites(Long userId, String keyword) {
+    public List<FavoriteResponse> searchFavorites(Long userId, String keyword) {
         User user = userRepository.findById(userId)
-                .orElseThrow(() -> new IllegalArgumentException("사용자를 찾을 수 없어요"));
+                .orElseThrow(() -> new UserNotFoundException(SecurityCode.USER_NOT_FOUND));
 
         return favoriteRepository.findByUserAndBenefit_BenefitNameContaining(user, keyword).stream()
                 .map(fav -> {
                     Benefit benefit = fav.getBenefit();
                     Partner partner = benefit.getPartner();
 
-                    return FavoriteResponseDto.builder()
+                    return FavoriteResponse.builder()
                             .benefitId(benefit.getBenefitId())
                             .benefitName(benefit.getBenefitName())
                             .partnerName(partner != null ? partner.getPartnerName() : null)
@@ -110,14 +115,14 @@ public class FavoriteServiceImpl implements FavoriteService {
 
     @Override
     @Transactional(readOnly = true)
-    public FavoriteDetailResponseDto getBenefitDetail(Long benefitId) {
+    public FavoriteDetailResponse getBenefitDetail(Long benefitId) {
         Benefit benefit = benefitRepository.findDetailById(benefitId)
-                .orElseThrow(() -> new IllegalArgumentException("혜택을 찾을 수 없습니다."));
+                .orElseThrow(() -> new BenefitNotFoundException(BenefitCode.BENEFIT_NOT_FOUND));
 
         Partner partner = benefit.getPartner();
 
-        List<TierBenefitDetailDto> tierDtos = benefit.getTierBenefits().stream()
-                .map(tb -> TierBenefitDetailDto.builder()
+        List<TierBenefitDetail> tierDtos = benefit.getTierBenefits().stream()
+                .map(tb -> TierBenefitDetail.builder()
                         .grade(tb.getGrade())
                         .isAll(tb.getIsAll())
                         .context(tb.getContext())
@@ -125,7 +130,7 @@ public class FavoriteServiceImpl implements FavoriteService {
                         .build())
                 .collect(Collectors.toList());
 
-        return FavoriteDetailResponseDto.builder()
+        return FavoriteDetailResponse.builder()
                 .benefitId(benefit.getBenefitId())
                 .benefitName(benefit.getBenefitName())
                 .benefitDescription(benefit.getDescription())
