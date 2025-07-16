@@ -9,6 +9,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 
 import java.util.List;
 
@@ -30,4 +31,11 @@ public interface FavoriteRepository extends JpaRepository<Favorite, FavoriteId> 
     boolean existsByUserAndBenefit(User user, Benefit benefit);
 
     void deleteByUserAndBenefit(User user, Benefit benefit);
+
+    @Query("SELECT f.benefit.benefitId FROM Favorite f WHERE f.user.id = :userId AND f.benefit.benefitId IN :benefitIds")
+    List<Long> findFavoriteBenefitIdsByUser(@Param("userId") Long userId, @Param("benefitIds") List<Long> benefitIds);
+
+
+    @Query("SELECT f.benefit.benefitId, COUNT(f) FROM Favorite f WHERE f.benefit.benefitId IN :benefitIds GROUP BY f.benefit.benefitId")
+    List<Object[]> countFavoritesByBenefitIds(@Param("benefitIds") List<Long> benefitIds);
 }
