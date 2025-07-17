@@ -1,4 +1,4 @@
-package com.itplace.userapi.security.verification.jwt;
+package com.itplace.userapi.security.jwt;
 
 import com.itplace.userapi.user.entity.Role;
 import io.jsonwebtoken.Claims;
