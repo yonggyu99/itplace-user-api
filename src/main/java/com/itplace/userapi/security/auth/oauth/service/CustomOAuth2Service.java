@@ -32,15 +32,11 @@ public class CustomOAuth2Service extends DefaultOAuth2UserService {
     @Override
     @Transactional
     public OAuth2User loadUser(OAuth2UserRequest userRequest) throws OAuth2AuthenticationException {
+        log.info("OAuth 로그인 시작");
         OAuth2User oAuth2User = super.loadUser(userRequest);
 
         String provider = userRequest.getClientRegistration().getRegistrationId();
         OAuth2Response oAuth2Response = getOAuth2Response(provider, oAuth2User);
-
-        if (oAuth2Response == null) {
-            log.warn("Unsupported OAuth2 provider: {}", provider);
-            throw new OAuth2AuthenticationException("Unsupported provider: " + provider);
-        }
 
         // 1. provider와 providerId로 이미 연동된 계정이 있는지 확인 (기존 회원 로그인)
         Optional<LinkedAccount> linkedAccountOpt = linkedAccountRepository
@@ -53,16 +49,17 @@ public class CustomOAuth2Service extends DefaultOAuth2UserService {
             OAuth2InfoResponse oAuth2InfoResponse = OAuth2InfoResponse.builder()
                     .userId(user.getId())
                     .email(user.getEmail())
-                    .role(user.getRole())
+                    .role("ROLE_" + Role.GUEST.name())
                     .provider(provider)
                     .providerId(oAuth2Response.getProviderId())
                     .build();
 
             return new CustomOAuth2User(oAuth2InfoResponse, oAuth2User.getAttributes());
         }
+        // 여기까지는 완벽
 
         // 2. 연동된 계정이 없다면, 이메일 중복 여부와 관계없이 무조건 본인인증 절차 진행
-        log.info("신규 소셜 로그인 또는 미연동 계정입니다. 본인인증 절차를 시작합니다. Provider: {}", provider);
+        log.info("신규 소셜 로그인 또는 미연동 계정입니다. 회원가입을 시작합니다. Provider: {}", provider);
         String registrationId = createGuestSession(provider, oAuth2Response);
 
         // 신규 회원을 위한 임시 CustomOAuth2User 생성 (GUEST 권한)
@@ -71,7 +68,7 @@ public class CustomOAuth2Service extends DefaultOAuth2UserService {
                 .provider(provider)
                 .providerId(oAuth2Response.getProviderId())
                 .email(oAuth2Response.getEmail())
-                .role(Role.GUEST)
+                .role("ROLE_" + Role.GUEST.name())
                 .build();
 
         return new CustomOAuth2User(oAuth2InfoResponse, oAuth2User.getAttributes());
