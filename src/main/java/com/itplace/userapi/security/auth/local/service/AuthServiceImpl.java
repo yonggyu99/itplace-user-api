@@ -69,8 +69,8 @@ public class AuthServiceImpl implements AuthService {
             Long userId = user.getId();
             Role role = user.getRole();
 
-            String accessToken = jwtUtil.createToken(userId, role, JWTConstants.CATEGORY_ACCESS, null, null, user.getEmail());
-            String refreshToken = jwtUtil.createToken(userId, role, JWTConstants.CATEGORY_REFRESH, null, null, user.getEmail());
+            String accessToken = jwtUtil.createToken(userId, role, JWTConstants.CATEGORY_ACCESS, user.getEmail());
+            String refreshToken = jwtUtil.createToken(userId, role, JWTConstants.CATEGORY_REFRESH, user.getEmail());
 
             redisTemplate.opsForValue().set("RT:" + userId, refreshToken, 7, TimeUnit.DAYS);
 
@@ -225,8 +225,8 @@ public class AuthServiceImpl implements AuthService {
     }
 
     private TokenResponse createTokenResponse(User user) {
-        String accessToken = jwtUtil.createToken(user.getId(), user.getRole(), JWTConstants.CATEGORY_ACCESS, null, null, user.getEmail());
-        String refreshToken = jwtUtil.createToken(user.getId(), user.getRole(), JWTConstants.CATEGORY_REFRESH, null, null, user.getEmail());
+        String accessToken = jwtUtil.createToken(user.getId(), user.getRole(), JWTConstants.CATEGORY_ACCESS, user.getEmail());
+        String refreshToken = jwtUtil.createToken(user.getId(), user.getRole(), JWTConstants.CATEGORY_REFRESH, user.getEmail());
         return TokenResponse.builder()
                 .accessToken(accessToken)
                 .refreshToken(refreshToken)
