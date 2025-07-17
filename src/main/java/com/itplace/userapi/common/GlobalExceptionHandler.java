@@ -19,7 +19,7 @@ public class GlobalExceptionHandler {
     }
 
     @ExceptionHandler(RuntimeException.class)
-    public ResponseEntity<ApiResponse<?>> handleRuntimeException(IllegalStateException ex) {
+    public ResponseEntity<ApiResponse<?>> handleRuntimeException(RuntimeException ex) {
         ApiResponse<Void> body = ApiResponse.of(SecurityCode.Test, null);
         return new ResponseEntity<>(body, body.getStatus());
     }

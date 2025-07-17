@@ -12,10 +12,12 @@ import java.time.LocalDate;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
+import lombok.ToString;
 
 @Getter
 @Setter
 @Builder
+@ToString
 public class SignUpRequest {
 
     @NotBlank(message = "등록 ID는 필수 항목입니다.")
@@ -43,7 +45,7 @@ public class SignUpRequest {
     @NotNull(message = "성별은 필수 항목입니다.")
     private Gender gender;
 
-    @NotBlank(message = "멤버십 번호는 필수 항목입니다.")
+    //    @NotBlank(message = "멤버십 번호는 필수 항목입니다.")
     private String membershipId;
 
     @NotNull(message = "생년월일은 필수 입력입니다.")
