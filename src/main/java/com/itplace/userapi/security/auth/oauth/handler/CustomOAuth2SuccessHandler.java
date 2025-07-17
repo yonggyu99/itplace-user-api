@@ -37,6 +37,7 @@ public class CustomOAuth2SuccessHandler implements AuthenticationSuccessHandler 
         CustomOAuth2User oAuth2User = (CustomOAuth2User) authentication.getPrincipal();
         OAuth2LoginResult oAuth2LoginResult = authService.oAuth2Login(oAuth2User);
         BaseCode code = oAuth2LoginResult.getCode();
+        log.info("OAuth2LoginResult code: {}", code);
         OAuth2InfoResponse oAuth2InfoResponse = oAuth2LoginResult.getOAuth2InfoResponse();
         if (code == SecurityCode.LOGIN_SUCCESS) {
             TokenResponse tokens = oAuth2LoginResult.getTokens();
