@@ -49,7 +49,7 @@ public class CustomOAuth2Service extends DefaultOAuth2UserService {
             OAuth2InfoResponse oAuth2InfoResponse = OAuth2InfoResponse.builder()
                     .userId(user.getId())
                     .email(user.getEmail())
-                    .role("ROLE_" + Role.GUEST.name())
+                    .role("ROLE_" + user.getRole().name())
                     .provider(provider)
                     .providerId(oAuth2Response.getProviderId())
                     .build();
