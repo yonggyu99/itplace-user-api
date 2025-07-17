@@ -44,11 +44,14 @@ public class CustomOAuth2SuccessHandler implements AuthenticationSuccessHandler 
             response.addCookie(createCookie("accessToken", tokens.getAccessToken()));
             response.addCookie(createCookie("refreshToken", tokens.getRefreshToken()));
             writeJsonResponse(response, ApiResponse.ok(code));
+            response.sendRedirect("http://localhost:5173/");
         } else if (code == SecurityCode.SIGNUP_REQUIRED) {
             String registrationId = oAuth2InfoResponse.getRegistrationId();
             writeJsonResponse(response, ApiResponse.of(code, registrationId));
+            response.sendRedirect("http://localhost:5173/");
         } else {
             writeJsonResponse(response, ApiResponse.of(code, null));
+            response.sendRedirect("http://localhost:5173/");
         }
     }
 
