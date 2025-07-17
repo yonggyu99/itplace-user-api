@@ -95,7 +95,7 @@ paths:
         3.  **클라이언트 처리**: 응답 헤더의 `Set-Cookie`를 통해 브라우저의 `accessToken`과 `refreshToken` 쿠키를 즉시 만료시킵니다.
       operationId: logout
       security:
-        - bearerAuth: [] # 이 API는 JWT 인증이 필요함을 명시
+        - bearerAuth: [ ] # 이 API는 JWT 인증이 필요함을 명시
       responses:
         '200':
           description: 로그아웃 성공
@@ -501,11 +501,11 @@ paths:
               schema:
                 $ref: '#/components/schemas/ApiResponse'
               example:
-                  code: "SMS_SEND_SUCCESS"
-                  status: "OK"
-                  message: "문자 인증 코드가 성공적으로 발송되었습니다."
-                  data: null
-                  timestamp: "2025-07-04T11:27:06.789Z"                    
+                code: "SMS_SEND_SUCCESS"
+                status: "OK"
+                message: "문자 인증 코드가 성공적으로 발송되었습니다."
+                data: null
+                timestamp: "2025-07-04T11:27:06.789Z"
         '400':
           description: 잘못된 요청 (입력값 형식 오류)
           content:
@@ -513,11 +513,11 @@ paths:
               schema:
                 $ref: '#/components/schemas/ApiResponse'
               example:
-                  code: "INVALID_INPUT"
-                  status: "BAD_REQUEST"
-                  message: "입력값이 올바르지 않습니다."
-                  data: null
-                  timestamp: "2025-07-04T12:23:00.456Z"
+                code: "INVALID_INPUT"
+                status: "BAD_REQUEST"
+                message: "입력값이 올바르지 않습니다."
+                data: null
+                timestamp: "2025-07-04T12:23:00.456Z"
         '409':
           description: 데이터 충돌 (이미 사용 중인 리소스)
           content:
@@ -525,11 +525,11 @@ paths:
               schema:
                 $ref: '#/components/schemas/ApiResponse'
               example:
-                  code: "DUPLICATE_PHONE_NUMBER"
-                  status: "CONFLICT"
-                  message: "이미 사용 중인 전화번호입니다."
-                  data: null
-                  timestamp: "2025-07-04T12:23:00.789Z"
+                code: "DUPLICATE_PHONE_NUMBER"
+                status: "CONFLICT"
+                message: "이미 사용 중인 전화번호입니다."
+                data: null
+                timestamp: "2025-07-04T12:23:00.789Z"
 
   /verification/sms/confirm:
     post:
@@ -562,13 +562,13 @@ paths:
                       data:
                         $ref: '#/components/schemas/SmsConfirmResponse'
               example:
-                  code: "SMS_VERIFICATION_SUCCESS"
-                  status: "OK"
-                  message: "휴대폰 번호가 성공적으로 인증되었습니다."
-                  data:
-                    registrationId: "f79c2e9c-958d-4925-a562-3b3ad44353c8"
-                    uplusDataFound: "true"
-                  timestamp: "2025-07-04T11:27:06.789Z"
+                code: "SMS_VERIFICATION_SUCCESS"
+                status: "OK"
+                message: "휴대폰 번호가 성공적으로 인증되었습니다."
+                data:
+                  registrationId: "f79c2e9c-958d-4925-a562-3b3ad44353c8"
+                  uplusDataFound: "true"
+                timestamp: "2025-07-04T11:27:06.789Z"
         '400':
           description: 잘못된 인증 번호
           content:
@@ -576,11 +576,11 @@ paths:
               schema:
                 $ref: '#/components/schemas/ApiResponse'
               example:
-                  code: "SMS_CODE_MISMATCH"
-                  status: "BAD_REQUEST"
-                  message: "올바른 문자 인증 코드가 아닙니다."
-                  data: null
-                  timestamp: "2025-07-04T12:23:00.456Z"
+                code: "SMS_CODE_MISMATCH"
+                status: "BAD_REQUEST"
+                message: "올바른 문자 인증 코드가 아닙니다."
+                data: null
+                timestamp: "2025-07-04T12:23:00.456Z"
         '410':
           description: 인증 코드 입력 시간 초과
           content:
@@ -588,11 +588,11 @@ paths:
               schema:
                 $ref: '#/components/schemas/ApiResponse'
               example:
-                  code: "SMS_CODE_EXPIRED"
-                  status: "BAD_REQUEST"
-                  message: "문자 인증 코드가 만료되었습니다."
-                  data: null
-                  timestamp: "2025-07-04T12:23:00.789Z"
+                code: "SMS_CODE_EXPIRED"
+                status: "BAD_REQUEST"
+                message: "문자 인증 코드가 만료되었습니다."
+                data: null
+                timestamp: "2025-07-04T12:23:00.789Z"
 
   /verification/email:
     post:
@@ -630,11 +630,11 @@ paths:
               schema:
                 $ref: '#/components/schemas/ApiResponse'
               example:
-                  code: "INVALID_INPUT"
-                  status: "BAD_REQUEST"
-                  message: "입력값이 올바르지 않습니다."
-                  data: null
-                  timestamp: "2025-07-04T12:23:00.456Z"
+                code: "INVALID_INPUT"
+                status: "BAD_REQUEST"
+                message: "입력값이 올바르지 않습니다."
+                data: null
+                timestamp: "2025-07-04T12:23:00.456Z"
 
   /verification/email/confirm:
     post:
@@ -678,11 +678,11 @@ paths:
               schema:
                 $ref: '#/components/schemas/ApiResponse'
               example:
-                  code: "EMAIL_CODE_MISMATCH"
-                  status: "BAD_REQUEST"
-                  message: "이메일 인증 코드가 일치하지 않습니다."
-                  data: null
-                  timestamp: "2025-07-04T12:23:00.456Z"
+                code: "EMAIL_CODE_MISMATCH"
+                status: "BAD_REQUEST"
+                message: "이메일 인증 코드가 일치하지 않습니다."
+                data: null
+                timestamp: "2025-07-04T12:23:00.456Z"
         '409':
           description: 데이터 충돌 (이미 가입된 리소스)
           content:
@@ -690,11 +690,11 @@ paths:
               schema:
                 $ref: '#/components/schemas/ApiResponse'
               example:
-                  code: "DUPLICATE_EMAIL"
-                  status: "CONFLICT"
-                  message: "이미 사용 중인 이메일입니다."
-                  data: null
-                  timestamp: "2025-07-04T12:23:00.789Z"
+                code: "DUPLICATE_EMAIL"
+                status: "CONFLICT"
+                message: "이미 사용 중인 이메일입니다."
+                data: null
+                timestamp: "2025-07-04T12:23:00.789Z"
         '410':
           description: 인증 코드 입력 시간 초과
           content:
@@ -702,14 +702,14 @@ paths:
               schema:
                 $ref: '#/components/schemas/ApiResponse'
               example:
-                  code: "EMAIL_CODE_EXPIRED"
-                  status: "BAD_REQUEST"
-                  message: "이메일 인증 코드가 만료되었습니다."
-                  data: null
-                  timestamp: "2025-07-04T12:23:00.789Z"
-# =====================================================
-# 즐겨찾기
-# =====================================================
+                code: "EMAIL_CODE_EXPIRED"
+                status: "BAD_REQUEST"
+                message: "이메일 인증 코드가 만료되었습니다."
+                data: null
+                timestamp: "2025-07-04T12:23:00.789Z"
+  # =====================================================
+  # 즐겨찾기
+  # =====================================================
   /favorites:
     post:
       tags:
@@ -1563,6 +1563,103 @@ paths:
                 status: NOT_FOUND
                 message: 존재하지 않는 혜택입니다.
                 timestamp: '2025-07-16T12:00:00.000Z'
+
+  /benefit/map-detail:
+    get:
+      tags:
+        - Benefit
+      summary: 제휴처 지도에서 혜택 상세 조회
+      description: 지점(storeId), 제휴사(partnerId), 혜택 대분류(mainCategory)를 기준으로 혜택 상세 정보를 조회합니다.
+      operationId: getMapBenefitDetail
+      parameters:
+        - name: storeId
+          in: query
+          required: true
+          description: 지점 ID
+          schema:
+            type: integer
+            format: int64
+        - name: partnerId
+          in: query
+          required: true
+          description: 제휴사 ID
+          schema:
+            type: integer
+            format: int64
+        - name: mainCategory
+          in: query
+          required: true
+          description: 혜택 대분류
+          schema:
+            type: string
+            enum: [ VIP_COCK, BASIC_BENEFIT ]
+      responses:
+        '200':
+          description: 혜택 상세 조회 성공
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/ApiResponse'
+                  - type: object
+                    properties:
+                      data:
+                        $ref: '#/components/schemas/MapBenefitDetailResponse'
+              example:
+                data:
+                  benefitId: 21
+                  benefitName: "롯데월드 어드벤처"
+                  mainCategory: "VIP_COCK"
+                  manual: "결제 시 직원에게 멤버십 카드 제시\n\n\n\n*꼭 확인하세요\n\n- 기타 우대혜택 및 카드할인과 중복적용되지 않습니다.\n\n- 현장 구매 티켓은 당일에 한하여 이용가능합니다. \n\n- 본인 소유임을 확인할 수 있는 멤버십 카드에 한하여 우대가 적용됩니다. \n\n- 플라스틱 또는 모바일 카드와 함께 카드 소유주 확인이 가능한 증빙서류를 지참해 주시기 바랍니다. \n\n- 모바일카드의 경우 APP에서 실행한 카드만 우대가 적용됩니다.\n\n- '롯데월드 어드벤처 부산'은 VIP콕 '롯데월드 어드벤처 부산' 혜택 항목에서 확인하실 수 있습니다.\n\n\n\n대표문의\n\n롯데월드 고객센터 1661-2000"
+                  url: "https://adventure.lotteworld.com/kor/main/index.do"
+                  tierBenefits:
+                    - grade: "VIP콕"
+                      context: "본인 종합이용권(1 Day / AFTER 4) 42% 할인\r\n (동반 1인 30% 할인)"
+                      isAll: false
+                code: BENEFIT_DETAIL_SUCCESS
+                status: OK
+                message: 혜택 상세 조회에 성공했습니다.
+                timestamp: '2025-07-17T10:00:00.000Z'
+        '404':
+          description: 요청한 리소스를 찾을 수 없음
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiResponse'
+              examples:
+                benefitNotFound:
+                  summary: 혜택이 존재하지 않음
+                  value:
+                    data: null
+                    code: BENEFIT_NOT_FOUND
+                    status: NOT_FOUND
+                    message: 존재하지 않는 혜택입니다.
+                    timestamp: "2025-07-17T18:20:02.2361602"
+                storeNotFound:
+                  summary: 지점을 찾을 수 없음(storeId가 잘못된 경우)
+                  value:
+                    data: null
+                    code: STORE_NOT_FOUND
+                    status: NOT_FOUND
+                    message: 지점을 찾을 수 없습니다.
+                    timestamp: "2025-07-17T18:20:02.2361602"
+                storePartnerMismatch:
+                  summary: 지점과 제휴사가 일치하지 않음(partnerId가 잘못된 경우)
+                  value:
+                    data: null
+                    code: STORE_PARTNER_MISMATCH
+                    status: BAD_REQUEST
+                    message: 지점과 제휴사가 일치하지 않습니다.
+                    timestamp: "2025-07-17T18:20:02.2361602"
+                benefitOfflineNotFound:
+                  summary: 오프라인 사용 가능한 혜택이 없음
+                  value:
+                    data: null
+                    code: BENEFIT_OFFLINE_NOT_FOUND
+                    status: NOT_FOUND
+                    message: 오프라인 사용 가능한 혜택이 존재하지 않습니다.
+                    timestamp: "2025-07-17T18:20:02.2361602"
+
 components:
   schemas:
     # ----------------------------------------------------
@@ -1598,7 +1695,7 @@ components:
 
     SignUpRequest:
       type: object
-      required: [registrationId, name, email, password, passwordConfirm, phoneNumber, gender, birthday, membershipId]
+      required: [ registrationId, name, email, password, passwordConfirm, phoneNumber, gender, birthday, membershipId ]
       properties:
         registrationId:
           type: string
@@ -1633,7 +1730,7 @@ components:
         gender:
           type: string
           description: "성별"
-          enum: [MALE, FEMALE]
+          enum: [ MALE, FEMALE ]
           example: "MALE"
         birthday:
           type: string
@@ -1646,7 +1743,7 @@ components:
 
     PasswordResetRequest:
       type: object
-      required: [email]
+      required: [ email ]
       properties:
         email:
           type: string
@@ -1656,7 +1753,7 @@ components:
 
     PasswordResetConfirmRequest:
       type: object
-      required: [token, password, passwordConfirm]
+      required: [ token, password, passwordConfirm ]
       properties:
         token:
           type: string
@@ -1676,7 +1773,7 @@ components:
     SmsVerificationRequest:
       type: object
       description: "문자 인증 코드 발송 요청 DTO"
-      required: [registrationId, name, phoneNumber]
+      required: [ registrationId, name, phoneNumber ]
       properties:
         registrationId:
           type: string
@@ -1694,7 +1791,7 @@ components:
     SmsConfirmRequest:
       type: object
       description: "문자 인증 코드 확인 요청 DTO"
-      required: [name, phoneNumber, verificationCode]
+      required: [ name, phoneNumber, verificationCode ]
       properties:
         name:
           type: string
@@ -1712,7 +1809,7 @@ components:
     SmsConfirmResponse:
       type: object
       description: "문자 인증 코드 확인 응답 DTO"
-      required: [registrationId, uplusDataFound]
+      required: [ registrationId, uplusDataFound ]
       properties:
         registrationId:
           type: string
@@ -1727,7 +1824,7 @@ components:
     UplusDataRequest:
       type: object
       description: "유플러스 더미 데이터 요청"
-      required: [registrationId]
+      required: [ registrationId ]
       properties:
         registrationId:
           type: string
@@ -1738,7 +1835,7 @@ components:
     EmailVerificationRequest:
       type: object
       description: "이메일 인증 코드 발송 요청 DTO"
-      required: [email]
+      required: [ email ]
       properties:
         email:
           type: string
@@ -1749,7 +1846,7 @@ components:
     EmailConfirmRequest:
       type: object
       description: "이메일 인증 코드 확인 요청 DTO"
-      required: [email, verificationCode]
+      required: [ email, verificationCode ]
       properties:
         email:
           type: string
@@ -1764,7 +1861,7 @@ components:
     EmailConfirmResponse:
       type: object
       description: "이메일 인증 코드 확인 요청 DTO"
-      required: [registrationId, email, verificationCode]
+      required: [ registrationId, email, verificationCode ]
       properties:
         registrationId:
           type: string
@@ -1782,7 +1879,7 @@ components:
 
     LoginRequest:
       type: object
-      required: [email, password]
+      required: [ email, password ]
       properties:
         email:
           type: string
@@ -1795,7 +1892,7 @@ components:
 
     LinkLocalToOAuthRequest:
       type: object
-      required: [registrationId, email, password, passwordConfirm]
+      required: [ registrationId, email, password, passwordConfirm ]
       properties:
         registrationId:
           type: string
@@ -1815,7 +1912,7 @@ components:
 
     LinkOAuthToLocalRequest:
       type: object
-      required: [registrationId]
+      required: [ registrationId ]
       properties:
         registrationId:
           type: string
@@ -1828,7 +1925,7 @@ components:
 
     LoginResponse:
       type: object
-      required: [name, accessToken, refreshToken]
+      required: [ name, accessToken, refreshToken ]
       properties:
         name:
           type: string
@@ -1837,7 +1934,7 @@ components:
         membershipGrade:
           type: string
           example: "user@example.com"
-          enum: [VVIP, VIP, BASIC]
+          enum: [ VVIP, VIP, BASIC ]
         accessToken:
           type: string
           format: jwt
@@ -1859,7 +1956,7 @@ components:
     
     FindEmailResponse:
       type: object
-      required: [email]
+      required: [ email ]
       properties:
         name:
           type: string
@@ -1868,7 +1965,7 @@ components:
 
     BenefitResultResponse:
       type: object
-      required: [name, accessToken, refreshToken]
+      required: [ name, accessToken, refreshToken ]
       properties:
         tabType:
           type: string
@@ -1884,11 +1981,11 @@ components:
           example: "할리스 아메리카노 R사이즈 1잔 무료 제공 (ICE/HOT 선택 가능)"
         keywords:
           type: array
-          example: ["스타벅스", "커피", "무료"]
+          example: [ "스타벅스", "커피", "무료" ]
 
     RecommendedResponse:
       type: object
-      required: [name, accessToken, refreshToken]
+      required: [ name, accessToken, refreshToken ]
       properties:
         benefitId:
           type: integer
@@ -1904,7 +2001,7 @@ components:
           example: "카페"
         type:
           type: string
-          example: ["스타벅스", "커피", "무료"]
+          example: [ "스타벅스", "커피", "무료" ]
         description:
           type: string
           example: "VIP 콕"
@@ -1914,7 +2011,7 @@ components:
 
     UplusDataResponse:
       type: object
-      required: [registrationId]
+      required: [ registrationId ]
       properties:
         name:
           type: string
@@ -1924,7 +2021,7 @@ components:
           example: "01012345678"
         gender:
           type: string
-          enum: [MALE, FEMALE]
+          enum: [ MALE, FEMALE ]
           example: "MALE"
         birthday:
           type: string
@@ -2225,3 +2322,24 @@ components:
         image:
           type: string
           format: uri
+
+    MapBenefitDetailResponse:
+      type: object
+      properties:
+        benefitId:
+          type: integer
+          format: int64
+        benefitName:
+          type: string
+        mainCategory:
+          type: string
+          enum: [ VIP_COCK, BASIC_BENEFIT ]
+        manual:
+          type: string
+        url:
+          type: string
+          format: uri
+        tierBenefits:
+          type: array
+          items:
+            $ref: '#/components/schemas/TierBenefitInfo'

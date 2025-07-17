@@ -3,6 +3,7 @@ package com.itplace.userapi.benefit.controller;
 import com.itplace.userapi.benefit.BenefitCode;
 import com.itplace.userapi.benefit.dto.response.BenefitDetailResponse;
 import com.itplace.userapi.benefit.dto.response.BenefitListResponse;
+import com.itplace.userapi.benefit.dto.response.MapBenefitDetailResponse;
 import com.itplace.userapi.benefit.dto.response.PagedResponse;
 import com.itplace.userapi.benefit.entity.enums.MainCategory;
 import com.itplace.userapi.benefit.entity.enums.UsageType;
@@ -48,6 +49,17 @@ public class BenefitController {
     public ResponseEntity<ApiResponse<BenefitDetailResponse>> getBenefitDetail(@PathVariable Long benefitId) {
         BenefitDetailResponse result = benefitService.getBenefitDetail(benefitId);
         ApiResponse<BenefitDetailResponse> body = ApiResponse.of(BenefitCode.BENEFIT_DETAIL_SUCCESS, result);
+        return ResponseEntity.status(body.getStatus()).body(body);
+    }
+
+    @GetMapping("/map-detail")
+    public ResponseEntity<ApiResponse<MapBenefitDetailResponse>> getMapBenefitDetail(
+            @RequestParam Long storeId,
+            @RequestParam Long partnerId,
+            @RequestParam MainCategory mainCategory
+    ) {
+        MapBenefitDetailResponse detail = benefitService.getMapBenefitDetail(storeId, partnerId, mainCategory);
+        ApiResponse<MapBenefitDetailResponse> body = ApiResponse.of(BenefitCode.BENEFIT_DETAIL_SUCCESS, detail);
         return ResponseEntity.status(body.getStatus()).body(body);
     }
 }

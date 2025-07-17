@@ -56,4 +56,5 @@ public interface BenefitRepository extends JpaRepository<Benefit, Long> {
             """)
     Optional<Benefit> findBenefitWithPartnerById(@Param("benefitId") Long benefitId);
 
+    List<Benefit> findByPartner_PartnerIdAndMainCategory(Long partnerId, MainCategory mainCategory);
 }

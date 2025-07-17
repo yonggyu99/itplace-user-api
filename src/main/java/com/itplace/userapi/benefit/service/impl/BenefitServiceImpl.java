@@ -3,6 +3,7 @@ package com.itplace.userapi.benefit.service.impl;
 import com.itplace.userapi.benefit.BenefitCode;
 import com.itplace.userapi.benefit.dto.response.BenefitDetailResponse;
 import com.itplace.userapi.benefit.dto.response.BenefitListResponse;
+import com.itplace.userapi.benefit.dto.response.MapBenefitDetailResponse;
 import com.itplace.userapi.benefit.dto.response.PagedResponse;
 import com.itplace.userapi.benefit.dto.response.TierBenefitInfo;
 import com.itplace.userapi.benefit.entity.Benefit;
@@ -10,10 +11,16 @@ import com.itplace.userapi.benefit.entity.TierBenefit;
 import com.itplace.userapi.benefit.entity.enums.MainCategory;
 import com.itplace.userapi.benefit.entity.enums.UsageType;
 import com.itplace.userapi.benefit.exception.BenefitNotFoundException;
+import com.itplace.userapi.benefit.exception.BenefitOfflineNotFoundException;
 import com.itplace.userapi.benefit.repository.BenefitRepository;
 import com.itplace.userapi.benefit.repository.TierBenefitRepository;
 import com.itplace.userapi.benefit.service.BenefitService;
 import com.itplace.userapi.favorite.repository.FavoriteRepository;
+import com.itplace.userapi.map.StoreCode;
+import com.itplace.userapi.map.entity.Store;
+import com.itplace.userapi.map.exception.StoreNotFoundException;
+import com.itplace.userapi.map.exception.StorePartnerMismatchException;
+import com.itplace.userapi.map.repository.StoreRepository;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
@@ -22,17 +29,20 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class BenefitServiceImpl implements BenefitService {
 
     private final TierBenefitRepository tierBenefitRepository;
     private final FavoriteRepository favoriteRepository;
     private final BenefitRepository benefitRepository;
+    private final StoreRepository storeRepository;
 
     @Override
     public PagedResponse<BenefitListResponse> getBenefitList(
@@ -125,4 +135,64 @@ public class BenefitServiceImpl implements BenefitService {
                 .image(benefit.getPartner().getImage())
                 .build();
     }
+
+    public MapBenefitDetailResponse getMapBenefitDetail(Long storeId, Long partnerId, MainCategory mainCategory) {
+        log.info("[getMapBenefitDetail] storeId: {}, partnerId: {}, mainCategory: {}", storeId, partnerId,
+                mainCategory);
+
+        Store store = storeRepository.findByIdWithPartner(storeId)
+                .orElseThrow(() -> new StoreNotFoundException(StoreCode.STORE_NOT_FOUND));
+
+        if (!store.getPartner().getPartnerId().equals(partnerId)) {
+            throw new StorePartnerMismatchException(StoreCode.STORE_PARTNER_MISMATCH);
+        }
+
+        String storeName = normalize(store.getStoreName());
+
+        List<Benefit> benefits = benefitRepository.findByPartner_PartnerIdAndMainCategory(partnerId, mainCategory);
+        log.info("[benefits size] found: {}", benefits.size());
+
+        if (benefits.isEmpty()) {
+            throw new BenefitNotFoundException(BenefitCode.BENEFIT_NOT_FOUND);
+        }
+
+        Benefit selectedBenefit;
+
+        if (benefits.size() == 1) {
+            selectedBenefit = benefits.get(0);
+
+        } else if (benefits.size() == 2) {
+            selectedBenefit = benefits.stream()
+                    .filter(b -> b.getUsageType() == UsageType.OFFLINE || b.getUsageType() == UsageType.BOTH)
+                    .findFirst()
+                    .orElseThrow(() -> new BenefitOfflineNotFoundException(BenefitCode.BENEFIT_OFFLINE_NOT_FOUND));
+        } else {
+            selectedBenefit = benefits.stream()
+                    .filter(b -> normalize(b.getBenefitName()).equals(storeName))
+                    .findFirst()
+                    .orElseThrow(() -> new BenefitNotFoundException(BenefitCode.BENEFIT_NOT_FOUND));
+        }
+
+        log.info("[selectedBenefit] id: {}, name: {}", selectedBenefit.getBenefitId(),
+                selectedBenefit.getBenefitName());
+
+        List<TierBenefitInfo> tierDtos = tierBenefitRepository.findAllByBenefit_BenefitId(
+                        selectedBenefit.getBenefitId()).stream()
+                .map(tb -> new TierBenefitInfo(tb.getGrade(), tb.getContext(), tb.getIsAll()))
+                .toList();
+
+        return MapBenefitDetailResponse.builder()
+                .benefitId(selectedBenefit.getBenefitId())
+                .benefitName(selectedBenefit.getBenefitName())
+                .mainCategory(selectedBenefit.getMainCategory())
+                .manual(selectedBenefit.getManual())
+                .url(selectedBenefit.getUrl().trim())
+                .tierBenefits(tierDtos)
+                .build();
+    }
+
+    private String normalize(String input) {
+        return input.replaceAll("\\s+", "").toLowerCase();
+    }
+
 }

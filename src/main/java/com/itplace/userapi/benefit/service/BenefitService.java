@@ -2,6 +2,7 @@ package com.itplace.userapi.benefit.service;
 
 import com.itplace.userapi.benefit.dto.response.BenefitDetailResponse;
 import com.itplace.userapi.benefit.dto.response.BenefitListResponse;
+import com.itplace.userapi.benefit.dto.response.MapBenefitDetailResponse;
 import com.itplace.userapi.benefit.dto.response.PagedResponse;
 import com.itplace.userapi.benefit.entity.enums.MainCategory;
 import com.itplace.userapi.benefit.entity.enums.UsageType;
@@ -18,4 +19,6 @@ public interface BenefitService {
     );
 
     BenefitDetailResponse getBenefitDetail(Long benefitId);
+
+    MapBenefitDetailResponse getMapBenefitDetail(Long storeId, Long partnerId, MainCategory mainCategory);
 }
