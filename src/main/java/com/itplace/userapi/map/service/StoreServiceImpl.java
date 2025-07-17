@@ -12,12 +12,12 @@ import com.itplace.userapi.map.entity.Store;
 import com.itplace.userapi.map.exception.StoreKeywordException;
 import com.itplace.userapi.map.repository.StoreRepository;
 import com.itplace.userapi.partner.entity.Partner;
+import java.util.List;
+import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
-import java.util.List;
 
 @Service
 @RequiredArgsConstructor
@@ -29,7 +29,7 @@ public class StoreServiceImpl implements StoreService {
     private final TierBenefitRepository tierBenefitRepository;
 
     @Override
-    public List<StoreDetailDto> findNearby(double lat, double lng, double radiusMeters){
+    public List<StoreDetailDto> findNearby(double lat, double lng, double radiusMeters) {
         // 지구 반지름 (미터)
         double earthRadius = 6378137.0;
 
@@ -52,14 +52,16 @@ public class StoreServiceImpl implements StoreService {
 
                     List<Benefit> benefits = benefitRepository.findAllByPartner_PartnerId(partner.getPartnerId());
 
-                    List<TierBenefitDto> tierBenefitDtos = benefits.stream()
+                    List<Benefit> finalBenefits = selectBenefits(benefits, store.getStoreName());
+
+                    List<TierBenefitDto> tierBenefitDtos = finalBenefits.stream()
                             .flatMap(benefit ->
                                     tierBenefitRepository.findAllByBenefit_BenefitId(benefit.getBenefitId()).stream()
                                             .map(tierBenefit -> TierBenefitDto.builder()
                                                     .grade(tierBenefit.getGrade())
                                                     .context(tierBenefit.getContext())
                                                     .build())
-                                            )
+                            )
                             .toList();
                     return StoreDetailDto.builder()
                             .store(StoreDto.builder()
@@ -83,7 +85,7 @@ public class StoreServiceImpl implements StoreService {
                             .tierBenefit(tierBenefitDtos)
                             .distance(distance)
                             .build();
-                        })
+                })
                 .toList();
     }
 
@@ -99,15 +101,16 @@ public class StoreServiceImpl implements StoreService {
         return allStores.stream()
                 .filter(storeDetailDto ->
                         storeDetailDto.getPartner() != null &&
-                        category.equalsIgnoreCase(storeDetailDto.getPartner().getCategory()))
+                                category.equalsIgnoreCase(storeDetailDto.getPartner().getCategory()))
                 .toList();
     }
 
     @Override
-    public List<StoreDetailDto> findNearbyByKeyword(double lat, double lng, double radiusMeters, String category, String keyword) {
+    public List<StoreDetailDto> findNearbyByKeyword(double lat, double lng, double radiusMeters, String category,
+                                                    String keyword) {
         List<StoreDetailDto> allStores = findNearbyByCategory(lat, lng, radiusMeters, category);
 
-        if (keyword == null || keyword.isBlank()){
+        if (keyword == null || keyword.isBlank()) {
             throw new StoreKeywordException(StoreCode.KEYWORD_REQUIRED);
         }
 
@@ -115,10 +118,14 @@ public class StoreServiceImpl implements StoreService {
 
         return allStores.stream()
                 .filter(storeDetailDto ->
-                        (storeDetailDto.getStore().getStoreName() != null && storeDetailDto.getStore().getStoreName().toLowerCase().contains(lowerKeyword)) ||
-                        (storeDetailDto.getStore().getBusiness() != null && storeDetailDto.getStore().getBusiness().toLowerCase().contains(lowerKeyword)) ||
-                        (storeDetailDto.getPartner().getPartnerName() != null && storeDetailDto.getPartner().getPartnerName().toLowerCase().contains(lowerKeyword)) ||
-                        (storeDetailDto.getPartner().getCategory() != null && storeDetailDto.getPartner().getCategory().toLowerCase().contains(lowerKeyword))
+                        (storeDetailDto.getStore().getStoreName() != null && storeDetailDto.getStore().getStoreName()
+                                .toLowerCase().contains(lowerKeyword)) ||
+                                (storeDetailDto.getStore().getBusiness() != null && storeDetailDto.getStore()
+                                        .getBusiness().toLowerCase().contains(lowerKeyword)) ||
+                                (storeDetailDto.getPartner().getPartnerName() != null && storeDetailDto.getPartner()
+                                        .getPartnerName().toLowerCase().contains(lowerKeyword)) ||
+                                (storeDetailDto.getPartner().getCategory() != null && storeDetailDto.getPartner()
+                                        .getCategory().toLowerCase().contains(lowerKeyword))
                 ).toList();
     }
 
@@ -129,13 +136,33 @@ public class StoreServiceImpl implements StoreService {
         double dLat = Math.toRadians(storeLat - userLat);
         double dLng = Math.toRadians(storeLng - userLng);
 
-        double a = Math.sin(dLat/2) * Math.sin(dLat/2)
+        double a = Math.sin(dLat / 2) * Math.sin(dLat / 2)
                 + Math.cos(Math.toRadians(userLat))
                 * Math.cos(Math.toRadians(storeLat))
-                * Math.sin(dLng/2) * Math.sin(dLng/2);
-        double c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+                * Math.sin(dLng / 2) * Math.sin(dLng / 2);
+        double c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
 
         double d = earthRadius * c * 0.001; // km 단위 거리
         return Math.round(d * 10) / 10.0;
+    }
+
+    private List<Benefit> selectBenefits(List<Benefit> benefits, String storeName) {
+        // 오프라인/온라인이 나뉘어져 있는 경우
+        Optional<Benefit> offlineBenefit = benefits.stream()
+                .filter(benefit -> benefit.getBenefitName().contains("오프라인"))
+                .findFirst();
+
+        if (offlineBenefit.isPresent()) {
+            return List.of(offlineBenefit.get());
+        }
+
+        // benefits 이 3개 이상일 경우
+        if (benefits.size() >= 3) {
+            return benefits.stream()
+                    .filter(benefit -> benefit.getBenefitName().equals(storeName))
+                    .toList();
+        }
+
+        return benefits;
     }
 }
