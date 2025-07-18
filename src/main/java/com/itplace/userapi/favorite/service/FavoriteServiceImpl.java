@@ -93,24 +93,41 @@ public class FavoriteServiceImpl implements FavoriteService {
 
     @Override
     @Transactional(readOnly = true)
-    public List<FavoriteResponse> searchFavorites(Long userId, String keyword) {
+    public List<FavoriteResponse> searchFavorites(
+            Long userId,
+            String keyword,
+            String category
+    ) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new UserNotFoundException(SecurityCode.USER_NOT_FOUND));
 
-        return favoriteRepository.findByUserAndBenefit_BenefitNameContaining(user, keyword).stream()
-                .map(fav -> {
-                    Benefit benefit = fav.getBenefit();
-                    Partner partner = benefit.getPartner();
+        List<Favorite> favs;
+        // category가 전체(또는 null)이면 전체 조회
+        if (category == null || category.equals("전체")) {
+            favs = favoriteRepository
+                    .findByUserAndBenefit_BenefitNameContaining(user, keyword);
+        }
+        // 특정 카테고리일 때만 partner.category 필터 적용
+        else {
+            favs = favoriteRepository
+                    .findByUserAndBenefit_BenefitNameContainingAndBenefit_Partner_CategoryContaining(
+                            user, keyword, category);
+        }
 
+        return favs.stream()
+                .map(fav -> {
+                    Benefit b = fav.getBenefit();
+                    Partner p = b.getPartner();
                     return FavoriteResponse.builder()
-                            .benefitId(benefit.getBenefitId())
-                            .benefitName(benefit.getBenefitName())
-                            .partnerName(partner != null ? partner.getPartnerName() : null)
-                            .partnerImage(partner != null ? partner.getImage() : null)
+                            .benefitId(b.getBenefitId())
+                            .benefitName(b.getBenefitName())
+                            .partnerName(p != null ? p.getPartnerName() : null)
+                            .partnerImage(p != null ? p.getImage() : null)
                             .build();
                 })
                 .collect(Collectors.toList());
     }
+
 
     @Override
     @Transactional(readOnly = true)
