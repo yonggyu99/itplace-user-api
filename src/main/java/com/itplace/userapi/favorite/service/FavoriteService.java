@@ -1,16 +1,15 @@
 package com.itplace.userapi.favorite.service;
 
 import com.itplace.userapi.favorite.dto.FavoriteDetailResponse;
-import com.itplace.userapi.favorite.dto.FavoriteRequest;
 import com.itplace.userapi.favorite.dto.FavoriteResponse;
 import java.util.List;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
 public interface FavoriteService {
-    void addFavorite(FavoriteRequest request);
+    void addFavorite(Long userId, Long benefitId);
 
-    void removeFavorite(FavoriteRequest request);
+    void removeFavorite(Long userId, Long benefitId);
 
     Page<FavoriteResponse> getFavorites(Long userId, String category, Pageable pageable);
 
