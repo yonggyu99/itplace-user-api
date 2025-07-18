@@ -32,14 +32,6 @@ public class AuthController {
         return new ResponseEntity<>(body, body.getStatus());
     }
 
-    private Cookie createCookie(String key, String value) {
-        Cookie cookie = new Cookie(key, value);
-        cookie.setMaxAge(60 * 60 * 24 * 7);
-        cookie.setPath("/");
-        cookie.setHttpOnly(true);
-        return cookie;
-    }
-
     private Cookie createExpiredCookie(String key) {
         Cookie cookie = new Cookie(key, null);
         cookie.setMaxAge(0); // 만료 시간을 0으로 설정하여 즉시 삭제

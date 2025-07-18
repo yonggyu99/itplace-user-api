@@ -7,17 +7,14 @@ import com.itplace.userapi.security.auth.local.dto.response.UplusDataResponse;
 import com.itplace.userapi.security.exception.DuplicateEmailException;
 import com.itplace.userapi.security.exception.DuplicatePhoneNumberException;
 import com.itplace.userapi.security.exception.PasswordMismatchException;
-import com.itplace.userapi.security.jwt.JWTUtil;
 import com.itplace.userapi.user.entity.Role;
 import com.itplace.userapi.user.entity.User;
-import com.itplace.userapi.user.repository.LinkedAccountRepository;
 import com.itplace.userapi.user.repository.UplusDataRepository;
 import com.itplace.userapi.user.repository.UserRepository;
 import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.redis.core.RedisTemplate;
-import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -28,13 +25,10 @@ import org.springframework.transaction.annotation.Transactional;
 @RequiredArgsConstructor
 public class AuthServiceImpl implements AuthService {
 
-    private final LinkedAccountRepository linkedAccountRepository;
     private final RedisTemplate<String, String> redisTemplate;
-    private final AuthenticationManager authenticationManager;
     private final UplusDataRepository uplusDataRepository;
     private final PasswordEncoder passwordEncoder;
     private final UserRepository userRepository;
-    private final JWTUtil jwtUtil;
 
     @Override
     public void logout(Long userId) {

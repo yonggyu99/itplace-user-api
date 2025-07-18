@@ -44,7 +44,8 @@ public class SecurityConfig {
                         .anyRequest().authenticated());
 
         LoginFilter loginFilter = new LoginFilter(authenticationManager(authenticationConfiguration), jwtUtil, redisTemplate, objectMapper);
-        loginFilter.setFilterProcessesUrl("/api/v1/login");
+        loginFilter.setFilterProcessesUrl("/api/v1/auth/login");
+
         http
                 .addFilterBefore(new JWTFilter(jwtUtil), LoginFilter.class)
                 .addFilterAt(loginFilter, UsernamePasswordAuthenticationFilter.class);
