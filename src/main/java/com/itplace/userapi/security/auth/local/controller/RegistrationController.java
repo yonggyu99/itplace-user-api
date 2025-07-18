@@ -6,8 +6,11 @@ import com.itplace.userapi.security.auth.local.dto.request.SignUpRequest;
 import com.itplace.userapi.security.auth.local.dto.request.UplusDataRequest;
 import com.itplace.userapi.security.auth.local.dto.response.UplusDataResponse;
 import com.itplace.userapi.security.auth.local.service.AuthService;
+import com.itplace.userapi.security.verification.sms.dto.SmsVerificationRequest;
+import com.itplace.userapi.security.verification.sms.service.SmsService;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -16,12 +19,14 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 @Tag(name = "Auth", description = "인증, 인가, 로그인, 회원가입 관련 API")
+@Slf4j
 @RestController
 @RequestMapping("/api/v1/auth")
 @RequiredArgsConstructor
 public class RegistrationController {
 
     private final AuthService authService;
+    private final SmsService smsService;
 
     @PostMapping("/signUp")
     public ResponseEntity<ApiResponse<Void>> signUp(@RequestBody @Validated SignUpRequest request) {
@@ -30,6 +35,14 @@ public class RegistrationController {
         return ResponseEntity
                 .status(body.getStatus())
                 .body(body);
+    }
+
+    @PostMapping("/findEmail")
+    public ResponseEntity<ApiResponse<Void>> findEmail(@RequestBody @Validated SmsVerificationRequest request) {
+        log.info("문자 request:{} ", request);
+        smsService.send(request);
+        ApiResponse<Void> body = ApiResponse.ok(SecurityCode.SMS_SEND_SUCCESS);
+        return new ResponseEntity<>(body, body.getStatus());
     }
 
     @PostMapping("/loadUplusData")

@@ -40,7 +40,7 @@ public class UserController {
         return ResponseEntity.status(body.getStatus()).body(body);
     }
 
-    @PostMapping("/findEmail")
+    //    @PostMapping("/findEmail")
     public ResponseEntity<ApiResponse<Void>> findEmail(@RequestBody @Validated SmsVerificationRequest request) {
         log.info("문자 request:{} ", request);
         smsService.send(request);
