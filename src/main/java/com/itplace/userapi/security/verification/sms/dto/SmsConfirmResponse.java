@@ -8,9 +8,9 @@ import lombok.Getter;
 @Getter
 @Builder
 public class SmsConfirmResponse {
-    private String registrationId;
+
     private UserStatus userStatus;
     @JsonProperty("isLocalUser")
-    private boolean isLocalUser;
+    private boolean localUser;
     private boolean uplusDataExists;
 }

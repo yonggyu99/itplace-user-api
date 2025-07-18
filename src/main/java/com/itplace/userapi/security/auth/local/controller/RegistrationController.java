@@ -2,8 +2,6 @@ package com.itplace.userapi.security.auth.local.controller;
 
 import com.itplace.userapi.common.ApiResponse;
 import com.itplace.userapi.security.SecurityCode;
-import com.itplace.userapi.security.auth.local.dto.request.LinkLocalToOAuthRequest;
-import com.itplace.userapi.security.auth.local.dto.request.LinkOAuthToLocalRequest;
 import com.itplace.userapi.security.auth.local.dto.request.SignUpRequest;
 import com.itplace.userapi.security.auth.local.dto.request.UplusDataRequest;
 import com.itplace.userapi.security.auth.local.dto.response.UplusDataResponse;
@@ -29,24 +27,6 @@ public class RegistrationController {
     public ResponseEntity<ApiResponse<Void>> signUp(@RequestBody @Validated SignUpRequest request) {
         authService.signUp(request);
         ApiResponse<Void> body = ApiResponse.ok(SecurityCode.SIGNUP_SUCCESS);
-        return ResponseEntity
-                .status(body.getStatus())
-                .body(body);
-    }
-
-    @PostMapping("/linkLocal")
-    public ResponseEntity<ApiResponse<Void>> linkLocal(@RequestBody @Validated LinkLocalToOAuthRequest request) {
-        authService.linkLocalToOAuth(request);
-        ApiResponse<Void> body = ApiResponse.ok(SecurityCode.LINK_LOCAL_SUCCESS);
-        return ResponseEntity
-                .status(body.getStatus())
-                .body(body);
-    }
-
-    @PostMapping("/linkOAuth")
-    public ResponseEntity<ApiResponse<Void>> linkOAuth(@RequestBody LinkOAuthToLocalRequest request) {
-        authService.linkOAuthToLocal(request);
-        ApiResponse<Void> body = ApiResponse.ok(SecurityCode.LINK_OAUTH_SUCCESS);
         return ResponseEntity
                 .status(body.getStatus())
                 .body(body);

@@ -4,9 +4,6 @@ public class JWTConstants {
     public static final String CLAIM_USER_ID = "userId";
     public static final String CLAIM_ROLE = "role";
     public static final String CLAIM_CATEGORY = "category";
-    public static final String CLAIM_PROVIDER = "provider";
-    public static final String CLAIM_PROVIDER_ID = "providerId";
-    public static final String CLAIM_EMAIL = "email";
     public static final String CATEGORY_ACCESS = "access";
     public static final String CATEGORY_REFRESH = "refresh";
 }

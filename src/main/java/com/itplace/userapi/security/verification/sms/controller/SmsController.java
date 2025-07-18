@@ -5,7 +5,6 @@ import com.itplace.userapi.security.SecurityCode;
 import com.itplace.userapi.security.verification.sms.dto.SmsConfirmRequest;
 import com.itplace.userapi.security.verification.sms.dto.SmsConfirmResponse;
 import com.itplace.userapi.security.verification.sms.dto.SmsVerificationRequest;
-import com.itplace.userapi.security.verification.sms.dto.SmsVerificationResponse;
 import com.itplace.userapi.security.verification.sms.service.SmsService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -23,9 +22,9 @@ public class SmsController {
     private final SmsService smsService;
 
     @PostMapping("/sms")
-    public ResponseEntity<ApiResponse<SmsVerificationResponse>> send(@RequestBody @Validated SmsVerificationRequest request) {
-        SmsVerificationResponse data = smsService.send(request);
-        ApiResponse<SmsVerificationResponse> body = ApiResponse.of(SecurityCode.SMS_SEND_SUCCESS, data);
+    public ResponseEntity<ApiResponse<Void>> send(@RequestBody @Validated SmsVerificationRequest request) {
+        smsService.send(request);
+        ApiResponse<Void> body = ApiResponse.of(SecurityCode.SMS_SEND_SUCCESS, null);
         return ResponseEntity.status(body.getStatus())
                 .body(body);
     }
