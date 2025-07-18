@@ -19,10 +19,6 @@ import lombok.ToString;
 @Builder
 @ToString
 public class SignUpRequest {
-
-    @NotBlank(message = "등록 ID는 필수 항목입니다.")
-    private String registrationId;
-
     @NotBlank(message = "이름은 필수 항목입니다.")
     private String name;
 
