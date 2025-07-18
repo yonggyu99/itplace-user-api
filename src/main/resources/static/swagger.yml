@@ -22,6 +22,8 @@ tags:
     description: 즐겨찾기 관련 API
   - name: User
     description: 사용자 마이페이지 관련 API
+  - name: History
+    description: 멤버십 혜택 사용 내역 관련 API
 
 paths:
   # =====================================================
@@ -1665,6 +1667,157 @@ paths:
                     message: 오프라인 사용 가능한 혜택이 존재하지 않습니다.
                     timestamp: "2025-07-17T18:20:02.2361602"
 
+  /membership-history:
+    get:
+      tags:
+        - History
+      summary: 마이페이지 내에서 멤버십 사용 내역 조회
+      description: 특정 사용자의 멤버십 사용 내역을 검색어, 날짜, 페이징으로 조회합니다.
+      parameters:
+        - name: userId
+          in: query
+          required: true
+          schema:
+            type: integer
+            format: int64
+          description: 사용자 ID
+        - name: keyword
+          in: query
+          required: false
+          schema:
+            type: string
+          description: 혜택명 검색어
+        - name: startDate
+          in: query
+          required: false
+          schema:
+            type: string
+            format: date
+          description: 조회 시작일 (yyyy-MM-dd)
+        - name: endDate
+          in: query
+          required: false
+          schema:
+            type: string
+            format: date
+          description: 조회 종료일 (yyyy-MM-dd)
+        - name: page
+          in: query
+          required: false
+          schema:
+            type: integer
+            default: 0
+          description: 페이지 번호 (0부터 시작)
+        - name: size
+          in: query
+          required: false
+          schema:
+            type: integer
+            default: 10
+          description: 페이지당 결과 수
+      responses:
+        '200':
+          description: 멤버십 사용 내역 조회 성공
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PagedResponse_MembershipHistoryResponse'
+              examples:
+                successExample:
+                  value:
+                    data:
+                      content:
+                        - image: ""
+                          benefitName: "오가나셀 피부과의원 청담점"
+                          discountAmount: 5700
+                          usedAt: "2025-05-20T03:53:13"
+                      currentPage: 0
+                      totalPages: 1
+                      totalElements: 1
+                      hasNext: false
+                    code: MEMBERSHIP_HISTORY_SUCCESS
+                    status: OK
+                    message: 멤버십 사용 내역 조회에 성공했습니다.
+                    timestamp: "2025-07-18T11:17:57.4030576"
+                successExampleEmpty:
+                  value:
+                    data:
+                      content: [ ]
+                      totalPages: 0
+                      totalElements: 0
+                      hasNext: false
+                    code: MEMBERSHIP_HISTORY_SUCCESS
+                    status: OK
+                    message: 멤버십 사용 내역 조회에 성공했습니다.
+                    timestamp: "2025-07-18T11:17:57.4030576"
+        '400':
+          description: 멤버십 회원이 아닐경우
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiResponse'
+              example:
+                data: null
+                code: NO_MEMBERSHIP
+                status: BAD_REQUEST
+                message: 해당 사용자는 멤버십 정보를 가지고 있지 않습니다.
+                timestamp: '2025-07-07T12:00:00Z'
+
+  /membership-history/summary:
+    get:
+      tags:
+        - History
+      summary: 이번 달 총 할인 금액
+      description: 사용자 ID를 기반으로 이번 달 총 할인 금액을 조회합니다.
+      parameters:
+        - name: userId
+          in: query
+          required: true
+          schema:
+            type: integer
+            format: int64
+          description: 사용자 ID
+      responses:
+        '200':
+          description: 이번 달 할인 금액 조회 성공
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MonthlyDiscountResponse'
+              examples:
+                successExample:
+                  value:
+                    data:
+                      userId: 1608
+                      yearMonth: "2025-07"
+                      totalDiscountAmount: 10000
+                    code: MEMBERSHIP_HISTORY_SUMMARY_SUCCESS
+                    status: OK
+                    message: 이번 달 할인 금액 조회에 성공했습니다.
+                    timestamp: "2025-07-18T14:21:00.123456"
+        '400':
+          description: 멤버십 정보가 없거나 사용자를 찾을 수 없음
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiResponse'
+              examples:
+                noMembershipExample:
+                  value:
+                    data: null
+                    code: NO_MEMBERSHIP
+                    status: BAD_REQUEST
+                    message: 해당 사용자는 멤버십 정보를 가지고 있지 않습니다.
+                    timestamp: "2025-07-18T14:21:00.123456"
+                userNotFoundExample:
+                  value:
+                    data: null
+                    code: USER_NOT_FOUND
+                    status: BAD_REQUEST
+                    message: 해당 사용자를 찾을 수 없습니다.
+                    timestamp: "2025-07-18T14:21:00.123456"
+
+
 components:
   schemas:
     # ----------------------------------------------------
@@ -2345,3 +2498,53 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/TierBenefitInfo'
+
+    MembershipHistoryResponse:
+      type: object
+      properties:
+        image:
+          type: string
+          format: uri
+        benefitName:
+          type: string
+        discountAmount:
+          type: integer
+          format: int64
+        usedAt:
+          type: string
+          format: date-time
+
+    PagedResponse_MembershipHistoryResponse:
+      allOf:
+        - $ref: '#/components/schemas/ApiResponse'
+        - type: object
+          properties:
+            data:
+              type: object
+              properties:
+                content:
+                  type: array
+                  items:
+                    $ref: '#/components/schemas/MembershipHistoryResponse'
+                totalPages:
+                  type: integer
+                totalElements:
+                  type: integer
+                currentPage:
+                  type: integer
+                hasNext:
+                  type: boolean
+
+    MonthlyDiscountResponse:
+      type: object
+      properties:
+        userId:
+          type: integer
+          format: int64
+        yearMonth:
+          type: string
+          description: 조회 대상 연월
+        totalDiscountAmount:
+          type: integer
+          format: int64
+          description: 총 할인 금액
