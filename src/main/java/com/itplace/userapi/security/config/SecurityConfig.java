@@ -5,6 +5,7 @@ import com.itplace.userapi.security.auth.local.filter.LoginFilter;
 import com.itplace.userapi.security.jwt.JWTFilter;
 import com.itplace.userapi.security.jwt.JWTUtil;
 import jakarta.servlet.http.HttpServletRequest;
+import java.util.Arrays;
 import java.util.Collections;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
@@ -42,7 +43,12 @@ public class SecurityConfig {
                     public CorsConfiguration getCorsConfiguration(HttpServletRequest request) {
                         CorsConfiguration configuration = new CorsConfiguration();
 
-                        configuration.setAllowedOrigins(Collections.singletonList("http://localhost:5173"));
+                        configuration.setAllowedOriginPatterns(Arrays.asList(
+                                "http://localhost:3000", // 로컬 개발 환경
+                                "http://localhost:5173", // 로컬 개발 환경
+                                "http://localhost:5174", // 로컬 개발 환경
+                                "http://localhost:8080" // 로컬 개발 환경
+                        ));
                         configuration.setAllowedMethods(Collections.singletonList("*"));
                         configuration.setAllowCredentials(true);
                         configuration.setAllowedHeaders(Collections.singletonList("*"));
