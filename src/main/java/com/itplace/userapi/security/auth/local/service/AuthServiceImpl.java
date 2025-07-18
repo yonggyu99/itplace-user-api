@@ -144,13 +144,18 @@ public class AuthServiceImpl implements AuthService {
             throw new PasswordMismatchException(SecurityCode.PASSWORD_MISMATCH);
         }
 
+        String membershipId = request.getMembershipId();
+        if (membershipId != null && membershipId.isEmpty()) {
+            membershipId = null;
+        }
+
         User user = User.builder()
                 .email(storedEmail)
                 .phoneNumber(storedPhoneNumber)
                 .name(storedName)
                 .password(passwordEncoder.encode(request.getPassword()))
                 .gender(request.getGender())
-                .membershipId(request.getMembershipId())
+                .membershipId(membershipId)
                 .birthday(request.getBirthday())
                 .role(Role.USER)
                 .build();

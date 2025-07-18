@@ -1575,6 +1575,103 @@ paths:
                 status: NOT_FOUND
                 message: 존재하지 않는 혜택입니다.
                 timestamp: '2025-07-16T12:00:00.000Z'
+
+  /benefit/map-detail:
+    get:
+      tags:
+        - Benefit
+      summary: 제휴처 지도에서 혜택 상세 조회
+      description: 지점(storeId), 제휴사(partnerId), 혜택 대분류(mainCategory)를 기준으로 혜택 상세 정보를 조회합니다.
+      operationId: getMapBenefitDetail
+      parameters:
+        - name: storeId
+          in: query
+          required: true
+          description: 지점 ID
+          schema:
+            type: integer
+            format: int64
+        - name: partnerId
+          in: query
+          required: true
+          description: 제휴사 ID
+          schema:
+            type: integer
+            format: int64
+        - name: mainCategory
+          in: query
+          required: true
+          description: 혜택 대분류
+          schema:
+            type: string
+            enum: [ VIP_COCK, BASIC_BENEFIT ]
+      responses:
+        '200':
+          description: 혜택 상세 조회 성공
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/ApiResponse'
+                  - type: object
+                    properties:
+                      data:
+                        $ref: '#/components/schemas/MapBenefitDetailResponse'
+              example:
+                data:
+                  benefitId: 21
+                  benefitName: "롯데월드 어드벤처"
+                  mainCategory: "VIP_COCK"
+                  manual: "결제 시 직원에게 멤버십 카드 제시\n\n\n\n*꼭 확인하세요\n\n- 기타 우대혜택 및 카드할인과 중복적용되지 않습니다.\n\n- 현장 구매 티켓은 당일에 한하여 이용가능합니다. \n\n- 본인 소유임을 확인할 수 있는 멤버십 카드에 한하여 우대가 적용됩니다. \n\n- 플라스틱 또는 모바일 카드와 함께 카드 소유주 확인이 가능한 증빙서류를 지참해 주시기 바랍니다. \n\n- 모바일카드의 경우 APP에서 실행한 카드만 우대가 적용됩니다.\n\n- '롯데월드 어드벤처 부산'은 VIP콕 '롯데월드 어드벤처 부산' 혜택 항목에서 확인하실 수 있습니다.\n\n\n\n대표문의\n\n롯데월드 고객센터 1661-2000"
+                  url: "https://adventure.lotteworld.com/kor/main/index.do"
+                  tierBenefits:
+                    - grade: "VIP콕"
+                      context: "본인 종합이용권(1 Day / AFTER 4) 42% 할인\r\n (동반 1인 30% 할인)"
+                      isAll: false
+                code: BENEFIT_DETAIL_SUCCESS
+                status: OK
+                message: 혜택 상세 조회에 성공했습니다.
+                timestamp: '2025-07-17T10:00:00.000Z'
+        '404':
+          description: 요청한 리소스를 찾을 수 없음
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiResponse'
+              examples:
+                benefitNotFound:
+                  summary: 혜택이 존재하지 않음
+                  value:
+                    data: null
+                    code: BENEFIT_NOT_FOUND
+                    status: NOT_FOUND
+                    message: 존재하지 않는 혜택입니다.
+                    timestamp: "2025-07-17T18:20:02.2361602"
+                storeNotFound:
+                  summary: 지점을 찾을 수 없음(storeId가 잘못된 경우)
+                  value:
+                    data: null
+                    code: STORE_NOT_FOUND
+                    status: NOT_FOUND
+                    message: 지점을 찾을 수 없습니다.
+                    timestamp: "2025-07-17T18:20:02.2361602"
+                storePartnerMismatch:
+                  summary: 지점과 제휴사가 일치하지 않음(partnerId가 잘못된 경우)
+                  value:
+                    data: null
+                    code: STORE_PARTNER_MISMATCH
+                    status: BAD_REQUEST
+                    message: 지점과 제휴사가 일치하지 않습니다.
+                    timestamp: "2025-07-17T18:20:02.2361602"
+                benefitOfflineNotFound:
+                  summary: 오프라인 사용 가능한 혜택이 없음
+                  value:
+                    data: null
+                    code: BENEFIT_OFFLINE_NOT_FOUND
+                    status: NOT_FOUND
+                    message: 오프라인 사용 가능한 혜택이 존재하지 않습니다.
+                    timestamp: "2025-07-17T18:20:02.2361602"
+
 components:
   schemas:
     # ----------------------------------------------------
@@ -2237,3 +2334,24 @@ components:
         image:
           type: string
           format: uri
+
+    MapBenefitDetailResponse:
+      type: object
+      properties:
+        benefitId:
+          type: integer
+          format: int64
+        benefitName:
+          type: string
+        mainCategory:
+          type: string
+          enum: [ VIP_COCK, BASIC_BENEFIT ]
+        manual:
+          type: string
+        url:
+          type: string
+          format: uri
+        tierBenefits:
+          type: array
+          items:
+            $ref: '#/components/schemas/TierBenefitInfo'
