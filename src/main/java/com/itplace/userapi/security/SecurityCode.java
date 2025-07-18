@@ -76,6 +76,10 @@ public enum SecurityCode implements BaseCode {
 
     USER_NOT_FOUND("USER_NOT_FOUND", HttpStatus.BAD_REQUEST, "사용자를 찾을 수 없습니다"),
 
+    RESET_PASSWORD_SUCCESS("RESET_PASSWORD_SUCCESS", HttpStatus.OK, "비밀번호가 변경되었습니다."),
+
+    RESET_PASSWORD_FAILURE("RESET_PASSWORD_FAILURE", HttpStatus.BAD_REQUEST, "비밀번호 변경을 실패했습니다."),
+
     RENEW_ACCESS_TOKEN("RENEW_ACCESS_TOKEN", HttpStatus.OK, "액세스 토큰이 갱신되었습니다."),
 
     REFRESH_TOKEN_REQUIRE("REFRESH_TOKEN_REQUIRE", HttpStatus.UNAUTHORIZED, "리프레시 토큰이 필요합니다."),
