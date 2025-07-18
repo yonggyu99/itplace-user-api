@@ -69,7 +69,7 @@ public class SmsServiceImpl implements SmsService {
             log.info("UserStatus: {}, isLocalUser: {}, UplusData: {}", userStatus, isLocalUser, uplusData);
             return SmsConfirmResponse.builder()
                     .userStatus(userStatus)
-                    .isLocalUser(isLocalUser)
+                    .localUser(isLocalUser)
                     .uplusDataExists(uplusData)
                     .build();
         } else {
