@@ -6,7 +6,7 @@ import com.itplace.userapi.security.auth.local.dto.request.SignUpRequest;
 import com.itplace.userapi.security.auth.local.dto.request.UplusDataRequest;
 import com.itplace.userapi.security.auth.local.dto.response.UplusDataResponse;
 import com.itplace.userapi.security.auth.local.service.AuthService;
-import io.swagger.v3.oas.annotations.tags.Tag;
+import com.itplace.userapi.security.verification.sms.service.SmsService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
@@ -16,7 +16,6 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-@Tag(name = "Auth", description = "인증, 인가, 로그인, 회원가입 관련 API")
 @Slf4j
 @RestController
 @RequestMapping("/api/v1/auth")
@@ -24,6 +23,7 @@ import org.springframework.web.bind.annotation.RestController;
 public class RegistrationController {
 
     private final AuthService authService;
+    private final SmsService smsService;
 
     @PostMapping("/signUp")
     public ResponseEntity<ApiResponse<Void>> signUp(@RequestBody @Validated SignUpRequest request) {
