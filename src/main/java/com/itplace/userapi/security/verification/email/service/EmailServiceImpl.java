@@ -3,12 +3,11 @@ package com.itplace.userapi.security.verification.email.service;
 import com.itplace.userapi.security.SecurityCode;
 import com.itplace.userapi.security.exception.DuplicateEmailException;
 import com.itplace.userapi.security.exception.EmailVerificationException;
+import com.itplace.userapi.security.verification.OtpUtil;
 import com.itplace.userapi.security.verification.email.dto.EmailConfirmRequest;
 import com.itplace.userapi.security.verification.email.dto.EmailVerificationRequest;
 import com.itplace.userapi.user.repository.UserRepository;
 import jakarta.mail.internet.MimeMessage;
-import java.time.Duration;
-import java.util.Random;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.redis.core.StringRedisTemplate;
@@ -23,6 +22,7 @@ public class EmailServiceImpl implements EmailService {
     private final JavaMailSender javaMailSender;
     private final StringRedisTemplate redisTemplate;
     private final UserRepository userRepository;
+    private final OtpUtil otpUtil;
 
     private static final long KEY_TTL_SECONDS = 300;
     private static final long VERIFIED_TTL_SECONDS = 1800;
@@ -30,20 +30,12 @@ public class EmailServiceImpl implements EmailService {
     @Override
     public void send(EmailVerificationRequest request) {
         log.info("EmailVerificationRequest: {}", request);
-        String registrationId = request.getRegistrationId();
         String email = request.getEmail();
-
-        String status = (String) redisTemplate.opsForHash().get(registrationId, "status");
-        if (status == null || !status.equals("SMS_VERIFIED")) {
-            throw new EmailVerificationException(SecurityCode.SMS_VERIFICATION_NOT_COMPLETED);
-        }
 
         MimeMessage mimeMessage = javaMailSender.createMimeMessage();
 
-        String code = String.format("%06d", new Random().nextInt(900_000) + 100_000);
-        String key = "verify:" + registrationId + ":" + email;
+        String code = otpUtil.generateEmailOtp(request.getEmail());
 
-        redisTemplate.opsForValue().set(key, code, Duration.ofSeconds(KEY_TTL_SECONDS));
         log.info("email code: {}", code);
 
         try {
@@ -113,7 +105,7 @@ public class EmailServiceImpl implements EmailService {
             log.info("메일 발송 성공!");
         } catch (Exception e) {
             log.error("메일 발송 실패!", e);
-            redisTemplate.delete(key);
+            redisTemplate.delete("email:" + email);
             throw new EmailVerificationException(SecurityCode.EMAIL_SEND_FAILURE);
         }
     }
@@ -121,36 +113,15 @@ public class EmailServiceImpl implements EmailService {
     @Override
     public void confirm(EmailConfirmRequest request) {
         log.info("EmailConfirmRequest: {}", request);
-        String email = request.getEmail();
-        String registrationId = request.getRegistrationId();
-        String code = request.getVerificationCode();
 
-        String key = "verify:" + registrationId + ":" + email;
-        String stored = redisTemplate.opsForValue().get(key);
-
-        // Check registration status
-        String status = (String) redisTemplate.opsForHash().get(registrationId, "status");
-        if (status == null || !status.equals("SMS_VERIFIED")) {
-            throw new EmailVerificationException(SecurityCode.SMS_VERIFICATION_NOT_COMPLETED);
+        if (otpUtil.validateEmailOtp(request.getEmail(), request.getVerificationCode())) {
+            log.info("이메일 인증 성공: {}", request.getEmail());
+            if (userRepository.findByEmail(request.getEmail()).isPresent()) {
+                throw new DuplicateEmailException(SecurityCode.DUPLICATE_EMAIL);
+            }
+        } else {
+            log.info("이메일 인증 실패");
+            throw new EmailVerificationException(SecurityCode.EMAIL_VERIFICATION_FAILURE);
         }
-
-        if (stored == null) {
-            throw new EmailVerificationException(SecurityCode.EMAIL_CODE_EXPIRED);
-        }
-
-        if (!stored.equals(code)) {
-            throw new EmailVerificationException(SecurityCode.EMAIL_CODE_MISMATCH);
-        }
-
-        if (userRepository.findByEmail(email).isPresent()) {
-            throw new DuplicateEmailException(SecurityCode.DUPLICATE_EMAIL);
-        }
-
-        // 일치하면 삭제하고 인증 완료 상태 저장
-        redisTemplate.delete(key);
-        redisTemplate.opsForHash().put(registrationId, "email", email);
-        redisTemplate.opsForHash().put(registrationId, "status", "EMAIL_VERIFIED");
-        redisTemplate.expire(registrationId, Duration.ofSeconds(VERIFIED_TTL_SECONDS)); // Extend TTL for the registration session
-        log.info("이메일 인증 성공: {}", email);
     }
 }
