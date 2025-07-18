@@ -48,9 +48,6 @@ public class JWTUtil {
         return Jwts.parser().verifyWith(secretKey).build().parseSignedClaims(token).getPayload().get("providerId", String.class);
     }
 
-    public String getEmail(String token) {
-        return Jwts.parser().verifyWith(secretKey).build().parseSignedClaims(token).getPayload().get("email", String.class);
-    }
 
     public Boolean isExpired(String token) {
         return Jwts.parser().verifyWith(secretKey).build().parseSignedClaims(token).getPayload().getExpiration().before(new Date());
@@ -64,7 +61,6 @@ public class JWTUtil {
                 .claim(JWTConstants.CLAIM_CATEGORY, category)
                 .claim(JWTConstants.CLAIM_USER_ID, userId)
                 .claim(JWTConstants.CLAIM_ROLE, role.name())
-                .claim(JWTConstants.CLAIM_EMAIL, email)
                 .issuedAt(new Date(now))
                 .expiration(new Date(now + validity))
                 .signWith(secretKey)
