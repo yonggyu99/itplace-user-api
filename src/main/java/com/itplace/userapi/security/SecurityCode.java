@@ -46,6 +46,8 @@ public enum SecurityCode implements BaseCode {
 
     SMS_CODE_MISMATCH("SMS_CODE_MISMATCH", HttpStatus.BAD_REQUEST, "문자 인증 코드가 일치하지 않습니다."),
 
+    SMS_CODE_FAILURE("SMS_CODE__FAILURE", HttpStatus.BAD_REQUEST, "문자 인증에 실패했습니다."),
+
     SMS_SEND_SUCCESS("SMS_SEND_SUCCESS", HttpStatus.OK, "문자 인증 코드가 성공적으로 발송되었습니다."),
 
     SMS_SEND_FAILURE("SMS_SEND_FAILURE", HttpStatus.INTERNAL_SERVER_ERROR, "문자 인증 코드 발송에 실패했습니다."),
@@ -57,6 +59,8 @@ public enum SecurityCode implements BaseCode {
 
 
     EMAIL_VERIFICATION_SUCCESS("EMAIL_VERIFICATION_SUCCESS", HttpStatus.OK, "이메일 인증에 성공했습니다."),
+
+    EMAIL_VERIFICATION_FAILURE("EMAIL_VERIFICATION_FAILURE", HttpStatus.BAD_REQUEST, "이메일 인증에 실패했습니다."),
 
     EMAIL_CODE_EXPIRED("EMAIL_CODE_EXPIRED", HttpStatus.BAD_REQUEST, "이메일 인증 코드가 만료되었습니다."),
 
