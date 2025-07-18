@@ -1,4 +1,4 @@
-package com.itplace.userapi.security.verification.jwt;
+package com.itplace.userapi.security.jwt;
 
 public class JWTConstants {
     public static final String CLAIM_USER_ID = "userId";
