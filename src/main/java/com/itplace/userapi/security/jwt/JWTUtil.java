@@ -14,6 +14,7 @@ import org.springframework.stereotype.Component;
 public class JWTUtil {
 
     private final SecretKey secretKey;
+    @Getter
     private final Long accessTokenValidityInMS;
     @Getter
     private final Long refreshTokenValidityInMS; // 변경점 1: Refresh Token 만료 시간 필드 추가

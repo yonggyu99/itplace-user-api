@@ -6,6 +6,7 @@ import com.itplace.userapi.security.jwt.JWTConstants;
 import com.itplace.userapi.security.jwt.JWTUtil;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
+import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
@@ -71,13 +72,33 @@ public class LoginFilter extends UsernamePasswordAuthenticationFilter {
         Long refreshTokenValidityInMS = jwtUtil.getRefreshTokenValidityInMS();
         redisTemplate.opsForValue().set(key, refreshToken, refreshTokenValidityInMS, TimeUnit.MILLISECONDS);
 
-        response.addHeader("Authorization", "Bearer " + accessToken);
-        response.addHeader("Authorization_REFRESH", "Bearer " + refreshToken);
+        response.addCookie(createAccessTokenCookie(accessToken));
+        response.addCookie(createRefreshTokenCookie(refreshToken));
     }
 
     @Override
     protected void unsuccessfulAuthentication(HttpServletRequest request, HttpServletResponse response, AuthenticationException failed) throws IOException, ServletException {
         log.info("로그인 실패");
         response.setStatus(HttpStatus.UNAUTHORIZED.value());
+    }
+
+    private Cookie createAccessTokenCookie(String token) {
+        Cookie cookie = new Cookie(JWTConstants.CATEGORY_ACCESS, token);
+        cookie.setHttpOnly(true);
+        cookie.setSecure(true);          // HTTPS 환경이면 true
+        cookie.setPath("/");
+        long sec = jwtUtil.getAccessTokenValidityInMS() / 1000;
+        cookie.setMaxAge((int) sec);
+        return cookie;
+    }
+
+    private Cookie createRefreshTokenCookie(String token) {
+        Cookie cookie = new Cookie(JWTConstants.CATEGORY_REFRESH, token);
+        cookie.setHttpOnly(true);
+        cookie.setSecure(true);
+        cookie.setPath("/");
+        long sec = jwtUtil.getRefreshTokenValidityInMS() / 1000;
+        cookie.setMaxAge((int) sec);
+        return cookie;
     }
 }
