@@ -12,6 +12,7 @@ import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import java.time.Duration;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.Map;
@@ -19,7 +20,9 @@ import java.util.concurrent.TimeUnit;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.redis.core.StringRedisTemplate;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseCookie;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
@@ -74,8 +77,30 @@ public class LoginFilter extends UsernamePasswordAuthenticationFilter {
         Long refreshTokenValidityInMS = jwtUtil.getRefreshTokenValidityInMS();
         redisTemplate.opsForValue().set(key, refreshToken, refreshTokenValidityInMS, TimeUnit.MILLISECONDS);
 
-        response.addCookie(createAccessTokenCookie(accessToken));
-        response.addCookie(createRefreshTokenCookie(refreshToken));
+        ResponseCookie accessCookie = ResponseCookie.from(JWTConstants.CATEGORY_ACCESS, accessToken)
+                .httpOnly(true)
+                .secure(false)
+                .path("/")
+                .domain("localhost")
+                .maxAge(Duration.ofMillis(jwtUtil.getAccessTokenValidityInMS()))
+                .sameSite("Lax")
+                .build();
+
+        // 2) Refresh Token Cookie
+        ResponseCookie refreshCookie = ResponseCookie.from(JWTConstants.CATEGORY_REFRESH, refreshToken)
+                .httpOnly(true)
+                .secure(false)
+                .path("/")
+                .domain("localhost")
+                .maxAge(Duration.ofMillis(jwtUtil.getRefreshTokenValidityInMS()))
+                .sameSite("Lax")
+                .build();
+
+        response.addHeader(HttpHeaders.SET_COOKIE, accessCookie.toString());
+        response.addHeader(HttpHeaders.SET_COOKIE, refreshCookie.toString());
+
+//        response.addCookie(createAccessTokenCookie(accessToken));
+//        response.addCookie(createRefreshTokenCookie(refreshToken));
 
         response.setContentType("application/json;charset=UTF-8");
         response.setStatus(HttpStatus.OK.value());
@@ -95,7 +120,8 @@ public class LoginFilter extends UsernamePasswordAuthenticationFilter {
     private Cookie createAccessTokenCookie(String token) {
         Cookie cookie = new Cookie(JWTConstants.CATEGORY_ACCESS, token);
         cookie.setHttpOnly(true);
-//        cookie.setSecure(true);          // HTTPS 환경이면 true
+        cookie.setAttribute("SameSite", "Lax");
+        cookie.setSecure(false);          // HTTPS 환경이면 true
         cookie.setPath("/");
         long sec = jwtUtil.getAccessTokenValidityInMS() / 1000;
         cookie.setMaxAge((int) sec);
@@ -105,7 +131,8 @@ public class LoginFilter extends UsernamePasswordAuthenticationFilter {
     private Cookie createRefreshTokenCookie(String token) {
         Cookie cookie = new Cookie(JWTConstants.CATEGORY_REFRESH, token);
         cookie.setHttpOnly(true);
-//        cookie.setSecure(true);
+        cookie.setAttribute("SameSite", "Lax");
+        cookie.setSecure(false);
         cookie.setPath("/");
         long sec = jwtUtil.getRefreshTokenValidityInMS() / 1000;
         cookie.setMaxAge((int) sec);
