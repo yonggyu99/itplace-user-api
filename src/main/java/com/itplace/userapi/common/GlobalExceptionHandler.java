@@ -20,6 +20,7 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(RuntimeException.class)
     public ResponseEntity<ApiResponse<?>> handleRuntimeException(RuntimeException ex) {
+        log.info("ex: ", ex);
         ApiResponse<Void> body = ApiResponse.of(SecurityCode.Test, null);
         return new ResponseEntity<>(body, body.getStatus());
     }
