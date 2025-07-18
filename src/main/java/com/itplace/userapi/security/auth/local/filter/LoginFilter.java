@@ -81,9 +81,8 @@ public class LoginFilter extends UsernamePasswordAuthenticationFilter {
                 .httpOnly(true)
                 .secure(false)
                 .path("/")
-                .domain("localhost")
                 .maxAge(Duration.ofMillis(jwtUtil.getAccessTokenValidityInMS()))
-                .sameSite("Lax")
+                .sameSite("None")
                 .build();
 
         // 2) Refresh Token Cookie
@@ -91,9 +90,8 @@ public class LoginFilter extends UsernamePasswordAuthenticationFilter {
                 .httpOnly(true)
                 .secure(false)
                 .path("/")
-                .domain("localhost")
                 .maxAge(Duration.ofMillis(jwtUtil.getRefreshTokenValidityInMS()))
-                .sameSite("Lax")
+                .sameSite("None")
                 .build();
 
         response.addHeader(HttpHeaders.SET_COOKIE, accessCookie.toString());
