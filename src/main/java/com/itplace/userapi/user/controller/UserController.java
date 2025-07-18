@@ -10,6 +10,7 @@ import com.itplace.userapi.security.verification.sms.service.SmsService;
 import com.itplace.userapi.user.UserCode;
 import com.itplace.userapi.user.dto.UserInfoDto;
 import com.itplace.userapi.user.dto.request.FindEmailConfirmRequest;
+import com.itplace.userapi.user.dto.request.ResetPasswordRequest;
 import com.itplace.userapi.user.dto.response.FindEmailResponse;
 import com.itplace.userapi.user.service.UserService;
 import lombok.RequiredArgsConstructor;
@@ -40,7 +41,7 @@ public class UserController {
         return ResponseEntity.status(body.getStatus()).body(body);
     }
 
-    //    @PostMapping("/findEmail")
+    @PostMapping("/findEmail")
     public ResponseEntity<ApiResponse<Void>> findEmail(@RequestBody @Validated SmsVerificationRequest request) {
         log.info("문자 request:{} ", request);
         smsService.send(request);
@@ -70,4 +71,10 @@ public class UserController {
         return new ResponseEntity<>(body, body.getStatus());
     }
 
+    @PostMapping("/resetPassword")
+    public ResponseEntity<ApiResponse<Void>> resetPassword(@RequestBody @Validated ResetPasswordRequest request) {
+        userService.resetPassword(request);
+        ApiResponse<Void> body = ApiResponse.ok(SecurityCode.RESET_PASSWORD_SUCCESS);
+        return new ResponseEntity<>(body, body.getStatus());
+    }
 }
