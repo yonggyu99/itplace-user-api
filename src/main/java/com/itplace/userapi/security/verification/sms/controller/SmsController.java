@@ -23,7 +23,7 @@ public class SmsController {
 
     private final SmsService smsService;
 
-    //    @PostMapping("/sms")
+    @PostMapping("/sms")
     public ResponseEntity<ApiResponse<Void>> send(@RequestBody @Validated SmsVerificationRequest request) {
         log.info("문자쪽 request:{}", request);
         smsService.send(request);
