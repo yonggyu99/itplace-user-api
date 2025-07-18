@@ -1674,13 +1674,6 @@ paths:
       summary: 마이페이지 내에서 멤버십 사용 내역 조회
       description: 특정 사용자의 멤버십 사용 내역을 검색어, 날짜, 페이징으로 조회합니다.
       parameters:
-        - name: userId
-          in: query
-          required: true
-          schema:
-            type: integer
-            format: int64
-          description: 사용자 ID
         - name: keyword
           in: query
           required: false
