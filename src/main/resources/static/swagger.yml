@@ -22,6 +22,8 @@ tags:
     description: 즐겨찾기 관련 API
   - name: User
     description: 사용자 마이페이지 관련 API
+  - name: History
+    description: 멤버십 혜택 사용 내역 관련 API
 
 paths:
   # =====================================================
@@ -1675,7 +1677,7 @@ paths:
   /membership-history:
     get:
       tags:
-        - history
+        - History
       summary: 마이페이지 내에서 멤버십 사용 내역 조회
       description: 특정 사용자의 멤버십 사용 내역을 검색어, 날짜, 페이징으로 조회합니다.
       parameters:
@@ -1771,7 +1773,7 @@ paths:
   /membership-history/summary:
     get:
       tags:
-        - history
+        - History
       summary: 이번 달 총 할인 금액
       description: 사용자 ID를 기반으로 이번 달 총 할인 금액을 조회합니다.
       parameters:
