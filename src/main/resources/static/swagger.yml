@@ -923,11 +923,18 @@ paths:
       parameters:
         - name: keyword
           in: query
-          required: true
+          required: false
           description: 검색할 혜택 이름 키워드
           schema:
             type: string
             example: "할리스"
+        - name: category
+          in: query
+          required: false
+          description: 지도 페이지 내 카테고리 검색
+          schema:
+            type: string
+            example: "푸드"
       responses:
         '200':
           description: 즐겨찾기 검색 성공
