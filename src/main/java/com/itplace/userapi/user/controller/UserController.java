@@ -12,6 +12,7 @@ import com.itplace.userapi.user.dto.UserInfoDto;
 import com.itplace.userapi.user.dto.request.FindEmailConfirmRequest;
 import com.itplace.userapi.user.dto.request.ResetPasswordRequest;
 import com.itplace.userapi.user.dto.response.FindEmailResponse;
+import com.itplace.userapi.user.dto.response.FindPasswordConfirmResponse;
 import com.itplace.userapi.user.service.UserService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -65,9 +66,9 @@ public class UserController {
     }
 
     @PostMapping("/findPassword/confirm")
-    public ResponseEntity<ApiResponse<FindEmailResponse>> findPasswordConfirm(@RequestBody @Validated EmailConfirmRequest request) {
-        userService.findPasswordConfirm(request);
-        ApiResponse<FindEmailResponse> body = ApiResponse.ok(SecurityCode.EMAIL_VERIFICATION_SUCCESS);
+    public ResponseEntity<ApiResponse<FindPasswordConfirmResponse>> findPasswordConfirm(@RequestBody @Validated EmailConfirmRequest request) {
+        FindPasswordConfirmResponse response = userService.findPasswordConfirm(request);
+        ApiResponse<FindPasswordConfirmResponse> body = ApiResponse.of(SecurityCode.EMAIL_VERIFICATION_SUCCESS, response);
         return new ResponseEntity<>(body, body.getStatus());
     }
 

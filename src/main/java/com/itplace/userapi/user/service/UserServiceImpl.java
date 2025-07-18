@@ -9,8 +9,8 @@ import com.itplace.userapi.security.verification.email.dto.EmailConfirmRequest;
 import com.itplace.userapi.user.dto.UserInfoDto;
 import com.itplace.userapi.user.dto.request.FindEmailConfirmRequest;
 import com.itplace.userapi.user.dto.request.ResetPasswordRequest;
-import com.itplace.userapi.user.dto.response.EmailConfirmResponse;
 import com.itplace.userapi.user.dto.response.FindEmailResponse;
+import com.itplace.userapi.user.dto.response.FindPasswordConfirmResponse;
 import com.itplace.userapi.user.entity.Membership;
 import com.itplace.userapi.user.entity.User;
 import com.itplace.userapi.user.repository.MembershipRepository;
@@ -76,13 +76,13 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public EmailConfirmResponse findPasswordConfirm(EmailConfirmRequest request) {
+    public FindPasswordConfirmResponse findPasswordConfirm(EmailConfirmRequest request) {
         if (otpUtil.validateEmailOtp(request.getEmail(), request.getVerificationCode())) {
             log.info("Email 인증 성공");
             String resetPasswordToken = UUID.randomUUID().toString();
             String key = RESET_PASSWORD_PREFIX + resetPasswordToken;
             redisTemplate.opsForValue().set(key, RESET_PASSWORD_VALUE, 5, TimeUnit.MINUTES);
-            return EmailConfirmResponse.builder()
+            return FindPasswordConfirmResponse.builder()
                     .resetPasswordToken(resetPasswordToken)
                     .build();
         } else {

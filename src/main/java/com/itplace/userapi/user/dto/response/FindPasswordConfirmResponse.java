@@ -5,6 +5,6 @@ import lombok.Getter;
 
 @Getter
 @Builder
-public class EmailConfirmResponse {
+public class FindPasswordConfirmResponse {
     String resetPasswordToken;
 }
