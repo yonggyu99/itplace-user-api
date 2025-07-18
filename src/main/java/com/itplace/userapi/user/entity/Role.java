@@ -11,4 +11,13 @@ public enum Role {
     ADMIN("ROLE_ADMIN");
 
     private final String key;
+
+    public static Role fromKey(String key) {
+        for (Role role : Role.values()) {
+            if (role.getKey().equals(key)) {
+                return role;
+            }
+        }
+        throw new IllegalArgumentException("No enum constant for key " + key);
+    }
 }

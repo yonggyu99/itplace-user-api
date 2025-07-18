@@ -40,8 +40,6 @@ public enum SecurityCode implements BaseCode {
 
     PHONE_NUMBER_PATTERN_ERROR("PHONE_NUMBER_PATTERN_ERROR", HttpStatus.BAD_REQUEST, "올바른 전화번호 형식이 아닙니다."),
 
-    SMS_VERIFICATION_SUCCESS("SMS_VERIFICATION_SUCCESS", HttpStatus.OK, "문자 인증에 성공했습니다."),
-
     SMS_CODE_EXPIRED("SMS_CODE_EXPIRED", HttpStatus.BAD_REQUEST, "문자 인증 코드가 만료되었습니다."),
 
     SMS_CODE_MISMATCH("SMS_CODE_MISMATCH", HttpStatus.BAD_REQUEST, "문자 인증 코드가 일치하지 않습니다."),
@@ -59,8 +57,10 @@ public enum SecurityCode implements BaseCode {
 
 
     EMAIL_VERIFICATION_SUCCESS("EMAIL_VERIFICATION_SUCCESS", HttpStatus.OK, "이메일 인증에 성공했습니다."),
+    SMS_VERIFICATION_SUCCESS("EMAIL_VERIFICATION_SUCCESS", HttpStatus.OK, "이메일 인증에 성공했습니다."),
 
     EMAIL_VERIFICATION_FAILURE("EMAIL_VERIFICATION_FAILURE", HttpStatus.BAD_REQUEST, "이메일 인증에 실패했습니다."),
+    SMS_VERIFICATION_FAILURE("EMAIL_VERIFICATION_FAILURE", HttpStatus.BAD_REQUEST, "이메일 인증에 실패했습니다."),
 
     EMAIL_CODE_EXPIRED("EMAIL_CODE_EXPIRED", HttpStatus.BAD_REQUEST, "이메일 인증 코드가 만료되었습니다."),
 
@@ -74,15 +74,11 @@ public enum SecurityCode implements BaseCode {
 
     DUPLICATE_PHONE_NUMBER("DUPLICATE_PHONE_NUMBER", HttpStatus.CONFLICT, "이미 사용 중인 전화번호입니다."),
 
-
-    SMS_VERIFICATION_NOT_COMPLETED("SMS_VERIFICATION_NOT_COMPLETED", HttpStatus.BAD_REQUEST, "SMS 인증이 완료되지 않았습니다."),
-
-    EMAIL_VERIFICATION_NOT_COMPLETED("EMAIL_VERIFICATION_NOT_COMPLETED", HttpStatus.BAD_REQUEST, "이메일 인증이 완료되지 않았습니다."),
-
-    MISMATCHED_VERIFIED_DATA("MISMATCHED_VERIFIED_DATA", HttpStatus.BAD_REQUEST, "인증된 정보와 일치하지 않습니다."),
-
     USER_NOT_FOUND("USER_NOT_FOUND", HttpStatus.BAD_REQUEST, "사용자를 찾을 수 없습니다"),
 
+    RESET_PASSWORD_SUCCESS("RESET_PASSWORD_SUCCESS", HttpStatus.OK, "비밀번호가 변경되었습니다."),
+
+    RESET_PASSWORD_FAILURE("RESET_PASSWORD_FAILURE", HttpStatus.BAD_REQUEST, "비밀번호 변경을 실패했습니다."),
 
     RENEW_ACCESS_TOKEN("RENEW_ACCESS_TOKEN", HttpStatus.OK, "액세스 토큰이 갱신되었습니다."),
 

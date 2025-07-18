@@ -74,6 +74,8 @@ public class LoginFilter extends UsernamePasswordAuthenticationFilter {
         Long refreshTokenValidityInMS = jwtUtil.getRefreshTokenValidityInMS();
         redisTemplate.opsForValue().set(key, refreshToken, refreshTokenValidityInMS, TimeUnit.MILLISECONDS);
 
+//        response.addHeader("Authorization", "Bearer " + accessToken);
+//        response.addHeader("Authorization_Refresh", "Bearer " + refreshToken);
         response.addCookie(createAccessTokenCookie(accessToken));
         response.addCookie(createRefreshTokenCookie(refreshToken));
 
@@ -95,7 +97,9 @@ public class LoginFilter extends UsernamePasswordAuthenticationFilter {
     private Cookie createAccessTokenCookie(String token) {
         Cookie cookie = new Cookie(JWTConstants.CATEGORY_ACCESS, token);
         cookie.setHttpOnly(true);
-//        cookie.setSecure(true);          // HTTPS 환경이면 true
+        cookie.setSecure(false);          // HTTPS 환경이면 true
+        cookie.setAttribute("SameSite", "None");
+//        cookie.setDomain("itplace-api.kro.kr");
         cookie.setPath("/");
         long sec = jwtUtil.getAccessTokenValidityInMS() / 1000;
         cookie.setMaxAge((int) sec);
@@ -105,7 +109,9 @@ public class LoginFilter extends UsernamePasswordAuthenticationFilter {
     private Cookie createRefreshTokenCookie(String token) {
         Cookie cookie = new Cookie(JWTConstants.CATEGORY_REFRESH, token);
         cookie.setHttpOnly(true);
-//        cookie.setSecure(true);
+        cookie.setSecure(false);
+        cookie.setAttribute("SameSite", "None");
+//        cookie.setDomain("itplace-api.kro.kr");
         cookie.setPath("/");
         long sec = jwtUtil.getRefreshTokenValidityInMS() / 1000;
         cookie.setMaxAge((int) sec);
