@@ -97,7 +97,7 @@ public class LoginFilter extends UsernamePasswordAuthenticationFilter {
         cookie.setHttpOnly(true);
         cookie.setSecure(true);          // HTTPS 환경이면 true
         cookie.setAttribute("SameSite", "None");
-        cookie.setDomain("localhost:5173");
+        cookie.setDomain("http://itplace-api.kro.kr");
         cookie.setPath("/");
         long sec = jwtUtil.getAccessTokenValidityInMS() / 1000;
         cookie.setMaxAge((int) sec);
@@ -109,7 +109,7 @@ public class LoginFilter extends UsernamePasswordAuthenticationFilter {
         cookie.setHttpOnly(true);
         cookie.setSecure(true);
         cookie.setAttribute("SameSite", "None");
-        cookie.setDomain("localhost:5173");
+        cookie.setDomain("http://itplace-api.kro.kr");
         cookie.setPath("/");
         long sec = jwtUtil.getRefreshTokenValidityInMS() / 1000;
         cookie.setMaxAge((int) sec);
