@@ -21,7 +21,7 @@ import lombok.Setter;
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-@Table(name = "membershiphistory")
+@Table(name = "membershipHistory")
 public class MembershipHistory {
 
     @Id

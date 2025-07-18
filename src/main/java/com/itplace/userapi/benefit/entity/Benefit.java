@@ -1,17 +1,32 @@
 package com.itplace.userapi.benefit.entity;
 
-import com.itplace.userapi.benefit.entity.enums.*;
+import com.itplace.userapi.benefit.entity.enums.BenefitType;
+import com.itplace.userapi.benefit.entity.enums.BenefitTypeConverter;
+import com.itplace.userapi.benefit.entity.enums.MainCategory;
+import com.itplace.userapi.benefit.entity.enums.MainCategoryConverter;
+import com.itplace.userapi.benefit.entity.enums.UsageType;
+import com.itplace.userapi.benefit.entity.enums.UsageTypeConverter;
 import com.itplace.userapi.common.BaseTimeEntity;
 import com.itplace.userapi.favorite.entity.Favorite;
 import com.itplace.userapi.partner.entity.Partner;
-import jakarta.persistence.*;
+import jakarta.persistence.Column;
+import jakarta.persistence.Convert;
+import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.Lob;
+import jakarta.persistence.ManyToOne;
+import jakarta.persistence.OneToMany;
+import jakarta.persistence.Table;
+import java.util.ArrayList;
+import java.util.List;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-
-import java.util.ArrayList;
-import java.util.List;
 
 @Entity
 @Data
@@ -45,7 +60,7 @@ public class Benefit extends BaseTimeEntity {
 
     private String benefitLimit;
 
-    @Column(name = "usage_type")
+    @Column(name = "usageType")
     @Convert(converter = UsageTypeConverter.class)
     private UsageType usageType;
 

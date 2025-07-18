@@ -1,7 +1,6 @@
 package com.itplace.userapi.user.entity;
 
 import com.itplace.userapi.common.BaseTimeEntity;
-import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
@@ -9,13 +8,10 @@ import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
-import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 import java.time.LocalDate;
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.List;
 import java.util.UUID;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
@@ -67,9 +63,6 @@ public class User extends BaseTimeEntity {
     @Column(name = "role", nullable = false, length = 5)
     @Enumerated(EnumType.STRING)
     private Role role;
-
-    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL)
-    private List<LinkedAccount> linkedAccounts = new ArrayList<>();
 
     public void completeRegistration(String phoneNumber) {
         this.phoneNumber = phoneNumber;
