@@ -1,4 +1,4 @@
-package com.itplace.userapi.user.entity;
+package com.itplace.userapi.history.entity;
 
 import java.io.Serializable;
 import java.time.LocalDateTime;

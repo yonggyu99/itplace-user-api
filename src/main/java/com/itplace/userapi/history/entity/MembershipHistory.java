@@ -1,9 +1,11 @@
-package com.itplace.userapi.user.entity;
+package com.itplace.userapi.history.entity;
 
 import com.itplace.userapi.benefit.entity.Benefit;
+import com.itplace.userapi.user.entity.Membership;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.Id;
+import jakarta.persistence.IdClass;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
@@ -21,6 +23,7 @@ import lombok.Setter;
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
+@IdClass(MembershipHistoryId.class)
 @Table(name = "membershiphistory")
 public class MembershipHistory {
 
