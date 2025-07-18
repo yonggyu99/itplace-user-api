@@ -1,16 +1,12 @@
 package com.itplace.userapi.security.auth.local.service;
 
 import com.itplace.userapi.security.SecurityCode;
-import com.itplace.userapi.security.auth.local.dto.CustomUserDetails;
-import com.itplace.userapi.security.auth.local.dto.request.LoginRequest;
 import com.itplace.userapi.security.auth.local.dto.request.SignUpRequest;
 import com.itplace.userapi.security.auth.local.dto.request.UplusDataRequest;
 import com.itplace.userapi.security.auth.local.dto.response.UplusDataResponse;
 import com.itplace.userapi.security.exception.DuplicateEmailException;
 import com.itplace.userapi.security.exception.DuplicatePhoneNumberException;
-import com.itplace.userapi.security.exception.InvalidCredentialsException;
 import com.itplace.userapi.security.exception.PasswordMismatchException;
-import com.itplace.userapi.security.jwt.JWTConstants;
 import com.itplace.userapi.security.jwt.JWTUtil;
 import com.itplace.userapi.user.entity.Role;
 import com.itplace.userapi.user.entity.User;
@@ -18,14 +14,10 @@ import com.itplace.userapi.user.repository.LinkedAccountRepository;
 import com.itplace.userapi.user.repository.UplusDataRepository;
 import com.itplace.userapi.user.repository.UserRepository;
 import java.util.Optional;
-import java.util.concurrent.TimeUnit;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.security.authentication.AuthenticationManager;
-import org.springframework.security.authentication.BadCredentialsException;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.core.Authentication;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -43,37 +35,6 @@ public class AuthServiceImpl implements AuthService {
     private final PasswordEncoder passwordEncoder;
     private final UserRepository userRepository;
     private final JWTUtil jwtUtil;
-
-
-    @Override
-    public void login(LoginRequest request) {
-        try {
-            Authentication authentication = authenticationManager
-                    .authenticate(new UsernamePasswordAuthenticationToken(request.getEmail(), request.getPassword()));
-
-            CustomUserDetails userDetails = (CustomUserDetails) authentication.getPrincipal();
-            User user = userDetails.getUser();
-            String name = user.getName();
-            // 변경 필요
-            String membershipId = user.getMembershipId();
-            Long userId = user.getId();
-            Role role = user.getRole();
-
-            String accessToken = jwtUtil.createToken(userId, role, JWTConstants.CATEGORY_ACCESS, user.getEmail());
-            String refreshToken = jwtUtil.createToken(userId, role, JWTConstants.CATEGORY_REFRESH, user.getEmail());
-
-            redisTemplate.opsForValue().set("RT:" + userId, refreshToken, 7, TimeUnit.DAYS);
-
-//            return LoginWithTokenResponse.builder()
-//                    .accessToken(accessToken)
-//                    .refreshToken(refreshToken)
-//                    .name(name)
-//                    .membershipGrade(null)
-//                    .build();
-        } catch (BadCredentialsException e) {
-            throw new InvalidCredentialsException(SecurityCode.LOGIN_FAIL);
-        }
-    }
 
     @Override
     public void logout(Long userId) {
