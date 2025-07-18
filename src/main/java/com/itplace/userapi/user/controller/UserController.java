@@ -34,6 +34,15 @@ public class UserController {
     private final SmsService smsService;
     private final EmailService emailService;
 
+    @PostMapping("/sms")
+    public ResponseEntity<ApiResponse<Void>> send(@RequestBody @Validated SmsVerificationRequest request) {
+        log.info("문자쪽 request:{}", request);
+        smsService.send(request);
+        ApiResponse<Void> body = ApiResponse.of(SecurityCode.SMS_SEND_SUCCESS, null);
+        return ResponseEntity.status(body.getStatus())
+                .body(body);
+    }
+
     @GetMapping("/{userId}")
     public ResponseEntity<ApiResponse<?>> getUser(@PathVariable Long userId) {
         UserInfoDto userInfoDto = userService.getUserInfo(userId);
