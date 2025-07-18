@@ -39,7 +39,8 @@ public class UserController {
         log.info("문자쪽 request:{}", request);
         smsService.send(request);
         ApiResponse<Void> body = ApiResponse.of(SecurityCode.SMS_SEND_SUCCESS, null);
-        return ResponseEntity.status(body.getStatus())
+        return ResponseEntity
+                .status(body.getStatus())
                 .body(body);
     }
 
@@ -48,7 +49,9 @@ public class UserController {
         UserInfoDto userInfoDto = userService.getUserInfo(userId);
         ApiResponse<?> body = ApiResponse.of(UserCode.USER_INFO_SUCCESS, userInfoDto);
 
-        return ResponseEntity.status(body.getStatus()).body(body);
+        return ResponseEntity
+                .status(body.getStatus())
+                .body(body);
     }
 
     @PostMapping("/findEmail")
@@ -56,7 +59,9 @@ public class UserController {
         log.info("문자 request:{} ", request);
         smsService.send(request);
         ApiResponse<Void> body = ApiResponse.ok(SecurityCode.SMS_SEND_SUCCESS);
-        return new ResponseEntity<>(body, body.getStatus());
+        return ResponseEntity
+                .status(body.getStatus())
+                .body(body);
     }
 
     @PostMapping("/findEmail/confirm")
@@ -64,27 +69,35 @@ public class UserController {
         log.info("findEmailConfirm request: {}", request);
         FindEmailResponse response = userService.findEmailConfirm(request);
         ApiResponse<FindEmailResponse> body = ApiResponse.of(UserCode.EMAIL_FIND_SUCCESS, response);
-        return new ResponseEntity<>(body, body.getStatus());
+        return ResponseEntity
+                .status(body.getStatus())
+                .body(body);
     }
 
     @PostMapping("/findPassword")
     public ResponseEntity<ApiResponse<Void>> findPassword(@RequestBody @Validated EmailVerificationRequest request) {
         emailService.send(request);
         ApiResponse<Void> body = ApiResponse.ok(SecurityCode.EMAIL_SEND_SUCCESS);
-        return new ResponseEntity<>(body, body.getStatus());
+        return ResponseEntity
+                .status(body.getStatus())
+                .body(body);
     }
 
     @PostMapping("/findPassword/confirm")
     public ResponseEntity<ApiResponse<FindPasswordConfirmResponse>> findPasswordConfirm(@RequestBody @Validated EmailConfirmRequest request) {
         FindPasswordConfirmResponse response = userService.findPasswordConfirm(request);
         ApiResponse<FindPasswordConfirmResponse> body = ApiResponse.of(SecurityCode.EMAIL_VERIFICATION_SUCCESS, response);
-        return new ResponseEntity<>(body, body.getStatus());
+        return ResponseEntity
+                .status(body.getStatus())
+                .body(body);
     }
 
     @PostMapping("/resetPassword")
     public ResponseEntity<ApiResponse<Void>> resetPassword(@RequestBody @Validated ResetPasswordRequest request) {
         userService.resetPassword(request);
         ApiResponse<Void> body = ApiResponse.ok(SecurityCode.RESET_PASSWORD_SUCCESS);
-        return new ResponseEntity<>(body, body.getStatus());
+        return ResponseEntity
+                .status(body.getStatus())
+                .body(body);
     }
 }

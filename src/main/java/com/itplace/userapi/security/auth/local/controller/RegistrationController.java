@@ -6,6 +6,8 @@ import com.itplace.userapi.security.auth.local.dto.request.SignUpRequest;
 import com.itplace.userapi.security.auth.local.dto.request.UplusDataRequest;
 import com.itplace.userapi.security.auth.local.dto.response.UplusDataResponse;
 import com.itplace.userapi.security.auth.local.service.AuthService;
+import com.itplace.userapi.security.verification.sms.dto.SmsVerificationRequest;
+import com.itplace.userapi.security.verification.sms.service.SmsService;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -24,6 +26,17 @@ import org.springframework.web.bind.annotation.RestController;
 public class RegistrationController {
 
     private final AuthService authService;
+    private final SmsService smsService;
+
+    @PostMapping("/sms")
+    public ResponseEntity<ApiResponse<Void>> send(@RequestBody @Validated SmsVerificationRequest request) {
+        log.info("문자쪽 request:{}", request);
+        smsService.send(request);
+        ApiResponse<Void> body = ApiResponse.of(SecurityCode.SMS_SEND_SUCCESS, null);
+        return ResponseEntity
+                .status(body.getStatus())
+                .body(body);
+    }
 
     @PostMapping("/signUp")
     public ResponseEntity<ApiResponse<Void>> signUp(@RequestBody @Validated SignUpRequest request) {
