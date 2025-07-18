@@ -74,8 +74,10 @@ public class LoginFilter extends UsernamePasswordAuthenticationFilter {
         Long refreshTokenValidityInMS = jwtUtil.getRefreshTokenValidityInMS();
         redisTemplate.opsForValue().set(key, refreshToken, refreshTokenValidityInMS, TimeUnit.MILLISECONDS);
 
-        response.addCookie(createAccessTokenCookie(accessToken));
-        response.addCookie(createRefreshTokenCookie(refreshToken));
+        response.addHeader("Authorization", "Bearer " + accessToken);
+        response.addHeader("Authorization_Refresh", "Bearer " + refreshToken);
+//        response.addCookie(createAccessTokenCookie(accessToken));
+//        response.addCookie(createRefreshTokenCookie(refreshToken));
 
         response.setContentType("application/json;charset=UTF-8");
         response.setStatus(HttpStatus.OK.value());
@@ -94,25 +96,25 @@ public class LoginFilter extends UsernamePasswordAuthenticationFilter {
 
     private Cookie createAccessTokenCookie(String token) {
         Cookie cookie = new Cookie(JWTConstants.CATEGORY_ACCESS, token);
-//        cookie.setHttpOnly(true);
-//        cookie.setSecure(true);          // HTTPS 환경이면 true
-//        cookie.setAttribute("SameSite", "None");
+        cookie.setHttpOnly(true);
+        cookie.setSecure(true);          // HTTPS 환경이면 true
+        cookie.setAttribute("SameSite", "None");
 //        cookie.setDomain("itplace-api.kro.kr");
-        cookie.setPath("/");
+//        cookie.setPath("/");
         long sec = jwtUtil.getAccessTokenValidityInMS() / 1000;
-        cookie.setMaxAge((int) sec);
+//        cookie.setMaxAge((int) sec);
         return cookie;
     }
 
     private Cookie createRefreshTokenCookie(String token) {
         Cookie cookie = new Cookie(JWTConstants.CATEGORY_REFRESH, token);
-//        cookie.setHttpOnly(true);
-//        cookie.setSecure(true);
-//        cookie.setAttribute("SameSite", "None");
+        cookie.setHttpOnly(true);
+        cookie.setSecure(true);
+        cookie.setAttribute("SameSite", "None");
 //        cookie.setDomain("itplace-api.kro.kr");
-        cookie.setPath("/");
+//        cookie.setPath("/");
         long sec = jwtUtil.getRefreshTokenValidityInMS() / 1000;
-        cookie.setMaxAge((int) sec);
+//        cookie.setMaxAge((int) sec);
         return cookie;
     }
 }
