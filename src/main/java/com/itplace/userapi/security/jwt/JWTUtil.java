@@ -6,6 +6,7 @@ import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.security.Keys;
 import java.util.Date;
 import javax.crypto.SecretKey;
+import lombok.Getter;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
@@ -14,6 +15,7 @@ public class JWTUtil {
 
     private final SecretKey secretKey;
     private final Long accessTokenValidityInMS;
+    @Getter
     private final Long refreshTokenValidityInMS; // 변경점 1: Refresh Token 만료 시간 필드 추가
 
     public JWTUtil(
@@ -27,7 +29,8 @@ public class JWTUtil {
     }
 
     public Long getUserId(String token) {
-        return Jwts.parser().verifyWith(secretKey).build().parseSignedClaims(token).getPayload().get("userId", Long.class);
+        return Jwts.parser().verifyWith(secretKey).build().parseSignedClaims(token)
+                .getPayload().get("userId", Long.class);
     }
 
     public Role getRole(String token) {
@@ -35,32 +38,23 @@ public class JWTUtil {
         return Role.valueOf(roleString);
     }
 
-    // 변경점 3: 토큰의 종류(category)를 확인하는 메소드 추가
     public String getCategory(String token) {
-        return Jwts.parser().verifyWith(secretKey).build().parseSignedClaims(token).getPayload().get("category", String.class);
+        return Jwts.parser().verifyWith(secretKey).build().parseSignedClaims(token)
+                .getPayload().get("category", String.class);
     }
-
-    public String getProvider(String token) {
-        return Jwts.parser().verifyWith(secretKey).build().parseSignedClaims(token).getPayload().get("provider", String.class);
-    }
-
-    public String getProviderId(String token) {
-        return Jwts.parser().verifyWith(secretKey).build().parseSignedClaims(token).getPayload().get("providerId", String.class);
-    }
-
 
     public Boolean isExpired(String token) {
         return Jwts.parser().verifyWith(secretKey).build().parseSignedClaims(token).getPayload().getExpiration().before(new Date());
     }
 
-    public String createToken(Long userId, Role role, String category, String email) {
+    public String createJwt(Long userId, String role, String category) {
         long now = System.currentTimeMillis();
         long validity = JWTConstants.CATEGORY_ACCESS.equals(category) ? accessTokenValidityInMS : refreshTokenValidityInMS;
 
         return Jwts.builder()
                 .claim(JWTConstants.CLAIM_CATEGORY, category)
                 .claim(JWTConstants.CLAIM_USER_ID, userId)
-                .claim(JWTConstants.CLAIM_ROLE, role.name())
+                .claim(JWTConstants.CLAIM_ROLE, role)
                 .issuedAt(new Date(now))
                 .expiration(new Date(now + validity))
                 .signWith(secretKey)
