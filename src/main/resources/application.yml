@@ -93,3 +93,7 @@ spring:
 springdoc:
   swagger-ui:
     url: /swagger.yml
+logging:
+  level:
+    org.springframework.web: DEBUG
+    org.springframework.web.servlet.DispatcherServlet: DEBUG
