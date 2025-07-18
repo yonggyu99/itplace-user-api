@@ -277,6 +277,11 @@ paths:
           application/json:
             schema:
               $ref: '#/components/schemas/LinkLocalToOAuthRequest'
+            example:
+              registrationId: "f79c2e9c-958d-4925-a562-3b3ad44353c8"
+              email: "user@example.com"
+              password: "!Password123"
+              passwordConfirm: "!Password123"
       responses:
         '200':
           description: 연동 성공
@@ -304,6 +309,8 @@ paths:
           application/json:
             schema:
               $ref: '#/components/schemas/LinkOAuthToLocalRequest'
+            example:
+              registrationId: "f79c2e9c-958d-4925-a562-3b3ad44353c8"
       responses:
         '200':
           description: 연동 성공
@@ -504,7 +511,8 @@ paths:
                 code: "SMS_SEND_SUCCESS"
                 status: "OK"
                 message: "문자 인증 코드가 성공적으로 발송되었습니다."
-                data: null
+                data:
+                  registrationId: "f79c2e9c-958d-4925-a562-3b3ad44353c8"
                 timestamp: "2025-07-04T11:27:06.789Z"
         '400':
           description: 잘못된 요청 (입력값 형식 오류)
@@ -546,9 +554,9 @@ paths:
             schema:
               $ref: '#/components/schemas/SmsConfirmRequest'
             example:
-              name: "홍길동"
+              registrationId: "f79c2e9c-958d-4925-a562-3b3ad44353c8"
               phoneNumber: "01012345678"
-              code: "123456"
+              verificationCode: "123456"
       responses:
         '200':
           description: 인증 성공
@@ -568,6 +576,8 @@ paths:
                 data:
                   registrationId: "f79c2e9c-958d-4925-a562-3b3ad44353c8"
                   uplusDataFound: "true"
+                  userStatus: "NEW_USER"
+                  isLocalUser: "false"
                 timestamp: "2025-07-04T11:27:06.789Z"
         '400':
           description: 잘못된 인증 번호
@@ -609,6 +619,7 @@ paths:
             schema:
               $ref: '#/components/schemas/EmailVerificationRequest'
             example:
+              registrationId: "f79c2e9c-958d-4925-a562-3b3ad44353c8"
               email: "user@example.com"
       responses:
         '201':
@@ -618,9 +629,9 @@ paths:
               schema:
                 $ref: '#/components/schemas/ApiResponse'
               example:
-                code: "EMAIL_CODE_SEND_201"
-                status: "CREATED"
-                message: "이메일 인증 코드가 성공적으로 발송되었습니다."
+                code: "EMAIL_CODE_SEND"
+                status: "OK"
+                message: "이메일 인증 코드 발송에 성공했습니다."
                 data: null
                 timestamp: "2025-07-04T11:27:06.789Z"
         '400':
@@ -651,8 +662,9 @@ paths:
             schema:
               $ref: '#/components/schemas/EmailConfirmRequest'
             example:
+              registrationId: "f79c2e9c-958d-4925-a562-3b3ad44353c8"
               email: "user@example.com"
-              code: "123456"
+              verificationCode: "123456"
       responses:
         '200':
           description: 인증 성공
@@ -666,9 +678,9 @@ paths:
                       data:
                         $ref: '#/components/schemas/EmailConfirmResponse'
               example:
-                code: "EMAIL_CODE_CONFIRM_200"
+                code: "EMAIL_VERIFICATION_SUCCESS"
                 status: "OK"
-                message: "이메일이 성공적으로 인증되었습니다."
+                message: "이메일 인증에 성공했습니다."
                 data: null
                 timestamp: "2025-07-04T11:27:06.789Z"
         '400':

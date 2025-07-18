@@ -1,4 +1,4 @@
-package com.itplace.userapi.security.verification.jwt;
+package com.itplace.userapi.security.jwt;
 
 import com.itplace.userapi.user.entity.Role;
 import io.jsonwebtoken.Claims;
@@ -56,7 +56,7 @@ public class JWTUtil {
         return Jwts.parser().verifyWith(secretKey).build().parseSignedClaims(token).getPayload().getExpiration().before(new Date());
     }
 
-    public String createToken(Long userId, Role role, String category, String provider, String providerId, String email) {
+    public String createToken(Long userId, Role role, String category, String email) {
         long now = System.currentTimeMillis();
         long validity = JWTConstants.CATEGORY_ACCESS.equals(category) ? accessTokenValidityInMS : refreshTokenValidityInMS;
 
@@ -64,8 +64,6 @@ public class JWTUtil {
                 .claim(JWTConstants.CLAIM_CATEGORY, category)
                 .claim(JWTConstants.CLAIM_USER_ID, userId)
                 .claim(JWTConstants.CLAIM_ROLE, role.name())
-                .claim(JWTConstants.CLAIM_PROVIDER, provider)
-                .claim(JWTConstants.CLAIM_PROVIDER_ID, providerId)
                 .claim(JWTConstants.CLAIM_EMAIL, email)
                 .issuedAt(new Date(now))
                 .expiration(new Date(now + validity))

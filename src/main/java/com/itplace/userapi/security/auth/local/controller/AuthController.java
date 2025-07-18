@@ -7,7 +7,7 @@ import com.itplace.userapi.security.auth.local.dto.request.LoginRequest;
 import com.itplace.userapi.security.auth.local.dto.response.LoginResponse;
 import com.itplace.userapi.security.auth.local.dto.response.LoginWithTokenResponse;
 import com.itplace.userapi.security.auth.local.service.AuthService;
-import com.itplace.userapi.security.verification.jwt.JWTConstants;
+import com.itplace.userapi.security.jwt.JWTConstants;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletResponse;

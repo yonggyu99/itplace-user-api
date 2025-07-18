@@ -11,12 +11,12 @@ import lombok.Getter;
 public class OAuth2LoginResult {
 
     private final BaseCode code;
-    private final TokenResponse data;
+    private final TokenResponse tokens;
     private final OAuth2InfoResponse oAuth2InfoResponse;
 
-    private OAuth2LoginResult(SecurityCode securityCode, TokenResponse data, OAuth2InfoResponse oAuth2InfoResponse) {
+    private OAuth2LoginResult(SecurityCode securityCode, TokenResponse tokens, OAuth2InfoResponse oAuth2InfoResponse) {
         this.code = securityCode;
-        this.data = data;
+        this.tokens = tokens;
         this.oAuth2InfoResponse = oAuth2InfoResponse;
     }
 
