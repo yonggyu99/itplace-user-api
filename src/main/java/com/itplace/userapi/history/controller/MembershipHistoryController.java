@@ -5,12 +5,14 @@ import com.itplace.userapi.common.ApiResponse;
 import com.itplace.userapi.history.MembershipHistoryCode;
 import com.itplace.userapi.history.dto.MembershipHistoryResponse;
 import com.itplace.userapi.history.service.MembershipHistoryService;
+import com.itplace.userapi.security.auth.local.dto.CustomUserDetails;
 import java.time.LocalDate;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -24,7 +26,7 @@ public class MembershipHistoryController {
 
     @GetMapping
     public ResponseEntity<ApiResponse<PagedResponse<MembershipHistoryResponse>>> getHistory(
-            @RequestParam Long userId,
+            @AuthenticationPrincipal CustomUserDetails userDetails,
             @RequestParam(required = false) String keyword,
             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate,
             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate,
@@ -33,7 +35,7 @@ public class MembershipHistoryController {
     ) {
         Pageable pageable = PageRequest.of(page, size);
         PagedResponse<MembershipHistoryResponse> result =
-                membershipHistoryService.getUserHistory(userId, keyword, startDate, endDate, pageable);
+                membershipHistoryService.getUserHistory(userDetails.getUserId(), keyword, startDate, endDate, pageable);
         ApiResponse<PagedResponse<MembershipHistoryResponse>> body = ApiResponse.of(
                 MembershipHistoryCode.MEMBERSHIP_HISTORY_SUCCESS, result);
         return ResponseEntity.status(body.getStatus()).body(body);

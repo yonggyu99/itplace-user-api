@@ -1,7 +1,6 @@
 package com.itplace.userapi.history.repository;
 
 import com.itplace.userapi.history.entity.MembershipHistory;
-import com.itplace.userapi.history.entity.MembershipHistoryId;
 import java.time.LocalDateTime;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -9,7 +8,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
-public interface MembershipHistoryRepository extends JpaRepository<MembershipHistory, MembershipHistoryId> {
+public interface MembershipHistoryRepository extends JpaRepository<MembershipHistory, Long> {
 
     @Query("""
                 SELECT mh
