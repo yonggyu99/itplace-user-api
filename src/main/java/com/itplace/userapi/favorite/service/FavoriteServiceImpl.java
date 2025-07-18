@@ -6,7 +6,6 @@ import com.itplace.userapi.benefit.entity.enums.MainCategory;
 import com.itplace.userapi.benefit.exception.BenefitNotFoundException;
 import com.itplace.userapi.benefit.repository.BenefitRepository;
 import com.itplace.userapi.favorite.dto.FavoriteDetailResponse;
-import com.itplace.userapi.favorite.dto.FavoriteRequest;
 import com.itplace.userapi.favorite.dto.FavoriteResponse;
 import com.itplace.userapi.favorite.dto.TierBenefitDetail;
 import com.itplace.userapi.favorite.entity.Favorite;
@@ -36,10 +35,10 @@ public class FavoriteServiceImpl implements FavoriteService {
     private final BenefitRepository benefitRepository;
 
     @Override
-    public void addFavorite(FavoriteRequest request) {
-        User user = userRepository.findById(request.getUserId())
+    public void addFavorite(Long userId, Long benefitId) {
+        User user = userRepository.findById(userId)
                 .orElseThrow(() -> new UserNotFoundException(SecurityCode.USER_NOT_FOUND));
-        Benefit benefit = benefitRepository.findById(request.getBenefitId())
+        Benefit benefit = benefitRepository.findById(benefitId)
                 .orElseThrow(() -> new BenefitNotFoundException(BenefitCode.BENEFIT_NOT_FOUND));
 
         if (favoriteRepository.existsByUserAndBenefit(user, benefit)) {
@@ -55,10 +54,10 @@ public class FavoriteServiceImpl implements FavoriteService {
     }
 
     @Override
-    public void removeFavorite(FavoriteRequest request) {
-        User user = userRepository.findById(request.getUserId())
+    public void removeFavorite(Long userId, Long benefitId) {
+        User user = userRepository.findById(userId)
                 .orElseThrow(() -> new UserNotFoundException(SecurityCode.USER_NOT_FOUND));
-        Benefit benefit = benefitRepository.findById(request.getBenefitId())
+        Benefit benefit = benefitRepository.findById(benefitId)
                 .orElseThrow(() -> new BenefitNotFoundException(BenefitCode.BENEFIT_NOT_FOUND));
 
         favoriteRepository.deleteByUserAndBenefit(user, benefit);
