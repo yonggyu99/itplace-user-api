@@ -47,8 +47,10 @@ public class SecurityConfig {
                                 "http://localhost:3000", // 로컬 개발 환경
                                 "http://localhost:5173", // 로컬 개발 환경
                                 "http://localhost:5174", // 로컬 개발 환경
-                                "http://localhost:8080" // 로컬 개발 환경
+                                "http://localhost:8080", // 로컬 개발 환경
+                                "https://itplace.click"
                         ));
+
                         configuration.setAllowedMethods(Collections.singletonList("*"));
                         configuration.setAllowCredentials(true);
                         configuration.setAllowedHeaders(Collections.singletonList("*"));
@@ -74,8 +76,8 @@ public class SecurityConfig {
         loginFilter.setFilterProcessesUrl("/api/v1/auth/login");
 
         http
-                .addFilterBefore(new JWTFilter(jwtUtil), LoginFilter.class)
-                .addFilterAt(loginFilter, UsernamePasswordAuthenticationFilter.class);
+                .addFilterAt(loginFilter, UsernamePasswordAuthenticationFilter.class)
+                .addFilterBefore(new JWTFilter(jwtUtil), LoginFilter.class);
 
         // 세션 설정 : STATELESS
         http

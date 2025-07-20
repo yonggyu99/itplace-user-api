@@ -4,8 +4,6 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
 
-import java.math.BigDecimal;
-
 @Getter
 @Setter
 @Builder
@@ -20,6 +18,6 @@ public class StoreDto {
     private String roadName;
     private String roadAddress;
     private String postCode;
-    private BigDecimal longitude;
-    private BigDecimal latitude;
+    private Double longitude;
+    private Double latitude;
 }
