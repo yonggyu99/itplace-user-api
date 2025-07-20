@@ -1432,14 +1432,6 @@ paths:
           schema:
             type: string
 
-        - name: userId
-          in: query
-          description: 로그인한 사용자 id
-          required: true
-          schema:
-            type: integer
-            format: int64
-
         - name: page
           in: query
           description: 페이지 번호 (0부터 시작)
