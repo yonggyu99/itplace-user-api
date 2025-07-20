@@ -3,6 +3,7 @@ package com.itplace.userapi.history.service.impl;
 import com.itplace.userapi.benefit.dto.response.PagedResponse;
 import com.itplace.userapi.benefit.entity.Benefit;
 import com.itplace.userapi.history.dto.MembershipHistoryResponse;
+import com.itplace.userapi.history.dto.MonthlyDiscountResponse;
 import com.itplace.userapi.history.entity.MembershipHistory;
 import com.itplace.userapi.history.repository.MembershipHistoryRepository;
 import com.itplace.userapi.history.service.MembershipHistoryService;
@@ -71,6 +72,29 @@ public class MembershipHistoryServiceImpl implements MembershipHistoryService {
                 page.getTotalElements(),
                 page.hasNext()
         );
+    }
+
+    @Override
+    public MonthlyDiscountResponse getMonthlyDiscountSummary(Long userId) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new UserNotFoundException(UserCode.USER_NOT_FOUND));
+
+        String membershipId = user.getMembershipId();
+        if (membershipId == null) {
+            throw new NoMembershipException(UserCode.NO_MEMBERSHIP);
+        }
+
+        LocalDate now = LocalDate.now();
+        int year = now.getYear();
+        int month = now.getMonthValue();
+
+        Long totalDiscountAmount = historyRepository.sumDiscountAmountThisMonth(membershipId, year, month);
+
+        return MonthlyDiscountResponse.builder()
+                .userId(userId)
+                .yearMonth(String.format("%04d-%02d", year, month))
+                .totalDiscountAmount(totalDiscountAmount)
+                .build();
     }
 }
 

@@ -1755,13 +1755,6 @@ paths:
       summary: 이번 달 총 할인 금액
       description: 사용자 ID를 기반으로 이번 달 총 할인 금액을 조회합니다.
       parameters:
-        - name: userId
-          in: query
-          required: true
-          schema:
-            type: integer
-            format: int64
-          description: 사용자 ID
       responses:
         '200':
           description: 이번 달 할인 금액 조회 성공

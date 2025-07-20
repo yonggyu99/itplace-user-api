@@ -2,6 +2,7 @@ package com.itplace.userapi.history.service;
 
 import com.itplace.userapi.benefit.dto.response.PagedResponse;
 import com.itplace.userapi.history.dto.MembershipHistoryResponse;
+import com.itplace.userapi.history.dto.MonthlyDiscountResponse;
 import java.time.LocalDate;
 import org.springframework.data.domain.Pageable;
 
@@ -13,5 +14,7 @@ public interface MembershipHistoryService {
             LocalDate endDate,
             Pageable pageable
     );
+
+    MonthlyDiscountResponse getMonthlyDiscountSummary(Long userId);
 }
 
