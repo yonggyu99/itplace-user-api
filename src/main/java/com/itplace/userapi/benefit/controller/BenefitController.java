@@ -9,10 +9,12 @@ import com.itplace.userapi.benefit.entity.enums.MainCategory;
 import com.itplace.userapi.benefit.entity.enums.UsageType;
 import com.itplace.userapi.benefit.service.BenefitService;
 import com.itplace.userapi.common.ApiResponse;
+import com.itplace.userapi.security.auth.local.dto.CustomUserDetails;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -32,14 +34,14 @@ public class BenefitController {
             @RequestParam(required = false) UsageType filter,
             @RequestParam(required = false, defaultValue = "POPULARITY") String sort,
             @RequestParam(required = false) String keyword,
-            @RequestParam Long userId,
+            @AuthenticationPrincipal CustomUserDetails userDetails,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "12") int size
     ) {
 
         Pageable pageable = PageRequest.of(page, size);
         PagedResponse<BenefitListResponse> result = benefitService.getBenefitList(
-                mainCategory, category, filter, keyword, userId, pageable
+                mainCategory, category, filter, keyword, userDetails.getUserId(), pageable
         );
         ApiResponse<PagedResponse<BenefitListResponse>> body = ApiResponse.of(BenefitCode.BENEFIT_LIST_SUCCESS, result);
         return ResponseEntity.status(body.getStatus()).body(body);
