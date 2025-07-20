@@ -28,4 +28,17 @@ public interface MembershipHistoryRepository extends JpaRepository<MembershipHis
             @Param("endDate") LocalDateTime endDate,
             Pageable pageable
     );
+
+    @Query("""
+                SELECT COALESCE(SUM(mh.discountAmount), 0)
+                FROM MembershipHistory mh
+                WHERE mh.membership.membershipId = :membershipId
+                  AND YEAR(mh.usedAt) = :year
+                  AND MONTH(mh.usedAt) = :month
+            """)
+    Long sumDiscountAmountThisMonth(
+            @Param("membershipId") String membershipId,
+            @Param("year") int year,
+            @Param("month") int month
+    );
 }
