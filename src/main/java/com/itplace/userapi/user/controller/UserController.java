@@ -2,24 +2,26 @@ package com.itplace.userapi.user.controller;
 
 import com.itplace.userapi.common.ApiResponse;
 import com.itplace.userapi.security.SecurityCode;
+import com.itplace.userapi.security.auth.local.dto.CustomUserDetails;
+import com.itplace.userapi.security.exception.UserNotFoundException;
 import com.itplace.userapi.security.verification.email.dto.EmailConfirmRequest;
 import com.itplace.userapi.security.verification.email.dto.EmailVerificationRequest;
 import com.itplace.userapi.security.verification.email.service.EmailService;
 import com.itplace.userapi.security.verification.sms.dto.SmsVerificationRequest;
 import com.itplace.userapi.security.verification.sms.service.SmsService;
 import com.itplace.userapi.user.UserCode;
-import com.itplace.userapi.user.dto.UserInfoDto;
 import com.itplace.userapi.user.dto.request.FindEmailConfirmRequest;
 import com.itplace.userapi.user.dto.request.ResetPasswordRequest;
 import com.itplace.userapi.user.dto.response.FindEmailResponse;
 import com.itplace.userapi.user.dto.response.FindPasswordConfirmResponse;
+import com.itplace.userapi.user.dto.response.UserInfoResponse;
 import com.itplace.userapi.user.service.UserService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -34,9 +36,12 @@ public class UserController {
     private final SmsService smsService;
     private final EmailService emailService;
 
-    @GetMapping("/{userId}")
-    public ResponseEntity<ApiResponse<?>> getUser(@PathVariable Long userId) {
-        UserInfoDto userInfoDto = userService.getUserInfo(userId);
+    @GetMapping
+    public ResponseEntity<ApiResponse<?>> getUser(@AuthenticationPrincipal CustomUserDetails userDetails) {
+        if (userDetails == null) {
+            throw new UserNotFoundException(SecurityCode.USER_NOT_FOUND);
+        }
+        UserInfoResponse userInfoDto = userService.getUserInfo(userDetails.getUserId());
         ApiResponse<?> body = ApiResponse.of(UserCode.USER_INFO_SUCCESS, userInfoDto);
 
         return ResponseEntity
@@ -55,7 +60,8 @@ public class UserController {
     }
 
     @PostMapping("/findEmail/confirm")
-    public ResponseEntity<ApiResponse<FindEmailResponse>> findEmailConfirm(@RequestBody @Validated FindEmailConfirmRequest request) {
+    public ResponseEntity<ApiResponse<FindEmailResponse>> findEmailConfirm(
+            @RequestBody @Validated FindEmailConfirmRequest request) {
         log.info("findEmailConfirm request: {}", request);
         FindEmailResponse response = userService.findEmailConfirm(request);
         ApiResponse<FindEmailResponse> body = ApiResponse.of(UserCode.EMAIL_FIND_SUCCESS, response);
@@ -74,9 +80,11 @@ public class UserController {
     }
 
     @PostMapping("/findPassword/confirm")
-    public ResponseEntity<ApiResponse<FindPasswordConfirmResponse>> findPasswordConfirm(@RequestBody @Validated EmailConfirmRequest request) {
+    public ResponseEntity<ApiResponse<FindPasswordConfirmResponse>> findPasswordConfirm(
+            @RequestBody @Validated EmailConfirmRequest request) {
         FindPasswordConfirmResponse response = userService.findPasswordConfirm(request);
-        ApiResponse<FindPasswordConfirmResponse> body = ApiResponse.of(SecurityCode.EMAIL_VERIFICATION_SUCCESS, response);
+        ApiResponse<FindPasswordConfirmResponse> body = ApiResponse.of(SecurityCode.EMAIL_VERIFICATION_SUCCESS,
+                response);
         return ResponseEntity
                 .status(body.getStatus())
                 .body(body);

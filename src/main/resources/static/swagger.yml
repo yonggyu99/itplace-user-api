@@ -794,21 +794,12 @@ paths:
   # User 관련
   # =====================================================
 
-  /users/{userId}:
+  /users:
     get:
       tags:
         - User
       summary: 사용자 정보 조회
       description: 사용자 ID를 기반으로 사용자의 기본 정보와 멤버십 정보를 조회합니다.
-      parameters:
-        - name: userId
-          in: path
-          required: true
-          description: 조회할 사용자의 ID
-          schema:
-            type: integer
-            format: int64
-            example: 1
       responses:
         '200':
           description: 사용자 정보 조회 성공
@@ -820,7 +811,7 @@ paths:
                   - type: object
                     properties:
                       data:
-                        $ref: '#/components/schemas/UserInfoDto'
+                        $ref: '#/components/schemas/UserInfoResponse'
               examples:
                 success:
                   summary: 사용자 정보 조회 성공 예시
@@ -832,26 +823,11 @@ paths:
                       id: 1
                       name: "홍길동"
                       email: "hong@example.com"
-                      phoneNumber: "010-1234-5678"
+                      phoneNumber: "01012345678"
                       gender: "MALE"
                       birthday: "1990-01-01"
                       membershipId: "M001"
-                      grade: "GOLD"
-                    timestamp: '2025-07-16T10:00:00.000Z'
-        '404':
-          description: 사용자를 찾을 수 없음
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ApiResponse'
-              examples:
-                user_not_found:
-                  summary: 사용자 없음 에러
-                  value:
-                    code: USER_NOT_FOUND
-                    status: NOT_FOUND
-                    message: 사용자를 찾을 수 없습니다.
-                    data: null
+                      membershipGrade: "BASIC"
                     timestamp: '2025-07-16T10:00:00.000Z'
 
   /users/findEmail:
@@ -1091,11 +1067,11 @@ paths:
                           image: "https://example.com/starbucks-logo.png"
                           category: "카페"
                         tierBenefit:
-                          - grade: "BRONZE"
+                          - grade: "BASIC"
                             context: "5% 할인"
-                          - grade: "SILVER"
+                          - grade: "VIP"
                             context: "10% 할인"
-                          - grade: "GOLD"
+                          - grade: "VVIP"
                             context: "15% 할인"
                         distance: 0.5
                     timestamp: '2025-07-15T11:00:00.000Z'
@@ -1177,11 +1153,11 @@ paths:
                           image: "https://example.com/starbucks-logo.png"
                           category: "카페"
                         tierBenefit:
-                          - grade: "BRONZE"
+                          - grade: "BASIC"
                             context: "5% 할인"
-                          - grade: "SILVER"
+                          - grade: "VIP"
                             context: "10% 할인"
-                          - grade: "GOLD"
+                          - grade: "VVIP"
                             context: "15% 할인"
                         distance: 0.5
                       - store:
@@ -1201,10 +1177,12 @@ paths:
                           image: "https://example.com/twosome-logo.png"
                           category: "카페"
                         tierBenefit:
-                          - grade: "BRONZE"
+                          - grade: "BASIC"
                             context: "3% 할인"
-                          - grade: "SILVER"
-                            context: "7% 할인"
+                          - grade: "VIP"
+                            context: "5% 할인"
+                          - grade: "VVIP"
+                            context: "5% 할인"
                         distance: 0.8
                     timestamp: '2025-07-15T11:00:00.000Z'
 
@@ -1293,11 +1271,11 @@ paths:
                           image: "https://example.com/starbucks-logo.png"
                           category: "카페"
                         tierBenefit:
-                          - grade: "BRONZE"
+                          - grade: "BASIC"
                             context: "5% 할인"
-                          - grade: "SILVER"
+                          - grade: "VIP"
                             context: "10% 할인"
-                          - grade: "GOLD"
+                          - grade: "VVIP"
                             context: "15% 할인"
                         distance: 0.5
                     timestamp: '2025-07-15T11:00:00.000Z'
@@ -2154,7 +2132,7 @@ components:
         hasNext:
           type: boolean
 
-    UserInfoDto:
+    UserInfoResponse:
       type: object
       properties:
         id:
@@ -2190,11 +2168,11 @@ components:
           description: 멤버십 ID (없는 경우 null)
           example: "M001"
           nullable: true
-        grade:
+        membershipGrade:
           type: string
           description: 멤버십 등급 (없는 경우 null)
-          enum: [ BRONZE, SILVER, GOLD, PLATINUM ]
-          example: "GOLD"
+          enum: [ VVIP, VIP, BASIC ]
+          example: "BASIC"
           nullable: true
 
     StoreDetailDto:
