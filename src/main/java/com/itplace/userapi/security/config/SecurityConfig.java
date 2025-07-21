@@ -48,7 +48,8 @@ public class SecurityConfig {
                                 "http://localhost:5173", // 로컬 개발 환경
                                 "http://localhost:5174", // 로컬 개발 환경
                                 "http://localhost:8080", // 로컬 개발 환경
-                                "https://itplace.click"
+                                "https://itplace.click",
+                                "https://www.itplace.click"
                         ));
 
                         configuration.setAllowedMethods(Collections.singletonList("*"));
