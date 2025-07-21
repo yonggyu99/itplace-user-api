@@ -101,6 +101,7 @@ public class BenefitServiceImpl implements BenefitService {
                             .benefitName(b.getBenefitName())
                             .mainCategory(b.getMainCategory())
                             .usageType(b.getUsageType())
+                            .partnerId(b.getPartner().getPartnerId())
                             .category(Optional.ofNullable(b.getPartner().getCategory()).map(String::trim).orElse(null))
                             .image(b.getPartner().getImage())
                             .isFavorite(isFavorite)
