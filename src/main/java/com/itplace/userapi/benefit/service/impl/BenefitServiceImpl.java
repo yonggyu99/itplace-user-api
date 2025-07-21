@@ -72,9 +72,9 @@ public class BenefitServiceImpl implements BenefitService {
                 .collect(Collectors.groupingBy(tb -> tb.getBenefit().getBenefitId()));
 
         // 즐겨찾기 여부를 한 번에 가져오기
-        Set<Long> userFavoriteBenefitIds = new HashSet<>(
-                favoriteRepository.findFavoriteBenefitIdsByUser(userId, benefitIds)
-        );
+        Set<Long> userFavoriteBenefitIds = (userId != null)
+                ? new HashSet<>(favoriteRepository.findFavoriteBenefitIdsByUser(userId, benefitIds))
+                : Collections.emptySet();
 
         // 즐겨찾기 수를 한 번에 가져오기
         Map<Long, Long> favoriteCountMap = favoriteRepository.countFavoritesByBenefitIds(benefitIds).stream()
