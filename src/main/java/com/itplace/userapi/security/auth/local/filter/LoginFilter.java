@@ -1,11 +1,15 @@
 package com.itplace.userapi.security.auth.local.filter;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.itplace.userapi.benefit.entity.enums.Grade;
 import com.itplace.userapi.common.ApiResponse;
 import com.itplace.userapi.security.SecurityCode;
 import com.itplace.userapi.security.auth.local.dto.CustomUserDetails;
+import com.itplace.userapi.security.auth.local.dto.response.LoginResponse;
 import com.itplace.userapi.security.jwt.JWTConstants;
 import com.itplace.userapi.security.jwt.JWTUtil;
+import com.itplace.userapi.user.entity.Membership;
+import com.itplace.userapi.user.repository.MembershipRepository;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.Cookie;
@@ -15,6 +19,7 @@ import java.io.IOException;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.Map;
+import java.util.Optional;
 import java.util.concurrent.TimeUnit;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -35,6 +40,7 @@ public class LoginFilter extends UsernamePasswordAuthenticationFilter {
     private final JWTUtil jwtUtil;
     private final StringRedisTemplate redisTemplate;
     private final ObjectMapper objectMapper;
+    private final MembershipRepository membershipRepository;
 
     private static final String REFRESH_TOKEN_PREFIX = "RT:";
 
@@ -70,6 +76,8 @@ public class LoginFilter extends UsernamePasswordAuthenticationFilter {
         GrantedAuthority auth = iterator.next();
         String role = auth.getAuthority();
 
+        LoginResponse loginResponse = getLoginResponse(customUserDetails);
+
         String accessToken = jwtUtil.createJwt(userId, role, JWTConstants.CATEGORY_ACCESS);
         String refreshToken = jwtUtil.createJwt(userId, role, JWTConstants.CATEGORY_REFRESH);
 
@@ -84,7 +92,7 @@ public class LoginFilter extends UsernamePasswordAuthenticationFilter {
 
         response.setContentType("application/json;charset=UTF-8");
         response.setStatus(HttpStatus.OK.value());
-        ApiResponse<Void> apiResponse = ApiResponse.ok(SecurityCode.LOGIN_SUCCESS);
+        ApiResponse<LoginResponse> apiResponse = ApiResponse.of(SecurityCode.LOGIN_SUCCESS, loginResponse);
         objectMapper.writeValue(response.getOutputStream(), apiResponse);
     }
 
@@ -96,6 +104,24 @@ public class LoginFilter extends UsernamePasswordAuthenticationFilter {
         response.setStatus(HttpStatus.UNAUTHORIZED.value());
         ApiResponse<Void> apiResponse = ApiResponse.of(SecurityCode.LOGIN_FAIL, null);
         objectMapper.writeValue(response.getOutputStream(), apiResponse);
+    }
+
+    private LoginResponse getLoginResponse(CustomUserDetails customUserDetails) {
+        String name = customUserDetails.getUser().getName();
+        String membershipId = customUserDetails.getUser().getMembershipId();
+        Grade membershipGrade = null;
+
+        if (membershipId != null) {
+            Optional<Membership> membershipOpt = membershipRepository.findById(membershipId);
+            if (membershipOpt.isPresent()) {
+                membershipGrade = membershipOpt.get().getGrade();
+            }
+        }
+
+        return LoginResponse.builder()
+                .name(name)
+                .membershipGrade(membershipGrade)
+                .build();
     }
 
     private Cookie createAccessTokenCookie(String token) {
