@@ -40,8 +40,9 @@ public class BenefitController {
     ) {
 
         Pageable pageable = PageRequest.of(page, size);
+        Long userId = (userDetails != null) ? userDetails.getUserId() : null;
         PagedResponse<BenefitListResponse> result = benefitService.getBenefitList(
-                mainCategory, category, filter, keyword, userDetails.getUserId(), pageable
+                mainCategory, category, filter, keyword, userId, pageable
         );
         ApiResponse<PagedResponse<BenefitListResponse>> body = ApiResponse.of(BenefitCode.BENEFIT_LIST_SUCCESS, result);
         return ResponseEntity.status(body.getStatus()).body(body);
