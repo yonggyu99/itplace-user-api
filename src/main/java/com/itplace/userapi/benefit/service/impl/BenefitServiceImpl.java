@@ -137,6 +137,7 @@ public class BenefitServiceImpl implements BenefitService {
                 .build();
     }
 
+    @Override
     public MapBenefitDetailResponse getMapBenefitDetail(Long storeId, Long partnerId, MainCategory mainCategory) {
         log.info("[getMapBenefitDetail] storeId: {}, partnerId: {}, mainCategory: {}", storeId, partnerId,
                 mainCategory);
@@ -147,8 +148,6 @@ public class BenefitServiceImpl implements BenefitService {
         if (!store.getPartner().getPartnerId().equals(partnerId)) {
             throw new StorePartnerMismatchException(StoreCode.STORE_PARTNER_MISMATCH);
         }
-
-        String storeName = normalize(store.getStoreName());
 
         List<Benefit> benefits = benefitRepository.findByPartner_PartnerIdAndMainCategory(partnerId, mainCategory);
         log.info("[benefits size] found: {}", benefits.size());
@@ -162,16 +161,11 @@ public class BenefitServiceImpl implements BenefitService {
         if (benefits.size() == 1) {
             selectedBenefit = benefits.get(0);
 
-        } else if (benefits.size() == 2) {
+        } else {
             selectedBenefit = benefits.stream()
                     .filter(b -> b.getUsageType() == UsageType.OFFLINE || b.getUsageType() == UsageType.BOTH)
                     .findFirst()
                     .orElseThrow(() -> new BenefitOfflineNotFoundException(BenefitCode.BENEFIT_OFFLINE_NOT_FOUND));
-        } else {
-            selectedBenefit = benefits.stream()
-                    .filter(b -> normalize(b.getBenefitName()).equals(storeName))
-                    .findFirst()
-                    .orElseThrow(() -> new BenefitNotFoundException(BenefitCode.BENEFIT_NOT_FOUND));
         }
 
         log.info("[selectedBenefit] id: {}, name: {}", selectedBenefit.getBenefitId(),
@@ -190,10 +184,6 @@ public class BenefitServiceImpl implements BenefitService {
                 .url(selectedBenefit.getUrl().trim())
                 .tierBenefits(tierDtos)
                 .build();
-    }
-
-    private String normalize(String input) {
-        return input.replaceAll("\\s+", "").toLowerCase();
     }
 
 }
