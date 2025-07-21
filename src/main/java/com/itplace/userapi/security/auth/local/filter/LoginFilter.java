@@ -39,7 +39,8 @@ public class LoginFilter extends UsernamePasswordAuthenticationFilter {
     private static final String REFRESH_TOKEN_PREFIX = "RT:";
 
     @Override
-    public Authentication attemptAuthentication(HttpServletRequest request, HttpServletResponse response) throws AuthenticationException {
+    public Authentication attemptAuthentication(HttpServletRequest request, HttpServletResponse response)
+            throws AuthenticationException {
         try {
             Map<String, String> requestBody = objectMapper.readValue(request.getInputStream(), Map.class);
             String username = requestBody.get("email");
@@ -47,7 +48,8 @@ public class LoginFilter extends UsernamePasswordAuthenticationFilter {
 
             log.info("username: {}, password: {}", username, password);
 
-            UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(username, password, null);
+            UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(username, password,
+                    null);
 
             return authenticationManager.authenticate(authToken);
         } catch (IOException e) {
@@ -56,7 +58,8 @@ public class LoginFilter extends UsernamePasswordAuthenticationFilter {
     }
 
     @Override
-    protected void successfulAuthentication(HttpServletRequest request, HttpServletResponse response, FilterChain chain, Authentication authResult)
+    protected void successfulAuthentication(HttpServletRequest request, HttpServletResponse response, FilterChain chain,
+                                            Authentication authResult)
             throws IOException, ServletException {
         log.info("로그인 성공");
         CustomUserDetails customUserDetails = (CustomUserDetails) authResult.getPrincipal();
@@ -86,7 +89,8 @@ public class LoginFilter extends UsernamePasswordAuthenticationFilter {
     }
 
     @Override
-    protected void unsuccessfulAuthentication(HttpServletRequest request, HttpServletResponse response, AuthenticationException failed) throws IOException, ServletException {
+    protected void unsuccessfulAuthentication(HttpServletRequest request, HttpServletResponse response,
+                                              AuthenticationException failed) throws IOException, ServletException {
         log.info("로그인 실패");
         response.setContentType("application/json;charset=UTF-8");
         response.setStatus(HttpStatus.UNAUTHORIZED.value());
@@ -98,7 +102,7 @@ public class LoginFilter extends UsernamePasswordAuthenticationFilter {
         Cookie cookie = new Cookie(JWTConstants.CATEGORY_ACCESS, token);
         cookie.setHttpOnly(true);
         cookie.setSecure(true);          // HTTPS 환경이면 true
-        cookie.setDomain("itplace.click");
+//        cookie.setDomain("itplace.click");
         cookie.setPath("/");
         long sec = jwtUtil.getAccessTokenValidityInMS() / 1000;
         cookie.setMaxAge((int) sec);
@@ -109,7 +113,7 @@ public class LoginFilter extends UsernamePasswordAuthenticationFilter {
         Cookie cookie = new Cookie(JWTConstants.CATEGORY_REFRESH, token);
         cookie.setHttpOnly(true);
         cookie.setSecure(true);
-        cookie.setDomain("itplace.click");
+//        cookie.setDomain("itplace.click");
         cookie.setPath("/");
         long sec = jwtUtil.getRefreshTokenValidityInMS() / 1000;
         cookie.setMaxAge((int) sec);

@@ -1,0 +1,64 @@
+package com.itplace.userapi.log.interceptor;
+
+import com.itplace.userapi.log.service.LogService;
+import com.itplace.userapi.security.auth.local.dto.CustomUserDetails;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.stereotype.Component;
+import org.springframework.web.servlet.HandlerInterceptor;
+
+@Component
+@RequiredArgsConstructor
+@Slf4j
+public class LoggingInterceptor implements HandlerInterceptor {
+
+    private final LogService logService;
+
+    @Override
+    public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) {
+        String uri = request.getRequestURI();
+
+        Long userId = extractUserId();
+        String event = "click";
+        Long benefitId = extractBenefitIdFromUri(uri);
+        String path = uri;
+        String params = request.getQueryString();
+
+        if (userId != null && benefitId != null) {
+            logService.saveRequestLog(userId, event, benefitId, path, params);
+        }
+
+        return true;
+    }
+
+    private Long extractBenefitIdFromUri(String uri) {
+        String[] parts = uri.split("/");
+        String path = parts[parts.length - 2];
+        String benefitId = parts[parts.length - 1];
+        try {
+            if (path != null && path.equals("benefit")) {
+                return Long.parseLong(benefitId);
+            } else {
+                return null;
+            }
+        } catch (NumberFormatException e) {
+            return null;
+        }
+    }
+
+    private Long extractUserId() {
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+
+        if (auth.getPrincipal() instanceof UserDetails) {
+            CustomUserDetails userDetails = (CustomUserDetails) auth.getPrincipal();
+            return userDetails.getUser().getId();
+        }
+        log.info("user 정보 없음");
+        return null;
+    }
+}
