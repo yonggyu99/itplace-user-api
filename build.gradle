@@ -25,6 +25,7 @@ dependencies {
 //    implementation 'org.springframework.boot:spring-boot-starter-data-mongodb'
     implementation 'org.springframework.boot:spring-boot-starter-data-redis'
     implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
+    implementation 'org.springframework.boot:spring-boot-starter-webflux'
 
     // 인증 관련
     implementation 'org.springframework.boot:spring-boot-starter-mail'
@@ -36,14 +37,13 @@ dependencies {
     implementation 'io.jsonwebtoken:jjwt-impl:0.12.3'
     implementation 'io.jsonwebtoken:jjwt-jackson:0.12.3'
 
-    // aws
-    implementation 'software.amazon.awssdk:s3'
-    implementation 'software.amazon.awssdk:kendra'
-    implementation 'software.amazon.awssdk:core:2.25.21'
-    implementation platform('software.amazon.awssdk:bom:2.25.21')
-    implementation 'software.amazon.awssdk:personalizeruntime'
-
+    // OpenAI
+    implementation 'com.openai:openai-java:2.17.0'
+    implementation 'com.openai:openai-java-client-okhttp:2.17.0'
     implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:2.8.9")
+
+    // ElasticSearch
+    implementation 'co.elastic.clients:elasticsearch-java:8.13.2'
 
     compileOnly 'org.projectlombok:lombok'
     runtimeOnly 'com.mysql:mysql-connector-j'
@@ -51,6 +51,10 @@ dependencies {
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
     testImplementation 'org.springframework.security:spring-security-test'
     testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+
+    // Jackson
+    implementation 'com.fasterxml.jackson.core:jackson-databind'
+    implementation 'com.fasterxml.jackson.dataformat:jackson-dataformat-xml'
 
     // 공간 데이터 매핑
     implementation 'org.hibernate.orm:hibernate-spatial'
