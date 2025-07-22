@@ -792,14 +792,14 @@ paths:
         - Favorites
       summary: 즐겨찾기 삭제
       description: 사용자 ID와 혜택 ID를 기반으로 즐겨찾기를 삭제합니다.
-      operationId: removeFavorite
+      operationId: removeFavorites
       requestBody:
         description: 혜택 ID를 포함한 요청 객체
         required: true
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/FavoriteRequest'
+              $ref: '#/components/schemas/RemoveFavoritesRequest'
       responses:
         '200':
           description: 즐겨찾기 삭제 성공
@@ -2035,6 +2035,17 @@ components:
         benefitId:
           type: integer
           example: 100
+
+
+    RemoveFavoritesRequest:
+      type: object
+      properties:
+        benefitIds:
+          type: array
+          items:
+            type: integer
+            example: [100, 101, 102]
+
 
     FavoriteResponse:
       type: object
