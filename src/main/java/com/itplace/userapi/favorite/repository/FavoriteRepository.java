@@ -41,5 +41,6 @@ public interface FavoriteRepository extends JpaRepository<Favorite, FavoriteId> 
     List<Favorite> findByUserAndBenefit_BenefitNameContainingAndBenefit_Partner_CategoryContaining(User user,
                                                                                                    String keyword,
                                                                                                    String category);
-    
+
+    boolean existsByUser_IdAndBenefit_BenefitId(Long userId, Long benefitId);
 }

@@ -138,7 +138,8 @@ public class BenefitServiceImpl implements BenefitService {
     }
 
     @Override
-    public MapBenefitDetailResponse getMapBenefitDetail(Long storeId, Long partnerId, MainCategory mainCategory) {
+    public MapBenefitDetailResponse getMapBenefitDetail(Long storeId, Long partnerId, MainCategory mainCategory,
+                                                        Long userId) {
         log.info("[getMapBenefitDetail] storeId: {}, partnerId: {}, mainCategory: {}", storeId, partnerId,
                 mainCategory);
 
@@ -176,6 +177,11 @@ public class BenefitServiceImpl implements BenefitService {
                 .map(tb -> new TierBenefitInfo(tb.getGrade(), tb.getContext(), tb.getIsAll()))
                 .toList();
 
+        boolean isFavorite = false;
+        if (userId != null) {
+            isFavorite = favoriteRepository.existsByUser_IdAndBenefit_BenefitId(userId, selectedBenefit.getBenefitId());
+        }
+
         return MapBenefitDetailResponse.builder()
                 .benefitId(selectedBenefit.getBenefitId())
                 .benefitName(selectedBenefit.getBenefitName())
@@ -183,6 +189,7 @@ public class BenefitServiceImpl implements BenefitService {
                 .manual(selectedBenefit.getManual())
                 .url(selectedBenefit.getUrl().trim())
                 .tierBenefits(tierDtos)
+                .isFavorite(isFavorite)
                 .build();
     }
 
