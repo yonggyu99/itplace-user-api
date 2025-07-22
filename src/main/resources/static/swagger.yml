@@ -262,6 +262,66 @@ paths:
                 data: null
                 timestamp: "2025-07-04T12:23:00.456Z"
 
+  /auth/reissue:
+    post:
+      tags:
+        - Auth
+      summary: Access Token 재발급
+      description: |
+        HttpOnly 속성으로 전달된 Refresh Token 쿠키를 사용하여 만료된 Access Token을 재발급합니다.
+        
+        **요청 시 별도의 Body는 필요 없으며, 브라우저에 저장된 `refreshToken` 쿠키를 자동으로 사용합니다.**
+      operationId: reissueAccessToken
+      responses:
+        '200':
+          description: Access Token 재발급 성공. 새로운 Access Token이 쿠키로 발급됩니다.
+          headers:
+            Set-Cookie:
+              schema:
+                type: string
+                example: "access=eyJhbGciOiJIUzI1NiJ9...; Path=/; Domain=itplace.click; Max-Age=1800; HttpOnly; Secure; SameSite=None"
+              description: "새롭게 발급된 accessToken을 담고 있는 HttpOnly 쿠키입니다."
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiResponse'
+              example:
+                code: "RENEW_ACCESS_TOKEN"
+                status: "OK"
+                message: "액세스 토큰이 갱신되었습니다."
+                data: null
+                timestamp: "2025-07-22T14:25:38.123Z"
+        '401':
+          description: 인증 실패. Refresh Token이 유효하지 않은 경우입니다.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiResponse'
+              examples:
+                missingToken:
+                  summary: Refresh Token 없음
+                  value:
+                    code: "REFRESH_TOKEN_REQUIRE"
+                    status: "UNAUTHORIZED"
+                    message: "리프레시 토큰이 필요합니다."
+                    data: null
+                    timestamp: "2025-07-22T14:25:38.456Z"
+                expiredToken:
+                  summary: Refresh Token 만료
+                  value:
+                    code: "REFRESH_TOKEN_EXPIRED"
+                    status: "UNAUTHORIZED"
+                    message: "리프레시 토큰이 만료되었습니다."
+                    data: null
+                    timestamp: "2025-07-22T14:25:38.789Z"
+                invalidToken:
+                  summary: 유효하지 않은 Refresh Token
+                  value:
+                    code: "INVALID_TOKEN"
+                    status: "UNAUTHORIZED"
+                    message: "잘못된 토큰입니다."
+                    data: null
+                    timestamp: "2025-07-22T14:25:39.123Z"
   # =====================================================
   # 이메일, 문자 인증 관련 API
   # =====================================================
@@ -2072,7 +2132,7 @@ components:
           type: array
           items:
             type: integer
-            example: [100, 101, 102]
+            example: [ 100, 101, 102 ]
 
 
     FavoriteResponse:
