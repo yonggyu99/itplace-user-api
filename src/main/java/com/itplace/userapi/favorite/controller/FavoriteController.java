@@ -61,7 +61,8 @@ public class FavoriteController {
             @RequestParam(required = false) String category,
             @PageableDefault(page = 0, size = 6) Pageable pageable) {
 
-        Long userId = userDetails.getUserId();
+        Long userId = 5L;
+//        userDetails.getUserId();
         Page<FavoriteResponse> page = favoriteService.getFavorites(userId, category, pageable);
         PageResult<FavoriteResponse> result = PageResult.of(page);
         ApiResponse<PageResult<FavoriteResponse>> body = ApiResponse.of(FavoriteCode.FAVORITE_BENEFIT_SUCCESS, result);
@@ -75,7 +76,7 @@ public class FavoriteController {
             @AuthenticationPrincipal CustomUserDetails userDetails,
             @RequestParam(required = false, defaultValue = "") String keyword,
             @RequestParam(required = false, defaultValue = "전체") String category) {
-        
+
         List<FavoriteResponse> favorites = favoriteService.searchFavorites(userDetails.getUserId(), keyword, category);
         ApiResponse<List<FavoriteResponse>> body = ApiResponse.of(FavoriteCode.FAVORITE_BENEFIT_SEARCH_SUCCESS,
                 favorites);

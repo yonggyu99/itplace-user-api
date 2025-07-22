@@ -55,7 +55,7 @@ public class FavoriteServiceImpl implements FavoriteService {
 
     @Override
     public void removeFavorites(Long userId, List<Long> benefitIds) {
-        User user = userRepository.findById(1L)
+        User user = userRepository.findById(userId)
                 .orElseThrow(() -> new UserNotFoundException(SecurityCode.USER_NOT_FOUND));
 
         List<Benefit> benefits = benefitRepository.findAllById(benefitIds);
