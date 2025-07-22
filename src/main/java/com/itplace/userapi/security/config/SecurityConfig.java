@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.itplace.userapi.security.auth.local.filter.LoginFilter;
 import com.itplace.userapi.security.jwt.JWTFilter;
 import com.itplace.userapi.security.jwt.JWTUtil;
+import com.itplace.userapi.user.repository.MembershipRepository;
 import jakarta.servlet.http.HttpServletRequest;
 import java.util.Arrays;
 import java.util.Collections;
@@ -33,6 +34,7 @@ public class SecurityConfig {
     private final JWTUtil jwtUtil;
     private final StringRedisTemplate redisTemplate;
     private final ObjectMapper objectMapper;
+    private final MembershipRepository membershipRepository;
 
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http, AuthenticationManager authenticationManager) throws Exception {
@@ -49,7 +51,8 @@ public class SecurityConfig {
                                 "http://localhost:5174", // 로컬 개발 환경
                                 "http://localhost:8080", // 로컬 개발 환경
                                 "https://itplace.click",
-                                "https://www.itplace.click"
+                                "https://www.itplace.click",
+                                "https://user-api.itplace.click"
                         ));
 
                         configuration.setAllowedMethods(Collections.singletonList("*"));
@@ -73,7 +76,12 @@ public class SecurityConfig {
                         .requestMatchers("/**").permitAll()
                         .anyRequest().authenticated());
 
-        LoginFilter loginFilter = new LoginFilter(authenticationManager(authenticationConfiguration), jwtUtil, redisTemplate, objectMapper);
+        LoginFilter loginFilter = new LoginFilter(
+                authenticationManager(authenticationConfiguration),
+                jwtUtil,
+                redisTemplate,
+                objectMapper,
+                membershipRepository);
         loginFilter.setFilterProcessesUrl("/api/v1/auth/login");
 
         http

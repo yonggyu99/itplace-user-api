@@ -6,11 +6,11 @@ import com.itplace.userapi.security.exception.SmsVerificationException;
 import com.itplace.userapi.security.exception.UserNotFoundException;
 import com.itplace.userapi.security.verification.OtpUtil;
 import com.itplace.userapi.security.verification.email.dto.EmailConfirmRequest;
-import com.itplace.userapi.user.dto.UserInfoDto;
 import com.itplace.userapi.user.dto.request.FindEmailConfirmRequest;
 import com.itplace.userapi.user.dto.request.ResetPasswordRequest;
 import com.itplace.userapi.user.dto.response.FindEmailResponse;
 import com.itplace.userapi.user.dto.response.FindPasswordConfirmResponse;
+import com.itplace.userapi.user.dto.response.UserInfoResponse;
 import com.itplace.userapi.user.entity.Membership;
 import com.itplace.userapi.user.entity.User;
 import com.itplace.userapi.user.repository.MembershipRepository;
@@ -38,7 +38,7 @@ public class UserServiceImpl implements UserService {
     private static final String RESET_PASSWORD_VALUE = "true";
 
     @Override
-    public UserInfoDto getUserInfo(Long userId) {
+    public UserInfoResponse getUserInfo(Long userId) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new UserNotFoundException(SecurityCode.USER_NOT_FOUND));
 
@@ -48,7 +48,7 @@ public class UserServiceImpl implements UserService {
                     .orElse(null);
         }
 
-        return UserInfoDto.builder()
+        return UserInfoResponse.builder()
                 .id(user.getId())
                 .name(user.getName())
                 .email(user.getEmail())
@@ -56,7 +56,7 @@ public class UserServiceImpl implements UserService {
                 .gender(user.getGender())
                 .birthday(user.getBirthday())
                 .membershipId(membership != null ? membership.getMembershipId() : null)
-                .grade(membership != null ? membership.getGrade() : null)
+                .membershipGrade(membership != null ? membership.getGrade() : null)
                 .build();
     }
 

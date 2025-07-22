@@ -72,9 +72,9 @@ public class BenefitServiceImpl implements BenefitService {
                 .collect(Collectors.groupingBy(tb -> tb.getBenefit().getBenefitId()));
 
         // 즐겨찾기 여부를 한 번에 가져오기
-        Set<Long> userFavoriteBenefitIds = new HashSet<>(
-                favoriteRepository.findFavoriteBenefitIdsByUser(userId, benefitIds)
-        );
+        Set<Long> userFavoriteBenefitIds = (userId != null)
+                ? new HashSet<>(favoriteRepository.findFavoriteBenefitIdsByUser(userId, benefitIds))
+                : Collections.emptySet();
 
         // 즐겨찾기 수를 한 번에 가져오기
         Map<Long, Long> favoriteCountMap = favoriteRepository.countFavoritesByBenefitIds(benefitIds).stream()
@@ -101,6 +101,7 @@ public class BenefitServiceImpl implements BenefitService {
                             .benefitName(b.getBenefitName())
                             .mainCategory(b.getMainCategory())
                             .usageType(b.getUsageType())
+                            .partnerId(b.getPartner().getPartnerId())
                             .category(Optional.ofNullable(b.getPartner().getCategory()).map(String::trim).orElse(null))
                             .image(b.getPartner().getImage())
                             .isFavorite(isFavorite)
@@ -136,7 +137,9 @@ public class BenefitServiceImpl implements BenefitService {
                 .build();
     }
 
-    public MapBenefitDetailResponse getMapBenefitDetail(Long storeId, Long partnerId, MainCategory mainCategory) {
+    @Override
+    public MapBenefitDetailResponse getMapBenefitDetail(Long storeId, Long partnerId, MainCategory mainCategory,
+                                                        Long userId) {
         log.info("[getMapBenefitDetail] storeId: {}, partnerId: {}, mainCategory: {}", storeId, partnerId,
                 mainCategory);
 
@@ -146,8 +149,6 @@ public class BenefitServiceImpl implements BenefitService {
         if (!store.getPartner().getPartnerId().equals(partnerId)) {
             throw new StorePartnerMismatchException(StoreCode.STORE_PARTNER_MISMATCH);
         }
-
-        String storeName = normalize(store.getStoreName());
 
         List<Benefit> benefits = benefitRepository.findByPartner_PartnerIdAndMainCategory(partnerId, mainCategory);
         log.info("[benefits size] found: {}", benefits.size());
@@ -161,16 +162,11 @@ public class BenefitServiceImpl implements BenefitService {
         if (benefits.size() == 1) {
             selectedBenefit = benefits.get(0);
 
-        } else if (benefits.size() == 2) {
+        } else {
             selectedBenefit = benefits.stream()
                     .filter(b -> b.getUsageType() == UsageType.OFFLINE || b.getUsageType() == UsageType.BOTH)
                     .findFirst()
                     .orElseThrow(() -> new BenefitOfflineNotFoundException(BenefitCode.BENEFIT_OFFLINE_NOT_FOUND));
-        } else {
-            selectedBenefit = benefits.stream()
-                    .filter(b -> normalize(b.getBenefitName()).equals(storeName))
-                    .findFirst()
-                    .orElseThrow(() -> new BenefitNotFoundException(BenefitCode.BENEFIT_NOT_FOUND));
         }
 
         log.info("[selectedBenefit] id: {}, name: {}", selectedBenefit.getBenefitId(),
@@ -181,6 +177,11 @@ public class BenefitServiceImpl implements BenefitService {
                 .map(tb -> new TierBenefitInfo(tb.getGrade(), tb.getContext(), tb.getIsAll()))
                 .toList();
 
+        boolean isFavorite = false;
+        if (userId != null) {
+            isFavorite = favoriteRepository.existsByUser_IdAndBenefit_BenefitId(userId, selectedBenefit.getBenefitId());
+        }
+
         return MapBenefitDetailResponse.builder()
                 .benefitId(selectedBenefit.getBenefitId())
                 .benefitName(selectedBenefit.getBenefitName())
@@ -188,11 +189,8 @@ public class BenefitServiceImpl implements BenefitService {
                 .manual(selectedBenefit.getManual())
                 .url(selectedBenefit.getUrl().trim())
                 .tierBenefits(tierDtos)
+                .isFavorite(isFavorite)
                 .build();
-    }
-
-    private String normalize(String input) {
-        return input.replaceAll("\\s+", "").toLowerCase();
     }
 
 }

@@ -2,12 +2,11 @@ package com.itplace.userapi.benefit.dto.response;
 
 import com.itplace.userapi.benefit.entity.enums.MainCategory;
 import com.itplace.userapi.benefit.entity.enums.UsageType;
+import java.util.List;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-
-import java.util.List;
 
 @Data
 @Builder
@@ -21,6 +20,7 @@ public class BenefitListResponse {
     private UsageType usageType;
 
     // Partner
+    private Long partnerId;
     private String category;
     private String image;
 

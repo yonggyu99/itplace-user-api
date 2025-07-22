@@ -5,6 +5,7 @@ import com.itplace.userapi.common.ApiResponse;
 import com.itplace.userapi.history.MembershipHistoryCode;
 import com.itplace.userapi.history.dto.MembershipHistoryResponse;
 import com.itplace.userapi.history.dto.MonthlyDiscountResponse;
+import com.itplace.userapi.history.exception.UnauthorizedAccessException;
 import com.itplace.userapi.history.service.MembershipHistoryService;
 import com.itplace.userapi.security.auth.local.dto.CustomUserDetails;
 import java.time.LocalDate;
@@ -34,6 +35,9 @@ public class MembershipHistoryController {
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size
     ) {
+        if (userDetails == null) {
+            throw new UnauthorizedAccessException(MembershipHistoryCode.UNAUTHORIZED_MEMBERSHIP_ACCESS);
+        }
         Pageable pageable = PageRequest.of(page, size);
         PagedResponse<MembershipHistoryResponse> result =
                 membershipHistoryService.getUserHistory(userDetails.getUserId(), keyword, startDate, endDate, pageable);
@@ -46,6 +50,9 @@ public class MembershipHistoryController {
     public ResponseEntity<ApiResponse<MonthlyDiscountResponse>> getMonthlyDiscountSummary(
             @AuthenticationPrincipal CustomUserDetails userDetails
     ) {
+        if (userDetails == null) {
+            throw new UnauthorizedAccessException(MembershipHistoryCode.UNAUTHORIZED_MEMBERSHIP_ACCESS);
+        }
         MonthlyDiscountResponse result = membershipHistoryService.getMonthlyDiscountSummary(userDetails.getUserId());
         ApiResponse<MonthlyDiscountResponse> body = ApiResponse.of(
                 MembershipHistoryCode.MEMBERSHIP_HISTORY_SUMMARY_SUCCESS,

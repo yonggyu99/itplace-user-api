@@ -40,8 +40,9 @@ public class BenefitController {
     ) {
 
         Pageable pageable = PageRequest.of(page, size);
+        Long userId = (userDetails != null) ? userDetails.getUserId() : null;
         PagedResponse<BenefitListResponse> result = benefitService.getBenefitList(
-                mainCategory, category, filter, keyword, userDetails.getUserId(), pageable
+                mainCategory, category, filter, keyword, userId, pageable
         );
         ApiResponse<PagedResponse<BenefitListResponse>> body = ApiResponse.of(BenefitCode.BENEFIT_LIST_SUCCESS, result);
         return ResponseEntity.status(body.getStatus()).body(body);
@@ -58,9 +59,11 @@ public class BenefitController {
     public ResponseEntity<ApiResponse<MapBenefitDetailResponse>> getMapBenefitDetail(
             @RequestParam Long storeId,
             @RequestParam Long partnerId,
-            @RequestParam MainCategory mainCategory
+            @RequestParam MainCategory mainCategory,
+            @AuthenticationPrincipal CustomUserDetails userDetails
     ) {
-        MapBenefitDetailResponse detail = benefitService.getMapBenefitDetail(storeId, partnerId, mainCategory);
+        Long userId = (userDetails != null) ? userDetails.getUserId() : null;
+        MapBenefitDetailResponse detail = benefitService.getMapBenefitDetail(storeId, partnerId, mainCategory, userId);
         ApiResponse<MapBenefitDetailResponse> body = ApiResponse.of(BenefitCode.BENEFIT_DETAIL_SUCCESS, detail);
         return ResponseEntity.status(body.getStatus()).body(body);
     }
