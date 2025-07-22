@@ -61,8 +61,7 @@ public class FavoriteController {
             @RequestParam(required = false) String category,
             @PageableDefault(page = 0, size = 6) Pageable pageable) {
 
-        Long userId = 5L;
-//        userDetails.getUserId();
+        Long userId = userDetails.getUserId();
         Page<FavoriteResponse> page = favoriteService.getFavorites(userId, category, pageable);
         PageResult<FavoriteResponse> result = PageResult.of(page);
         ApiResponse<PageResult<FavoriteResponse>> body = ApiResponse.of(FavoriteCode.FAVORITE_BENEFIT_SUCCESS, result);
