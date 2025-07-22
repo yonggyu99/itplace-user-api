@@ -1,7 +1,10 @@
 package com.itplace.userapi.history.repository;
 
 import com.itplace.userapi.history.entity.MembershipHistory;
+import com.itplace.userapi.recommend.projection.BenefitCount;
+import com.itplace.userapi.recommend.projection.CategoryCount;
 import java.time.LocalDateTime;
+import java.util.List;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -40,5 +43,31 @@ public interface MembershipHistoryRepository extends JpaRepository<MembershipHis
             @Param("membershipId") String membershipId,
             @Param("year") int year,
             @Param("month") int month
+    );
+
+    @Query("""
+              SELECT p.category AS category, COUNT(mh) AS cnt
+              FROM MembershipHistory mh
+                JOIN mh.benefit b
+                JOIN b.partner p
+              WHERE mh.membership.membershipId = :membershipId
+                AND mh.usedAt >= :since
+              GROUP BY p.category
+            """)
+    List<CategoryCount> countByPartnerCategorySince(
+            @Param("membershipId") String membershipId,
+            @Param("since") LocalDateTime since
+    );
+
+    @Query("""
+              SELECT mh.benefit.benefitId AS benefitId, COUNT(mh) AS cnt
+              FROM MembershipHistory mh
+              WHERE mh.membership.membershipId = :membershipId
+                AND mh.usedAt >= :since
+              GROUP BY mh.benefit.benefitId
+            """)
+    List<BenefitCount> countByBenefitSince(
+            @Param("membershipId") String membershipId,
+            @Param("since") LocalDateTime since
     );
 }

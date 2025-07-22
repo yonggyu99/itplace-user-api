@@ -75,10 +75,8 @@ public class FavoriteController {
             @AuthenticationPrincipal CustomUserDetails userDetails,
             @RequestParam(required = false, defaultValue = "") String keyword,
             @RequestParam(required = false, defaultValue = "전체") String category) {
-
-        Long userId = 1L;
-//        userDetails.getUserId();
-        List<FavoriteResponse> favorites = favoriteService.searchFavorites(userId, keyword, category);
+        
+        List<FavoriteResponse> favorites = favoriteService.searchFavorites(userDetails.getUserId(), keyword, category);
         ApiResponse<List<FavoriteResponse>> body = ApiResponse.of(FavoriteCode.FAVORITE_BENEFIT_SEARCH_SUCCESS,
                 favorites);
         return ResponseEntity.status(body.getStatus()).body(body);
