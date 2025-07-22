@@ -20,4 +20,5 @@ public class MapBenefitDetailResponse {
     private String manual;
     private String url;
     private List<TierBenefitInfo> tierBenefits;
+    private Boolean isFavorite; // 사용자 관심 혜택 여부 추가
 }

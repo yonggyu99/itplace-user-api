@@ -1,4 +1,4 @@
-package com.itplace.userapi.user.dto;
+package com.itplace.userapi.user.dto.response;
 
 import com.itplace.userapi.benefit.entity.enums.Grade;
 import com.itplace.userapi.user.entity.Gender;
@@ -10,7 +10,7 @@ import lombok.Setter;
 @Getter
 @Setter
 @Builder
-public class UserInfoDto {
+public class UserInfoResponse {
     private Long id;
     private String name;
     private String email;
@@ -18,5 +18,5 @@ public class UserInfoDto {
     private Gender gender;
     private LocalDate birthday;
     private String membershipId;
-    private Grade grade;
+    private Grade membershipGrade;
 }

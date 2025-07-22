@@ -13,7 +13,7 @@ public interface FavoriteService {
 
     Page<FavoriteResponse> getFavorites(Long userId, String category, Pageable pageable);
 
-    List<FavoriteResponse> searchFavorites(Long userId, String keyword);
+    List<FavoriteResponse> searchFavorites(Long userId, String keyword, String category);
 
     FavoriteDetailResponse getBenefitDetail(Long benefitId);
 }

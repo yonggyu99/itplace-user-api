@@ -36,7 +36,7 @@ public class JWTUtil {
 
     public Role getRole(String token) {
         String roleString = Jwts.parser().verifyWith(secretKey).build().parseSignedClaims(token).getPayload().get("role", String.class);
-        return Role.valueOf(roleString);
+        return Role.fromKey(roleString);
     }
 
     public String getCategory(String token) {

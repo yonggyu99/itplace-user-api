@@ -75,6 +75,8 @@ public class StoreServiceImpl implements StoreService {
                                     .roadName(store.getRoadName())
                                     .roadAddress(store.getRoadAddress())
                                     .postCode(store.getPostCode())
+                                    .longitude(store.getLocation().getX())
+                                    .latitude(store.getLocation().getY())
                                     .build())
                             .partner(PartnerDto.builder()
                                     .partnerId(partner.getPartnerId())
@@ -165,4 +167,6 @@ public class StoreServiceImpl implements StoreService {
 
         return benefits;
     }
+
+
 }

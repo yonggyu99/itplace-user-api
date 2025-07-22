@@ -4,7 +4,9 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.itplace.userapi.security.auth.local.filter.LoginFilter;
 import com.itplace.userapi.security.jwt.JWTFilter;
 import com.itplace.userapi.security.jwt.JWTUtil;
+import com.itplace.userapi.user.repository.MembershipRepository;
 import jakarta.servlet.http.HttpServletRequest;
+import java.util.Arrays;
 import java.util.Collections;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
@@ -32,6 +34,7 @@ public class SecurityConfig {
     private final JWTUtil jwtUtil;
     private final StringRedisTemplate redisTemplate;
     private final ObjectMapper objectMapper;
+    private final MembershipRepository membershipRepository;
 
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http, AuthenticationManager authenticationManager) throws Exception {
@@ -42,7 +45,16 @@ public class SecurityConfig {
                     public CorsConfiguration getCorsConfiguration(HttpServletRequest request) {
                         CorsConfiguration configuration = new CorsConfiguration();
 
-                        configuration.setAllowedOrigins(Collections.singletonList("http://localhost:5173"));
+                        configuration.setAllowedOriginPatterns(Arrays.asList(
+                                "http://localhost:3000", // 로컬 개발 환경
+                                "http://localhost:5173", // 로컬 개발 환경
+                                "http://localhost:5174", // 로컬 개발 환경
+                                "http://localhost:8080", // 로컬 개발 환경
+                                "https://itplace.click",
+                                "https://www.itplace.click",
+                                "https://user-api.itplace.click"
+                        ));
+
                         configuration.setAllowedMethods(Collections.singletonList("*"));
                         configuration.setAllowCredentials(true);
                         configuration.setAllowedHeaders(Collections.singletonList("*"));
@@ -64,12 +76,17 @@ public class SecurityConfig {
                         .requestMatchers("/**").permitAll()
                         .anyRequest().authenticated());
 
-        LoginFilter loginFilter = new LoginFilter(authenticationManager(authenticationConfiguration), jwtUtil, redisTemplate, objectMapper);
+        LoginFilter loginFilter = new LoginFilter(
+                authenticationManager(authenticationConfiguration),
+                jwtUtil,
+                redisTemplate,
+                objectMapper,
+                membershipRepository);
         loginFilter.setFilterProcessesUrl("/api/v1/auth/login");
 
         http
-                .addFilterBefore(new JWTFilter(jwtUtil), LoginFilter.class)
-                .addFilterAt(loginFilter, UsernamePasswordAuthenticationFilter.class);
+                .addFilterAt(loginFilter, UsernamePasswordAuthenticationFilter.class)
+                .addFilterBefore(new JWTFilter(jwtUtil), LoginFilter.class);
 
         // 세션 설정 : STATELESS
         http

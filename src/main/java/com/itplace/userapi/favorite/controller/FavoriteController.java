@@ -73,10 +73,12 @@ public class FavoriteController {
     @GetMapping("/search")
     public ResponseEntity<ApiResponse<List<FavoriteResponse>>> searchFavorites(
             @AuthenticationPrincipal CustomUserDetails userDetails,
-            @RequestParam String keyword) {
+            @RequestParam(required = false, defaultValue = "") String keyword,
+            @RequestParam(required = false, defaultValue = "전체") String category) {
 
-        Long userId = userDetails.getUserId();
-        List<FavoriteResponse> favorites = favoriteService.searchFavorites(userId, keyword);
+        Long userId = 1L;
+//        userDetails.getUserId();
+        List<FavoriteResponse> favorites = favoriteService.searchFavorites(userId, keyword, category);
         ApiResponse<List<FavoriteResponse>> body = ApiResponse.of(FavoriteCode.FAVORITE_BENEFIT_SEARCH_SUCCESS,
                 favorites);
         return ResponseEntity.status(body.getStatus()).body(body);
