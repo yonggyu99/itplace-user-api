@@ -34,14 +34,18 @@ public interface FavoriteRepository extends JpaRepository<Favorite, FavoriteId> 
     @Query("SELECT f.benefit.benefitId FROM Favorite f WHERE f.user.id = :userId AND f.benefit.benefitId IN :benefitIds")
     List<Long> findFavoriteBenefitIdsByUser(@Param("userId") Long userId, @Param("benefitIds") List<Long> benefitIds);
 
+
     @Query("SELECT f.benefit.benefitId, COUNT(f) FROM Favorite f WHERE f.benefit.benefitId IN :benefitIds GROUP BY f.benefit.benefitId")
     List<Object[]> countFavoritesByBenefitIds(@Param("benefitIds") List<Long> benefitIds);
 
+
     void deleteByUserAndBenefitIn(User user, List<Benefit> benefits);
+
 
     List<Favorite> findByUserAndBenefit_BenefitNameContainingAndBenefit_Partner_CategoryContaining(User user,
                                                                                                    String keyword,
                                                                                                    String category);
-    
+
     boolean existsByUser_IdAndBenefit_BenefitId(Long userId, Long benefitId);
+
 }
