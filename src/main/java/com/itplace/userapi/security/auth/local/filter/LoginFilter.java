@@ -25,6 +25,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseCookie;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
@@ -87,8 +88,28 @@ public class LoginFilter extends UsernamePasswordAuthenticationFilter {
 
 //        response.addHeader("Authorization", "Bearer " + accessToken);
 //        response.addHeader("Authorization_Refresh", "Bearer " + refreshToken);
-        response.addCookie(createAccessTokenCookie(accessToken));
-        response.addCookie(createRefreshTokenCookie(refreshToken));
+//        response.addCookie(createAccessTokenCookie(accessToken));
+//        response.addCookie(createRefreshTokenCookie(refreshToken));
+
+        // 1. Access Token 쿠키 설정
+        ResponseCookie accessTokenCookie = ResponseCookie.from(JWTConstants.CATEGORY_ACCESS, accessToken)
+                .path("/")
+                .secure(true)
+                .sameSite("None") // 로컬 개발 환경(http)과 통신하려면 None으로 설정
+                .httpOnly(true)
+                .maxAge(jwtUtil.getAccessTokenValidityInMS() / 1000)
+                .build();
+        response.addHeader("Set-Cookie", accessTokenCookie.toString());
+
+        // 2. Refresh Token 쿠키 설정
+        ResponseCookie refreshTokenCookie = ResponseCookie.from(JWTConstants.CATEGORY_REFRESH, refreshToken)
+                .path("/")
+                .secure(true)
+                .sameSite("None") // 로컬 개발 환경(http)과 통신하려면 None으로 설정
+                .httpOnly(true)
+                .maxAge(jwtUtil.getRefreshTokenValidityInMS() / 1000)
+                .build();
+        response.addHeader("Set-Cookie", refreshTokenCookie.toString());
 
         response.setContentType("application/json;charset=UTF-8");
         response.setStatus(HttpStatus.OK.value());
