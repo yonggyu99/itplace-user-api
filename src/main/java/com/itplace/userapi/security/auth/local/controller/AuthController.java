@@ -7,6 +7,7 @@ import com.itplace.userapi.security.auth.local.service.AuthService;
 import com.itplace.userapi.security.jwt.JWTConstants;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.Cookie;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -22,6 +23,13 @@ import org.springframework.web.bind.annotation.RestController;
 public class AuthController {
 
     private final AuthService authService;
+
+    @PostMapping("/reissue")
+    public ResponseEntity<ApiResponse<Void>> reissue(HttpServletRequest request, HttpServletResponse response) {
+        authService.reissue(request, response);
+        ApiResponse<Void> body = ApiResponse.ok(SecurityCode.RENEW_ACCESS_TOKEN);
+        return new ResponseEntity<>(body, body.getStatus());
+    }
 
     @PostMapping("/logout")
     public ResponseEntity<ApiResponse<Void>> logout(@AuthenticationPrincipal CustomUserDetails userDetails, HttpServletResponse response) {
