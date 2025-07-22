@@ -43,7 +43,7 @@ public class LoginFilter extends UsernamePasswordAuthenticationFilter {
     private final ObjectMapper objectMapper;
     private final MembershipRepository membershipRepository;
 
-    private static final String REFRESH_TOKEN_PREFIX = "RT:";
+    public static final String REFRESH_TOKEN_PREFIX = "RT:";
 
     @Override
     public Authentication attemptAuthentication(HttpServletRequest request, HttpServletResponse response)

@@ -12,16 +12,15 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 @Slf4j
 @RestControllerAdvice
 public class GlobalExceptionHandler {
-    @ExceptionHandler(IllegalStateException.class)
-    public ResponseEntity<ApiResponse<?>> handleIllegalStateException(IllegalStateException ex) {
-        ApiResponse<Void> body = ApiResponse.of(SecurityCode.Test, null);
-        return new ResponseEntity<>(body, HttpStatus.OK);
+    @ExceptionHandler(Exception.class)
+    public ResponseEntity<String> handleIllegalStateException(Exception ex) {
+        return new ResponseEntity<>(ex.getMessage(), HttpStatus.BAD_REQUEST);
     }
 
     @ExceptionHandler(RuntimeException.class)
-    public ResponseEntity<ApiResponse<?>> handleRuntimeException(RuntimeException ex) {
+    public ResponseEntity<ApiResponse<String>> handleRuntimeException(RuntimeException ex) {
         log.info("ex: ", ex);
-        ApiResponse<Void> body = ApiResponse.of(SecurityCode.Test, null);
+        ApiResponse<String> body = ApiResponse.of(SecurityCode.INTERNAL_SERVER_ERROR, ex.getMessage());
         return new ResponseEntity<>(body, body.getStatus());
     }
 
