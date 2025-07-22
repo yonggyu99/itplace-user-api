@@ -9,7 +9,7 @@ import org.springframework.data.domain.Pageable;
 public interface FavoriteService {
     void addFavorite(Long userId, Long benefitId);
 
-    void removeFavorite(Long userId, Long benefitId);
+    void removeFavorites(Long userId, List<Long> benefitIds);
 
     Page<FavoriteResponse> getFavorites(Long userId, String category, Pageable pageable);
 

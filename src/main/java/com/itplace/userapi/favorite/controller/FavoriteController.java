@@ -5,6 +5,7 @@ import com.itplace.userapi.favorite.dto.FavoriteDetailResponse;
 import com.itplace.userapi.favorite.dto.FavoriteRequest;
 import com.itplace.userapi.favorite.dto.FavoriteResponse;
 import com.itplace.userapi.favorite.dto.PageResult;
+import com.itplace.userapi.favorite.dto.RemoveFavoritesRequest;
 import com.itplace.userapi.favorite.enums.FavoriteCode;
 import com.itplace.userapi.favorite.service.FavoriteService;
 import com.itplace.userapi.security.auth.local.dto.CustomUserDetails;
@@ -46,8 +47,8 @@ public class FavoriteController {
     @DeleteMapping
     public ResponseEntity<ApiResponse<Void>> removeFavorite(
             @AuthenticationPrincipal CustomUserDetails userDetails,
-            @RequestBody FavoriteRequest request) {
-        favoriteService.removeFavorite(userDetails.getUserId(), request.getBenefitId());
+            @RequestBody RemoveFavoritesRequest request) {
+        favoriteService.removeFavorites(userDetails.getUserId(), request.getBenefitIds());
         ApiResponse<Void> body = ApiResponse.ok(FavoriteCode.FAVORITE_DELETE_SUCCESS);
         return ResponseEntity.status(body.getStatus()).body(body);
     }
