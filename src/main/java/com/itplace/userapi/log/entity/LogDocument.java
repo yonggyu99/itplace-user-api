@@ -19,7 +19,9 @@ public class LogDocument {
     private Long userId;
     private String event;
     private Long benefitId;
+    private String benefitName;
     private Long partnerId;
+    private String partnerName;
     private String path;
     private String param;
     private Instant loggingAt;

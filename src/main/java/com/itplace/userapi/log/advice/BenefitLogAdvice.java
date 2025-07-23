@@ -49,7 +49,12 @@ public class BenefitLogAdvice implements ResponseBodyAdvice<Object> {
         Long userId = getUserId();
 
         String[] parts = path.split("/");
-        if (!parts[parts.length - 1].equals("benefit") && !parts[parts.length - 2].equals("benefit")) {
+        if (parts.length < 1) {
+            return body;
+        }
+        boolean lastIsBenefit = !parts[parts.length - 1].equals("benefit");
+        boolean previsBenefit = parts.length >= 2 && !parts[parts.length - 2].equals("benefit");
+        if (lastIsBenefit && previsBenefit) {
             return body;
         }
 
