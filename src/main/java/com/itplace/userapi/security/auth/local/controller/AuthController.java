@@ -5,7 +5,6 @@ import com.itplace.userapi.security.SecurityCode;
 import com.itplace.userapi.security.auth.local.dto.CustomUserDetails;
 import com.itplace.userapi.security.auth.local.service.AuthService;
 import com.itplace.userapi.security.jwt.JWTConstants;
-import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -16,7 +15,6 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-@Tag(name = "Auth", description = "인증, 인가, 로그인, 회원가입 관련 API")
 @RestController
 @RequestMapping("/api/v1/auth")
 @RequiredArgsConstructor

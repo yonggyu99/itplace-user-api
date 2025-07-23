@@ -62,6 +62,20 @@ public class JWTUtil {
                 .compact();
     }
 
+    public String createTempJwt(String provider, String providerId) {
+        long now = System.currentTimeMillis();
+        long validity = 10 * 60 * 1000L; // 10분 유효
+
+        return Jwts.builder()
+                .claim(JWTConstants.CLAIM_CATEGORY, "temp")
+                .claim("provider", provider)
+                .claim("providerId", providerId)
+                .issuedAt(new Date(now))
+                .expiration(new Date(now + validity))
+                .signWith(secretKey)
+                .compact();
+    }
+
     /**
      * 토큰을 파싱하여 모든 클레임(정보)을 반환합니다.
      * 이 과정에서 토큰의 유효성(서명, 만료 시간 등)이 검증됩니다.

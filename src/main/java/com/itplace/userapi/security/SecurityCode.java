@@ -19,7 +19,6 @@ public enum SecurityCode implements BaseCode {
     UNAUTHORIZED_ACCESS("UNAUTHORIZED_ACCESS", HttpStatus.UNAUTHORIZED, "인증 정보가 유효하지 않습니다."),
 
     // 회원가입
-    INVALID_REGISTRATION_SESSION("INVALID_REGISTRATION_SESSION", HttpStatus.BAD_REQUEST, "잘못된 가입 요청입니다."),
     PASSWORD_MISMATCH("PASSWORD_MISMATCH", HttpStatus.BAD_REQUEST, "비밀번호가 일치하지 않습니다."),
     SIGNUP_SUCCESS("SIGNUP_SUCCESS", HttpStatus.OK, "성공적으로 회원가입 되었습니다."),
     LINK_LOCAL_SUCCESS("LINK_LOCAL_SUCCESS", HttpStatus.OK, "로컬 계정이 소셜 계정에 성공적으로 연결되었습니다."),
@@ -60,8 +59,10 @@ public enum SecurityCode implements BaseCode {
     REFRESH_TOKEN_EXPIRED("REFRESH_TOKEN_EXPIRED", HttpStatus.UNAUTHORIZED, "리프레시 토큰이 만료되었습니다."),
     INVALID_TOKEN_TYPE("INVALID_TOKEN_TYPE", HttpStatus.UNAUTHORIZED, "잘못된 토큰 타입입니다."),
 
-    // OAuth2 로그인 시 추가 정보가 필요함을 나타내는 코드
-    SIGNUP_REQUIRED("SIGNUP_REQUIRED", HttpStatus.OK, "회원가입이 필요합니다. 추가 정보를 입력해주세요.");
+    // OAuth2, 추가 정보 입력 전 임시 인증 성공
+    PRE_AUTHENTICATION_SUCCESS("PRE_AUTHENTICATION_SUCCESS", HttpStatus.OK, "임시 인증에 성공했습니다. 추가 정보 입력이 필요합니다."),
+    // 회원가입
+    INVALID_REGISTRATION_SESSION("INVALID_REGISTRATION_SESSION", HttpStatus.BAD_REQUEST, "잘못된 가입 요청입니다.");
 
     private final String code;
     private final HttpStatus status;

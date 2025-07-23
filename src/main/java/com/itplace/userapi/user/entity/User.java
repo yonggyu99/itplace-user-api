@@ -1,6 +1,7 @@
 package com.itplace.userapi.user.entity;
 
 import com.itplace.userapi.common.BaseTimeEntity;
+import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
@@ -8,10 +9,13 @@ import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.List;
 import java.util.UUID;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
@@ -27,7 +31,7 @@ import org.springframework.security.core.authority.SimpleGrantedAuthority;
 @Setter
 @Entity
 @Builder
-@ToString
+@ToString(exclude = "socialAccounts")
 @AllArgsConstructor
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Table(name = "user")
@@ -41,13 +45,13 @@ public class User extends BaseTimeEntity {
     @Column(name = "name", length = 30)
     private String name;
 
-    @Column(name = "email", nullable = false)
+    @Column(name = "email", unique = true)
     private String email;
 
     @Column(name = "password")
     private String password;
 
-    @Column(name = "phoneNumber", length = 11)
+    @Column(name = "phoneNumber", length = 11, unique = true)
     private String phoneNumber;
 
     @Column(name = "gender", length = 5)
@@ -64,10 +68,8 @@ public class User extends BaseTimeEntity {
     @Enumerated(EnumType.STRING)
     private Role role;
 
-    public void completeRegistration(String phoneNumber) {
-        this.phoneNumber = phoneNumber;
-        this.role = Role.USER;
-    }
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<SocialAccount> socialAccounts = new ArrayList<>();
 
     public Collection<? extends GrantedAuthority> getAuthorities() {
         return Collections.singletonList(new SimpleGrantedAuthority(this.role.name()));
