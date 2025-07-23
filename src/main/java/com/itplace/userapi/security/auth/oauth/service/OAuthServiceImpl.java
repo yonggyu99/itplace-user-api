@@ -32,6 +32,7 @@ import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.MediaType;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.LinkedMultiValueMap;
@@ -49,6 +50,7 @@ public class OAuthServiceImpl implements OAuthService {
     private final JWTUtil jwtUtil;
     private final RedisTemplate<String, String> redisTemplate;
     private final RestTemplate restTemplate = new RestTemplate();
+    private final PasswordEncoder passwordEncoder;
 
     @Value("${spring.security.oauth2.client.registration.kakao.client-id}")
     private String kakaoClientId;
@@ -117,10 +119,10 @@ public class OAuthServiceImpl implements OAuthService {
                 .gender(request.getGender())
                 .birthday(request.getBirthday())
                 .membershipId(membershipId)
-                .password(UUID.randomUUID().toString())
+                .password(passwordEncoder.encode(UUID.randomUUID().toString()))
                 .role(Role.USER)
                 .build();
-
+        
         user.getSocialAccounts().add(SocialAccount.builder()
                 .provider(provider).providerId(providerId).user(user).build());
 
