@@ -16,7 +16,6 @@ public class OpenAIConfig {
 
     @Bean
     public OpenAIClient openAIClient() {
-        // env 기반 + 명시적 키/URL 설정
         String host = props.getApi().getUrl();
         if (!host.endsWith("/")) {
             host += "/";

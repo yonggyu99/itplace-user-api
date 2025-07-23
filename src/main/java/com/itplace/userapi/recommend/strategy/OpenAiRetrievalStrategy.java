@@ -1,7 +1,7 @@
 package com.itplace.userapi.recommend.strategy;
 
+import com.itplace.userapi.recommend.domain.UserFeature;
 import com.itplace.userapi.recommend.dto.Candidate;
-import com.itplace.userapi.recommend.dto.UserFeature;
 import com.itplace.userapi.recommend.service.OpenAIService;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
