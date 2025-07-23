@@ -49,6 +49,8 @@ public class OAuthServiceImpl implements OAuthService {
 
     @Value("${spring.security.oauth2.client.registration.kakao.client-id}")
     private String kakaoClientId;
+    @Value("${spring.security.oauth2.client.registration.kakao.client-secret}")
+    private String kakaoClientSecret;
     @Value("${spring.security.oauth2.client.registration.kakao.redirect-uri}")
     private String kakaoRedirectUri;
     @Value("${spring.security.oauth2.client.provider.kakao.token-uri}")
@@ -176,6 +178,7 @@ public class OAuthServiceImpl implements OAuthService {
         params.add("grant_type", "authorization_code");
         params.add("client_id", kakaoClientId);
         params.add("redirect_uri", kakaoRedirectUri);
+        params.add("client_secret", kakaoClientSecret);
         params.add("code", code);
         HttpEntity<MultiValueMap<String, String>> request = new HttpEntity<>(params, headers);
         Map<String, Object> response = restTemplate.postForObject(kakaoTokenUri, request, Map.class);
