@@ -21,6 +21,16 @@ jobs:
       # 1. 소스 코드 체크아웃
       - uses: actions/checkout@v3
 
+      - name: Cache Gradle packages
+        uses: actions/cache@v3
+        with:
+          path: |
+            ~/.gradle/caches
+            ~/.gradle/wrapper
+          key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
+          restore-keys: |
+            ${{ runner.os }}-gradle-
+
       # 2. OpenJDK 17 설치
       - name: Install JDK 17
         uses: actions/setup-java@v3
@@ -33,7 +43,7 @@ jobs:
         run: |
           echo ${{secrets.APPLICATION_SECRET}} | base64 --decode > ./src/main/resources/application-secret.yml
           chmod +x ./gradlew
-          ./gradlew build -x test
+          ./gradlew build -x test --parallel --configure-on-demand
 
       # 4. DockerHub 로그인
       - name: Login to DockerHub
@@ -50,6 +60,10 @@ jobs:
           platforms: linux/amd64
           push: true
           tags: ${{ secrets.DOCKERHUB_USERNAME }}/live_server:latest
+          cache-from: |
+            type=registry,ref=${{ secrets.DOCKERHUB_USERNAME }}/live_server:cache
+          cache-to: |
+            type=registry,ref=${{ secrets.DOCKERHUB_USERNAME }}/live_server:cache,mode=max
 
   # 'deploy' 작업
   deploy:
