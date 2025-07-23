@@ -24,6 +24,7 @@ import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.http.HttpEntity;
@@ -36,6 +37,7 @@ import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.client.RestTemplate;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class OAuthServiceImpl implements OAuthService {
@@ -67,6 +69,8 @@ public class OAuthServiceImpl implements OAuthService {
 
         String provider = "kakao";
         String providerId = userInfo.get("id").toString();
+
+        log.info("======= provider: {}, providerId: {} =======", provider, providerId);
 
         Optional<SocialAccount> socialAccountOpt = socialAccountRepository.findByProviderAndProviderId(provider, providerId);
 
@@ -177,7 +181,7 @@ public class OAuthServiceImpl implements OAuthService {
         MultiValueMap<String, String> params = new LinkedMultiValueMap<>();
         params.add("grant_type", "authorization_code");
         params.add("client_id", kakaoClientId);
-        params.add("redirect_uri", "http://localhost:5173/oauth/callback/kakao");
+        params.add("redirect_uri", kakaoRedirectUri);
         params.add("client_secret", kakaoClientSecret);
         params.add("code", code);
         HttpEntity<MultiValueMap<String, String>> request = new HttpEntity<>(params, headers);
