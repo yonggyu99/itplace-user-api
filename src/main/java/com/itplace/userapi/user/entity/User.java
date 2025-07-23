@@ -69,6 +69,7 @@ public class User extends BaseTimeEntity {
     private Role role;
 
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+    @Builder.Default
     private List<SocialAccount> socialAccounts = new ArrayList<>();
 
     public Collection<? extends GrantedAuthority> getAuthorities() {
