@@ -63,7 +63,6 @@ public class OAuthServiceImpl implements OAuthService {
     @Override
     @Transactional(readOnly = true)
     public KakaoLoginResult processKakaoLogin(String code) {
-        log.info("kakao code: {}", code);
         String kakaoAccessToken = getKakaoAccessToken(code);
         Map<String, Object> userInfo = getKakaoUserInfo(kakaoAccessToken);
 //        Map<String, Object> kakaoAccount = (Map<String, Object>) userInfo.get("kakao_account"); 이메일 정보 미사용으로 주석 처리
