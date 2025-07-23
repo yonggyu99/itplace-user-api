@@ -21,38 +21,50 @@ public class LogServiceImpl implements LogService {
     @Override
     public void saveRequestLog(Long userId, String event, Long benefitId, String path, String param) {
         Benefit benefit = benefitRepository.findById(benefitId).orElse(null);
-        Long partnerId = benefit != null ? benefit.getPartner().getPartnerId() : null;
+        if (benefit != null) {
+            Long partnerId = benefit.getPartner().getPartnerId();
+            String partnerName = benefit.getPartner().getPartnerName();
 
-        log.info("REQUEST: {}, path={}, event={}, benefitId={}, partnerId={}",
-                userId, path, event, benefitId, partnerId);
+            log.info("REQUEST: {}, path={}, event={}, benefitId={}, partnerId={}",
+                    userId, path, event, benefitId, partnerId);
 
-        LogDocument logDocument = LogDocument.builder()
-                .userId(userId)
-                .event(event)
-                .benefitId(benefitId)
-                .partnerId(partnerId)
-                .path(path)
-                .param(param)
-                .loggingAt(Instant.now())
-                .build();
-        logRepository.save(logDocument);
+            LogDocument logDocument = LogDocument.builder()
+                    .userId(userId)
+                    .event(event)
+                    .benefitId(benefitId)
+                    .benefitName(benefit.getBenefitName())
+                    .partnerId(partnerId)
+                    .partnerName(partnerName)
+                    .path(path)
+                    .param(param)
+                    .loggingAt(Instant.now())
+                    .build();
+            logRepository.save(logDocument);
+        }
     }
 
     // 검색, 상세
     @Override
     public void saveResponseLog(Long userId, String event, Long benefitId, Long partnerId, String path, String param) {
-        log.info("RESPONSE: {}, path={}, event={}, benefitId={}, partnerId={}",
-                userId, path, event, benefitId, partnerId);
+        Benefit benefit = benefitRepository.findById(benefitId).orElse(null);
+        if (benefit != null) {
+            String partnerName = benefit.getPartner().getPartnerName();
 
-        LogDocument logDocument = LogDocument.builder()
-                .userId(userId)
-                .event(event)
-                .benefitId(benefitId)
-                .partnerId(partnerId)
-                .path(path)
-                .param(param)
-                .loggingAt(Instant.now())
-                .build();
-        logRepository.save(logDocument);
+            log.info("RESPONSE: {}, path={}, event={}, benefitId={}, partnerId={}",
+                    userId, path, event, benefitId, partnerId);
+
+            LogDocument logDocument = LogDocument.builder()
+                    .userId(userId)
+                    .event(event)
+                    .benefitId(benefitId)
+                    .benefitName(benefit.getBenefitName())
+                    .partnerId(partnerId)
+                    .partnerName(partnerName)
+                    .path(path)
+                    .param(param)
+                    .loggingAt(Instant.now())
+                    .build();
+            logRepository.save(logDocument);
+        }
     }
 }
