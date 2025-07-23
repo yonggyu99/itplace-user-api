@@ -1,7 +1,8 @@
 package com.itplace.userapi.recommend.service;
 
+import com.itplace.userapi.recommend.domain.UserFeature;
 import com.itplace.userapi.recommend.dto.Candidate;
-import com.itplace.userapi.recommend.dto.UserFeature;
+import com.itplace.userapi.recommend.dto.Recommendation;
 import com.itplace.userapi.recommend.strategy.RankingStrategy;
 import com.itplace.userapi.recommend.strategy.RetrievalStrategy;
 import java.util.List;
@@ -13,13 +14,11 @@ public abstract class AbstractRecommendationService {
     protected final RetrievalStrategy retrievalStrategy;
     protected final RankingStrategy rankingStrategy;
 
-    public String recommend(Long userId, int topK) throws Exception {
+    public List<Recommendation> recommend(Long userId, int topK) throws Exception {
+        // 사용자 분석
         UserFeature uf = ufService.loadUserFeature(userId);
-        List<Candidate> cands = retrievalStrategy.retrieve(uf, getCandidateSize());
+        // 추천 리스트
+        List<Candidate> cands = retrievalStrategy.retrieve(uf, 70);
         return rankingStrategy.rank(uf, cands, topK);
-    }
-
-    protected int getCandidateSize() {
-        return 50;
     }
 }

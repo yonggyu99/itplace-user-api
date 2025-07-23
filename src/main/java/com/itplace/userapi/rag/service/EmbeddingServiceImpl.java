@@ -2,6 +2,7 @@ package com.itplace.userapi.rag.service;
 
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpHeaders;
@@ -34,10 +35,15 @@ public class EmbeddingServiceImpl implements EmbeddingService {
                 .retrieve()
                 .bodyToMono(Map.class)
                 .block();
+        
+        List<?> rawVector = (List<?>) ((Map<?, ?>) ((List<?>) response.get("data")).get(0)).get("embedding");
 
-        // 파싱 예시
-        List<Float> vector = (List<Float>) ((Map) ((List) response.get("data")).get(0)).get("embedding");
+        List<Float> vector = rawVector.stream()
+                .map(val -> ((Number) val).floatValue())
+                .collect(Collectors.toList());
+
         return vector;
     }
+
 }
 

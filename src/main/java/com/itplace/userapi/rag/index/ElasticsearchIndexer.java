@@ -31,7 +31,6 @@
 //        benefitRepo.findAllWithPartnerAndTierBenefits().forEach(b -> {
 //            try {
 //                String benefitId = b.getBenefitId().toString();
-//
 //                if (elasticService.existsById(indexName, benefitId)) {
 //                    System.out.println("Benefit already exists: " + benefitId);
 //                    return;
@@ -40,15 +39,14 @@
 //                Partner p = b.getPartner();
 //
 //                // 임베딩용 텍스트
-//                String text = String.join(" ",
-//                        p.getPartnerName(),
+//                String embeddingText = String.format(
+//                        "%s, %s  %s",
 //                        b.getBenefitName(),
-//                        b.getDescription() != null ? b.getDescription() : "",
-//                        p.getCategory()
+//                        p.getCategory(),
+//                        b.getDescription() != null ? b.getDescription() : ""
 //                );
-//                List<Float> embedding = embeddingService.embed(text);
+//                List<Float> embedding = embeddingService.embed(embeddingText);
 //
-//                // LLM 전달용 context : 티어별 혜택 구분 포함
 //                String context = String.format("""
 //                                [VIP콕 혜택]
 //                                %s
@@ -84,7 +82,7 @@
 //                        .id(benefitId)
 //                        .document(doc)
 //                );
-//
+//                Thread.sleep(500);
 //                System.out.println("Indexed " + benefitId);
 //
 //            } catch (Exception e) {

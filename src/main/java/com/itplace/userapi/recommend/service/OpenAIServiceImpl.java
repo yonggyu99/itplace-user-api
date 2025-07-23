@@ -1,12 +1,14 @@
 package com.itplace.userapi.recommend.service;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.itplace.userapi.benefit.entity.Benefit;
 import com.itplace.userapi.benefit.repository.BenefitRepository;
-import com.itplace.userapi.partner.entity.Partner;
+import com.itplace.userapi.rag.service.BenefitSearchService;
+import com.itplace.userapi.rag.service.EmbeddingService;
+import com.itplace.userapi.recommend.domain.UserFeature;
 import com.itplace.userapi.recommend.dto.Candidate;
 import com.itplace.userapi.recommend.dto.ChatCompletionResponse;
-import com.itplace.userapi.recommend.dto.UserFeature;
+import com.itplace.userapi.recommend.dto.Recommendation;
 import java.util.List;
 import java.util.Map;
 import lombok.RequiredArgsConstructor;
@@ -24,105 +26,125 @@ import org.springframework.web.client.RestTemplate;
 public class OpenAIServiceImpl implements OpenAIService {
     private final BenefitRepository benefitRepo;
     private final ObjectMapper mapper;
-
-    // RestTemplate 으로만 호출하도록 변경
     private final RestTemplate restTemplate = new RestTemplate();
+    private final EmbeddingService embeddingService;
+    private final BenefitSearchService benefitSearchService;
 
     @Value("${spring.ai.openai.api.key}")
     private String apiKey;
 
-    @Value("${spring.ai.openai.api.url}")     // ex. https://api.openai.com
+    @Value("${spring.ai.openai.api.url}")
     private String baseUrl;
 
-    @Value("${spring.ai.openai.model.chat}")       // ex. gpt-3.5-turbo
+    @Value("${spring.ai.openai.model.chat}")
     private String model;
 
 
     @Override
-    public List<Candidate> vectorSearch(UserFeature uf, int topK) {
-        return uf.getBenefitUsageCounts().entrySet().stream()
-                .sorted(Map.Entry.<Long, Integer>comparingByValue().reversed())
-                .limit(topK)
-                .map(e -> {
-                    Benefit b = benefitRepo.findById(e.getKey())
-                            .orElseThrow(() -> new IllegalArgumentException("혜택이 없습니다: " + e.getKey()));
-                    Partner p = b.getPartner();
-                    return Candidate.builder()
-                            .benefitId(b.getBenefitId())
-                            .benefitName(b.getBenefitName())
-                            .partnerName(p.getPartnerName())
-                            .category(p.getCategory())
-                            .description(b.getDescription())
-                            .build();
-                })
-                .toList();
+    public List<Candidate> vectorSearch(UserFeature uf, int CandidateSize) {
+        List<Float> userEmbedding = embeddingService.embed(uf.getEmbeddingContext());
+        return benefitSearchService.queryVector(userEmbedding, CandidateSize);
     }
 
-    /**
-     * RestTemplate 으로 ChatCompletion 호출
-     */
+
     @Override
-    public String rerankAndExplain(UserFeature uf, List<Candidate> cands, int topK) {
+    public List<Recommendation> rerankAndExplain(UserFeature uf, List<Candidate> cands, int topK) {
         String url = baseUrl + "/v1/chat/completions";
 
-        // 1) HTTP 헤더 준비
         HttpHeaders headers = new HttpHeaders();
         headers.setBearerAuth(apiKey);
         headers.setContentType(MediaType.APPLICATION_JSON);
 
-        // 2) 후보 리스트 문자열화
         StringBuilder items = new StringBuilder();
         for (int i = 0; i < cands.size(); i++) {
             Candidate c = cands.get(i);
             items.append(String.format(
-                    "%d. %s｜%s%n",
-                    i + 1, c.getPartnerName(), c.getCategory()
+                    """
+                            %d. 혜택명: %s
+                               제휴사: %s
+                               카테고리: %s
+                               설명: %s
+                               등급별 혜택 요약 %s
+                            
+                            """,
+                    i + 1,
+                    c.getBenefitName(),
+                    c.getPartnerName(),
+                    c.getCategory(),
+                    c.getDescription() != null ? c.getDescription() : "설명 없음",
+                    c.getContext() != null ? c.getContext() : "추가 정보 없음"
             ));
         }
-
-        // 3) 프롬프트 구성
         String prompt = String.format("""
-                        【유저 요약】
-                        Top Categories: %s
-                        
-                        【후보 %d개】
-                        %s
-                        
-                        위 중 TOP-%d와 추천 이유를
-                        ┌순위—제휴사명—추천 이유
-                        └형식으로 뽑아주세요.
-                        """,
-                uf.getTopCategories(),
-                cands.size(),
-                items,
-                topK
-        );
+                【사용자 성향 요약】
+                %s
+                 [사용자 이용 통계]
+                %s
+                【후보 혜택들】
+                %s
+                
+                당신은 사용자의 성향과 통계를 분석해 가장 적절한 혜택 10개를 추천해야 해요.
+                
+                각 혜택의 '설명'을 잘 반영하고 '카테고리', '제휴사'를 잘 참고해서
+                왜 이 사용자가 해당 후보 혜택을 좋아할지를 추천 이유로 작성해주세요.
+                
+                [강조!!] 반드시 아래와 같은 JSON 형식으로 응답해주세요:
+                "Don't include markdown formatting. Just return valid JSON only."
+                {
+                  "recommendations": [
+                    {
+                      "rank": 1,
+                      "partnerName": "뚜레쥬르",
+                      "reason": "빵이 너무 맛있어서 자주 가는 곳이니까 추천드리는 걸요!"
+                    },
+                    {
+                      "rank": 2,
+                      "partnerName": "배스킨라빈스",
+                      "reason": "달콤한 아이스크림이 요즘처럼 더운 날에 딱이니까요!"
+                    }
+                    ...
+                  ]
+                }
+                
+                포맷은 꼭 지켜주세요. 문자열이나 문장이 아닌 JSON 객체로만 응답해주세요!
+                """, uf.getEmbeddingContext(), uf.getLLMContext(), items);
 
-        // 3) 시스템 메시지에 캐릭터 말투 지시 추가
         List<Map<String, String>> messages = List.of(
                 Map.of(
                         "role", "system",
-                        "content", "당신은 우주를 여행하는 귀여운 토끼 로봇 '바니봇'이에요! 말투는 언제나 밝고 상냥하게, '~한 걸요!','~한다냥!' 같은 어미를 사용하세요."
+                        "content", """
+                                당신은 귀엽고 상냥한 우주 토끼 캐릭터 '잇플봇'이에요!
+                                사용자의 관심사와 혜택 정보를 바탕으로,
+                                밝고 따뜻한 말투로 추천을 도와주는 안내 역할을 해요.
+                                말투는 '~인 걸요!', '~했다구요!' 같은 어미를 자주 사용하세요.
+                                """
                 ),
                 Map.of("role", "user", "content", prompt)
         );
 
-        // 4) 요청 바디 생성
         Map<String, Object> body = Map.of(
                 "model", model,
-                "messages", List.of(Map.of("role", "user", "content", prompt))
+                "messages", messages
         );
+
         HttpEntity<Map<String, Object>> request = new HttpEntity<>(body, headers);
 
-        // 5) 호출 및 파싱
         ResponseEntity<ChatCompletionResponse> response = restTemplate
                 .exchange(url, HttpMethod.POST, request, ChatCompletionResponse.class);
 
         ChatCompletionResponse cr = response.getBody();
         if (cr != null && !cr.getChoices().isEmpty()) {
-            return cr.getChoices().get(0).getMessage().getContent();
+            String jsonString = cr.getChoices().get(0).getMessage().getContent();
+            try {
+                JsonNode root = mapper.readTree(jsonString);
+                JsonNode recList = root.get("recommendations");
+                return mapper.readerForListOf(Recommendation.class).readValue(recList);
+            } catch (Exception e) {
+                throw new RuntimeException("LLM 추천 결과 파싱 실패", e);
+            }
         }
-        return "추천 결과를 가져오지 못했습니다.";
+        return List.of(); // 실패 시 빈 리스트 반환
+
     }
 }
 
