@@ -76,6 +76,7 @@ public class OAuthServiceImpl implements OAuthService {
 
         if (socialAccountOpt.isPresent()) {
             // Case 1: 이미 연동된 기존 사용자 -> 즉시 로그인
+            log.info("===== 이미 연동된 기존 사용자로 로그인 시도 =====");
             User user = socialAccountOpt.get().getUser();
             OAuthResult authResult = createAuthResultForUser(user);
             return KakaoLoginResult.builder()

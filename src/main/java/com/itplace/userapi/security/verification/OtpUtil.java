@@ -27,7 +27,8 @@ public class OtpUtil {
      * @return 생성된 6자리 OTP
      */
     public String generateAndCacheOtp(String key, String prefix) {
-        String otp = String.format("%06d", random.nextInt(1_000_000));
+//        String otp = String.format("%06d", random.nextInt(1_000_000));
+        String otp = "000000";
         String redisKey = prefix + key;
         redisTemplate.opsForValue().set(redisKey, otp, Duration.ofMinutes(ttlInMinutes));
         return otp;

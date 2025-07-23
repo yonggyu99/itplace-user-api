@@ -43,6 +43,7 @@ public class OAuthController {
         KakaoLoginResult result = oAuthService.processKakaoLogin(request.getCode());
 
         if (result.isExistingUser()) {
+            log.info("===== 카카오 로그인 성공 =====");
             // Case 1: 기존 사용자 -> 즉시 로그인 성공
             OAuthResult oAuthResult = result.getAuthResult();
             setTokensToCookie(httpServletResponse, oAuthResult.getAccessToken(), oAuthResult.getRefreshToken());
