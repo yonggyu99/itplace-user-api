@@ -1,5 +1,6 @@
 package com.itplace.userapi.user.entity;
 
+import com.itplace.userapi.common.BaseTimeEntity;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
@@ -24,7 +25,7 @@ import lombok.Setter;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor
 @Table(name = "socialAccount", uniqueConstraints = {@UniqueConstraint(columnNames = {"provider", "providerId"})})
-public class SocialAccount {
+public class SocialAccount extends BaseTimeEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
