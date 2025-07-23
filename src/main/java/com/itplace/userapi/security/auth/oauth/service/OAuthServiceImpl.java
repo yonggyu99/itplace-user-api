@@ -3,6 +3,7 @@ package com.itplace.userapi.security.auth.oauth.service;
 import com.itplace.userapi.benefit.entity.enums.Grade;
 import com.itplace.userapi.security.SecurityCode;
 import com.itplace.userapi.security.auth.local.dto.response.LoginResponse;
+import com.itplace.userapi.security.auth.oauth.dto.request.OAuthLinkRequest;
 import com.itplace.userapi.security.auth.oauth.dto.request.OAuthSignUpRequest;
 import com.itplace.userapi.security.auth.oauth.dto.response.KakaoLoginResult;
 import com.itplace.userapi.security.auth.oauth.dto.response.OAuthResult;
@@ -130,13 +131,13 @@ public class OAuthServiceImpl implements OAuthService {
 
     @Override
     @Transactional
-    public OAuthResult linkOAuthAccount(String tempToken, String phoneNumber) {
+    public OAuthResult linkOAuthAccount(String tempToken, OAuthLinkRequest request) {
         Claims claims = getVerifiedClaims(tempToken);
         String provider = claims.get("provider", String.class);
         String providerId = claims.get("providerId", String.class);
 
         // 계정 연동이므로, 해당 휴대폰 번호로 가입된 유저가 반드시 있어야 함
-        User user = userRepository.findByPhoneNumber(phoneNumber)
+        User user = userRepository.findByPhoneNumber(request.getPhoneNumber())
                 .orElseThrow(() -> new UserNotFoundException(SecurityCode.USER_NOT_FOUND));
 
         boolean alreadyLinked = user.getSocialAccounts().stream()
@@ -182,7 +183,7 @@ public class OAuthServiceImpl implements OAuthService {
         MultiValueMap<String, String> params = new LinkedMultiValueMap<>();
         params.add("grant_type", "authorization_code");
         params.add("client_id", kakaoClientId);
-        params.add("redirect_uri", "http://localhost:5173/oauth/callback/kakao");
+        params.add("redirect_uri", kakaoRedirectUri);
         params.add("client_secret", kakaoClientSecret);
         params.add("code", code);
         HttpEntity<MultiValueMap<String, String>> request = new HttpEntity<>(params, headers);
