@@ -11,6 +11,7 @@ import org.springframework.stereotype.Service;
 
 @Service
 @RequiredArgsConstructor
+@Transactional
 @Slf4j
 public class LogServiceImpl implements LogService {
 
