@@ -189,6 +189,6 @@ public class AuthServiceImpl implements AuthService {
         }
 
         user.setEmail(request.getEmail());
-        user.setPassword(request.getPassword());
+        user.setPassword(passwordEncoder.encode(request.getPassword()));
     }
 }
