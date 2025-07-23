@@ -10,6 +10,4 @@ public interface UserFeatureService {
 
     String getUserEmbeddingContext(UserFeature uf);
 
-    String getUserLLMContext(UserFeature uf);
-
 }

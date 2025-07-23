@@ -1,6 +1,7 @@
 package com.itplace.userapi.recommend.service;
 
 import com.itplace.userapi.benefit.entity.Benefit;
+import com.itplace.userapi.benefit.entity.enums.Grade;
 import com.itplace.userapi.benefit.repository.BenefitRepository;
 import com.itplace.userapi.history.repository.MembershipHistoryRepository;
 import com.itplace.userapi.rag.service.EmbeddingService;
@@ -9,7 +10,9 @@ import com.itplace.userapi.recommend.projection.BenefitCount;
 import com.itplace.userapi.recommend.projection.CategoryCount;
 import com.itplace.userapi.security.SecurityCode;
 import com.itplace.userapi.security.exception.UserNotFoundException;
+import com.itplace.userapi.user.entity.Membership;
 import com.itplace.userapi.user.entity.User;
+import com.itplace.userapi.user.repository.MembershipRepository;
 import com.itplace.userapi.user.repository.UserRepository;
 import java.time.LocalDateTime;
 import java.util.List;
@@ -25,6 +28,7 @@ public class UserFeatureServiceImpl implements UserFeatureService {
     private final UserRepository userRepo;
     private final EmbeddingService embeddingService;
     private final BenefitRepository benefitRepo;
+    private final MembershipRepository membershipRepo;
 
     public UserFeature loadUserFeature(Long userId) {
         // 최근 1년 혜택 이력
@@ -33,6 +37,10 @@ public class UserFeatureServiceImpl implements UserFeatureService {
         User user = userRepo.findById(userId)
                 .orElseThrow(() -> new UserNotFoundException(SecurityCode.USER_NOT_FOUND));
         String membershipId = user.getMembershipId();
+
+        Grade grade = membershipRepo.findByMembershipId(membershipId)
+                .map(Membership::getGrade)
+                .orElse(null);
 
         // 카테고리별 이용 횟수
         Map<String, Integer> catScores = historyRepo
@@ -70,6 +78,7 @@ public class UserFeatureServiceImpl implements UserFeatureService {
 
         return UserFeature.builder()
                 .userId(userId)
+                .grade(grade)
                 .recentCategoryScores(catScores)
                 .topCategories(topCats)
                 .benefitUsageCounts(benefitUsage)
@@ -87,7 +96,4 @@ public class UserFeatureServiceImpl implements UserFeatureService {
         return uf.getEmbeddingContext(); // UserFeature 내부 메서드 사용
     }
 
-    public String getUserLLMContext(UserFeature uf) {
-        return uf.getLLMContext(); // UserFeature 내부 메서드 사용
-    }
 }
