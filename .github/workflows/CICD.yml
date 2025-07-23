@@ -59,12 +59,13 @@ jobs:
       # 1. 배포 대상 서버 환경 설정 (Blue/Green)
       - name: Set target IP
         run: |
-          STATUS=$(curl -o /dev/null -w "%{http_code}" "http://${{ secrets.LIVE_SERVER_IP }}/env")
+          STATUS=$(curl -L -o /dev/null -w "%{http_code}" "http://${{ secrets.LIVE_SERVER_IP }}/env") || true
           echo "Current status code: $STATUS"
           if [ $STATUS = 200 ]; then
-            CURRENT_UPSTREAM=$(curl -s "http://${{ secrets.LIVE_SERVER_IP }}/env")
+            CURRENT_UPSTREAM=$(curl -L -s "http://${{ secrets.LIVE_S ERVER_IP }}/env")
           else
             # /env 엔드포인트가 없거나 Nginx가 다운된 초기 상태. green부터 시작.
+            echo "Could not determine current upstream or status was not 200. Defaulting to 'green'."
             CURRENT_UPSTREAM=green
           fi
           echo "CURRENT_UPSTREAM=$CURRENT_UPSTREAM" >> $GITHUB_ENV
