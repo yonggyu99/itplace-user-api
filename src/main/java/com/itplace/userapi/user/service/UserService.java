@@ -15,4 +15,6 @@ public interface UserService {
     FindPasswordConfirmResponse findPasswordConfirm(EmailConfirmRequest request);
 
     void resetPassword(ResetPasswordRequest request);
+
+    void withdraw(Long userId);
 }

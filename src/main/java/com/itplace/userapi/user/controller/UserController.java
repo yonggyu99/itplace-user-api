@@ -21,6 +21,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.validation.annotation.Validated;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -94,6 +95,17 @@ public class UserController {
     public ResponseEntity<ApiResponse<Void>> resetPassword(@RequestBody @Validated ResetPasswordRequest request) {
         userService.resetPassword(request);
         ApiResponse<Void> body = ApiResponse.ok(SecurityCode.RESET_PASSWORD_SUCCESS);
+        return ResponseEntity
+                .status(body.getStatus())
+                .body(body);
+    }
+
+    @DeleteMapping
+    public ResponseEntity<ApiResponse<Void>> withdraw(
+            @AuthenticationPrincipal CustomUserDetails userDetails
+    ) {
+        userService.withdraw(userDetails.getUserId());
+        ApiResponse<Void> body = ApiResponse.ok(UserCode.USER_WITHDRAWAL_SUCCESS);
         return ResponseEntity
                 .status(body.getStatus())
                 .body(body);
