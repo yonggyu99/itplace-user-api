@@ -37,7 +37,7 @@ public class CustomOAuth2User implements OAuth2User {
 
     @Override
     public String getName() {
-        return oAuth2User.getAttribute("id"); // providerId
+        return String.valueOf(oAuth2User.getAttribute("id")); // providerId
     }
 
     // 신규 사용자인지 여부를 판단하는 헬퍼 메소드
