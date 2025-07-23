@@ -1,17 +1,16 @@
 package com.itplace.userapi.security.auth.oauth.controller;
 
 import com.itplace.userapi.common.ApiResponse;
+import com.itplace.userapi.security.CookieUtil;
 import com.itplace.userapi.security.SecurityCode;
 import com.itplace.userapi.security.auth.local.dto.response.LoginResponse;
 import com.itplace.userapi.security.auth.oauth.dto.request.KakaoCodeRequest;
+import com.itplace.userapi.security.auth.oauth.dto.request.OAuthLinkRequest;
 import com.itplace.userapi.security.auth.oauth.dto.request.OAuthSignUpRequest;
 import com.itplace.userapi.security.auth.oauth.dto.response.KakaoLoginResult;
 import com.itplace.userapi.security.auth.oauth.dto.response.OAuthResult;
 import com.itplace.userapi.security.auth.oauth.service.OAuthService;
-import com.itplace.userapi.security.jwt.JWTConstants;
-import com.itplace.userapi.security.jwt.JWTUtil;
 import jakarta.servlet.http.HttpServletResponse;
-import java.util.Map;
 import java.util.concurrent.TimeUnit;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -31,7 +30,7 @@ import org.springframework.web.bind.annotation.RestController;
 public class OAuthController {
 
     private final OAuthService oAuthService;
-    private final JWTUtil jwtUtil;
+    private final CookieUtil cookieUtil;
 
     /**
      * React에서 인가 코드를 받아 카카오 로그인을 처리하는 첫 관문입니다.
@@ -46,7 +45,7 @@ public class OAuthController {
             log.info("===== 카카오 로그인 성공 =====");
             // Case 1: 기존 사용자 -> 즉시 로그인 성공
             OAuthResult oAuthResult = result.getAuthResult();
-            setTokensToCookie(httpServletResponse, oAuthResult.getAccessToken(), oAuthResult.getRefreshToken());
+            cookieUtil.setTokensToCookie(httpServletResponse, oAuthResult.getAccessToken(), oAuthResult.getRefreshToken());
             return ResponseEntity.ok(ApiResponse.of(SecurityCode.LOGIN_SUCCESS, oAuthResult.getLoginResponse()));
         } else {
             // Case 2: 신규 사용자 -> 임시 토큰 발급 및 휴대폰 인증 필요
@@ -73,7 +72,7 @@ public class OAuthController {
             HttpServletResponse httpServletResponse
     ) {
         OAuthResult result = oAuthService.signUpWithOAuth(tempToken, request);
-        setTokensToCookie(httpServletResponse, result.getAccessToken(), result.getRefreshToken());
+        cookieUtil.setTokensToCookie(httpServletResponse, result.getAccessToken(), result.getRefreshToken());
         return ResponseEntity.ok(ApiResponse.of(SecurityCode.LOGIN_SUCCESS, result.getLoginResponse()));
     }
 
@@ -83,35 +82,11 @@ public class OAuthController {
     @PostMapping("/link")
     public ResponseEntity<ApiResponse<LoginResponse>> oauthSignUpLink(
             @CookieValue("tempToken") String tempToken,
-            @RequestBody Map<String, String> requestBody,
+            @RequestBody @Validated OAuthLinkRequest request,
             HttpServletResponse httpServletResponse
     ) {
-        String phoneNumber = requestBody.get("phoneNumber");
-        OAuthResult result = oAuthService.linkOAuthAccount(tempToken, phoneNumber);
-        setTokensToCookie(httpServletResponse, result.getAccessToken(), result.getRefreshToken());
+        OAuthResult result = oAuthService.linkOAuthAccount(tempToken, request);
+        cookieUtil.setTokensToCookie(httpServletResponse, result.getAccessToken(), result.getRefreshToken());
         return ResponseEntity.ok(ApiResponse.of(SecurityCode.LOGIN_SUCCESS, result.getLoginResponse()));
-    }
-
-    /**
-     * Access Token과 Refresh Token을 HttpOnly 쿠키에 설정하는 유틸리티 메소드입니다.
-     */
-    private void setTokensToCookie(HttpServletResponse response, String accessToken, String refreshToken) {
-        ResponseCookie accessTokenCookie = ResponseCookie.from(JWTConstants.CATEGORY_ACCESS, accessToken)
-                .path("/")
-                .secure(true)
-                .sameSite("None")
-                .httpOnly(true)
-                .maxAge(jwtUtil.getAccessTokenValidityInMS() / 1000)
-                .build();
-        response.addHeader("Set-Cookie", accessTokenCookie.toString());
-
-        ResponseCookie refreshTokenCookie = ResponseCookie.from(JWTConstants.CATEGORY_REFRESH, refreshToken)
-                .path("/")
-                .secure(true)
-                .sameSite("None")
-                .httpOnly(true)
-                .maxAge(jwtUtil.getRefreshTokenValidityInMS() / 1000)
-                .build();
-        response.addHeader("Set-Cookie", refreshTokenCookie.toString());
     }
 }
