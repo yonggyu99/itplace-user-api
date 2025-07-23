@@ -1,6 +1,7 @@
 package com.itplace.userapi.security.config;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.itplace.userapi.security.CookieUtil;
 import com.itplace.userapi.security.auth.local.filter.LoginFilter;
 import com.itplace.userapi.security.jwt.JWTFilter;
 import com.itplace.userapi.security.jwt.JWTUtil;
@@ -35,6 +36,7 @@ public class SecurityConfig {
     private final StringRedisTemplate redisTemplate;
     private final ObjectMapper objectMapper;
     private final MembershipRepository membershipRepository;
+    private final CookieUtil cookieUtil;
 
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http, AuthenticationManager authenticationManager) throws Exception {
@@ -81,7 +83,8 @@ public class SecurityConfig {
                 jwtUtil,
                 redisTemplate,
                 objectMapper,
-                membershipRepository);
+                membershipRepository,
+                cookieUtil);
         loginFilter.setFilterProcessesUrl("/api/v1/auth/login");
 
         http
