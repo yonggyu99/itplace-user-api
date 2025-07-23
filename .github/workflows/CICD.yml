@@ -111,7 +111,7 @@ jobs:
           key: ${{ secrets.EC2_SSH_KEY }}
           script: |
             # Alpine 컨테이너를 위해 bash 대신 sh 사용
-            sudo docker exec -i nginxserver sh -c 'echo "set \$service_url ${{ env.TARGET_UPSTREAM }};" > /etc/nginx/conf.d/service-env.inc && nginx -s reload'
+            sudo docker exec -i nginxserver bash -c 'echo "set \$service_url ${{ env.TARGET_UPSTREAM }};" > /etc/nginx/conf.d/service-env.inc && nginx -s reload'
 
       # 5. 이전 버전의 서버 중지 및 제거
       - name: Stop current server
