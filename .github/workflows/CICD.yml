@@ -135,8 +135,8 @@ jobs:
             # Alpine 컨테이너를 위해 bash 대신 sh 사용
             sudo docker exec -i nginxserver sh -c 'echo "set \$service_url ${{ env.TARGET_UPSTREAM }};" > /etc/nginx/conf.d/service-env.inc && nginx -s reload'
 
-      # 5. 이전 버전의 서버 중지 및 제거
-      - name: Stop current server
+      # 5. 이전 버전의 서버 중지 및 제거 / 미사용 이미지 삭제
+      - name: Stop current server and clean images
         uses: appleboy/ssh-action@v1.0.3 # 버전 고정 및 script_stop 제거
         with:
           username: ubuntu
@@ -152,3 +152,6 @@ jobs:
             else
               echo "Container ${CONTAINER_NAME} not found or not running. Skipping."
             fi
+           
+            echo "Pruning unused Docker images..."
+            sudo docker image prune -a -f
