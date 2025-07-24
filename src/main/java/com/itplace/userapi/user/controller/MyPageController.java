@@ -8,7 +8,9 @@ import com.itplace.userapi.user.service.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.PatchMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -20,7 +22,9 @@ public class MyPageController {
     private final UserService userService;
 
     @PatchMapping("/changePassword")
-    public ResponseEntity<ApiResponse<Void>> changePassword(@AuthenticationPrincipal PrincipalDetails principalDetails, ChangePasswordRequest request) {
+    public ResponseEntity<ApiResponse<Void>> changePassword(
+            @AuthenticationPrincipal PrincipalDetails principalDetails,
+            @RequestBody @Validated ChangePasswordRequest request) {
         userService.changePassword(principalDetails, request);
         ApiResponse<Void> body = ApiResponse.ok(UserCode.PASSWORD_CHANGE_SUCCESS);
         return new ResponseEntity<>(body, body.getStatus());
