@@ -1,14 +1,13 @@
 package com.itplace.userapi.log.interceptor;
 
 import com.itplace.userapi.log.service.LogService;
-import com.itplace.userapi.security.auth.local.dto.CustomUserDetails;
+import com.itplace.userapi.security.auth.common.PrincipalDetails;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Component;
 import org.springframework.web.servlet.HandlerInterceptor;
 
@@ -53,10 +52,10 @@ public class LoggingInterceptor implements HandlerInterceptor {
 
     private Long extractUserId() {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        Object principal = auth.getPrincipal();
 
-        if (auth.getPrincipal() instanceof UserDetails) {
-            CustomUserDetails userDetails = (CustomUserDetails) auth.getPrincipal();
-            return userDetails.getUser().getId();
+        if (principal instanceof PrincipalDetails principalDetails) {
+            return principalDetails.getUserId();
         }
         log.info("user 정보 없음");
         return null;

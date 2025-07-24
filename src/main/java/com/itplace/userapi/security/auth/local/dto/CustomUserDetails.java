@@ -1,5 +1,6 @@
 package com.itplace.userapi.security.auth.local.dto;
 
+import com.itplace.userapi.security.auth.common.PrincipalDetails;
 import com.itplace.userapi.user.entity.User;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -10,7 +11,7 @@ import org.springframework.security.core.userdetails.UserDetails;
 
 @Getter
 @RequiredArgsConstructor
-public class CustomUserDetails implements UserDetails {
+public class CustomUserDetails implements UserDetails, PrincipalDetails {
 
     private final User user;
 
@@ -26,6 +27,7 @@ public class CustomUserDetails implements UserDetails {
         return collection;
     }
 
+    @Override
     public Long getUserId() {
         return user.getId();
     }

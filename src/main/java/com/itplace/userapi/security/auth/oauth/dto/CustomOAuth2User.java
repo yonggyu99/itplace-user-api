@@ -1,5 +1,6 @@
 package com.itplace.userapi.security.auth.oauth.dto;
 
+import com.itplace.userapi.security.auth.common.PrincipalDetails;
 import com.itplace.userapi.user.entity.User;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -10,7 +11,7 @@ import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.oauth2.core.user.OAuth2User;
 
 @RequiredArgsConstructor
-public class CustomOAuth2User implements OAuth2User {
+public class CustomOAuth2User implements OAuth2User, PrincipalDetails {
 
     private final OAuth2User oAuth2User;
     @Getter
@@ -19,6 +20,14 @@ public class CustomOAuth2User implements OAuth2User {
     private final String providerId;
     @Getter
     private final User user;
+
+    @Override
+    public Long getUserId() {
+        if (user == null) {
+            return null;
+        }
+        return user.getId();
+    }
 
     @Override
     public Map<String, Object> getAttributes() {
