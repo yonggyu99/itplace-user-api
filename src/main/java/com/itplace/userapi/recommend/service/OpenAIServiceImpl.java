@@ -2,7 +2,6 @@ package com.itplace.userapi.recommend.service;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.itplace.userapi.benefit.repository.BenefitRepository;
 import com.itplace.userapi.rag.service.BenefitSearchService;
 import com.itplace.userapi.rag.service.EmbeddingService;
 import com.itplace.userapi.recommend.domain.UserFeature;
@@ -24,7 +23,6 @@ import org.springframework.web.client.RestTemplate;
 @Service
 @RequiredArgsConstructor
 public class OpenAIServiceImpl implements OpenAIService {
-    private final BenefitRepository benefitRepo;
     private final ObjectMapper mapper;
     private final RestTemplate restTemplate = new RestTemplate();
     private final EmbeddingService embeddingService;
@@ -89,7 +87,7 @@ public class OpenAIServiceImpl implements OpenAIService {
                 각 혜택의 '설명'을 잘 반영하고 사용자의 '카테고리', '제휴사'를 잘 참고해서
                 왜 이 사용자가 해당 후보 혜택을 좋아할지를 추천 이유로 작성해주세요.
                 추천 이유에 사용자 등급에 맞는 혜택 내용을 같이 언급하면 좋겠습니다.
-                또한 반드시 제공된 후보 혜택들 중에서 추천을 진행해야합니다.
+                [강조!!] 반드시 제공된 후보 혜택들 중에서만 추천을 진행해야합니다.
                 
                 [강조!!] 반드시 아래와 같은 JSON 형식으로 응답해주세요:
                 "Don't include markdown formatting. Just return valid JSON only."
@@ -148,7 +146,7 @@ public class OpenAIServiceImpl implements OpenAIService {
                 throw new RuntimeException("LLM 추천 결과 파싱 실패", e);
             }
         }
-        return List.of(); // 실패 시 빈 리스트 반환
+        return List.of();
 
     }
 }
