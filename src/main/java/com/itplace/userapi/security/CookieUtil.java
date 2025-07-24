@@ -19,6 +19,7 @@ public class CookieUtil {
                 .secure(true)
                 .sameSite("None")
                 .httpOnly(true)
+                .domain("itplace.click")
                 .maxAge(jwtUtil.getAccessTokenValidityInMS() / 1000)
                 .build();
         response.addHeader("Set-Cookie", accessTokenCookie.toString());
@@ -28,6 +29,7 @@ public class CookieUtil {
                 .secure(true)
                 .sameSite("None")
                 .httpOnly(true)
+                .domain("itplace.click")
                 .maxAge(jwtUtil.getRefreshTokenValidityInMS() / 1000)
                 .build();
         response.addHeader("Set-Cookie", refreshTokenCookie.toString());
