@@ -3,13 +3,17 @@ package com.itplace.userapi.security.auth.local.service;
 import static com.itplace.userapi.security.auth.local.filter.LoginFilter.REFRESH_TOKEN_PREFIX;
 
 import com.itplace.userapi.security.SecurityCode;
+import com.itplace.userapi.security.auth.local.dto.request.LinkLocalRequest;
+import com.itplace.userapi.security.auth.local.dto.request.LoadOAuthDataRequest;
 import com.itplace.userapi.security.auth.local.dto.request.SignUpRequest;
 import com.itplace.userapi.security.auth.local.dto.request.UplusDataRequest;
+import com.itplace.userapi.security.auth.local.dto.response.LoadOAuthDataResponse;
 import com.itplace.userapi.security.auth.local.dto.response.UplusDataResponse;
 import com.itplace.userapi.security.exception.DuplicateEmailException;
 import com.itplace.userapi.security.exception.DuplicatePhoneNumberException;
 import com.itplace.userapi.security.exception.InvalidCredentialsException;
 import com.itplace.userapi.security.exception.PasswordMismatchException;
+import com.itplace.userapi.security.exception.UserNotFoundException;
 import com.itplace.userapi.security.jwt.JWTConstants;
 import com.itplace.userapi.security.jwt.JWTUtil;
 import com.itplace.userapi.user.entity.Role;
@@ -154,4 +158,37 @@ public class AuthServiceImpl implements AuthService {
         log.info("USER 저장됨");
     }
 
+    @Override
+    @Transactional
+    public LoadOAuthDataResponse loadOAuthData(LoadOAuthDataRequest request) {
+        User user = userRepository.findByPhoneNumber(request.getPhoneNumber())
+                .orElseThrow(() -> new UserNotFoundException(SecurityCode.USER_NOT_FOUND));
+
+        return LoadOAuthDataResponse.builder()
+                .name(user.getName())
+                .phoneNumber(user.getPhoneNumber())
+                .gender(user.getGender())
+                .birthday(user.getBirthday())
+                .membershipId(user.getMembershipId())
+                .build();
+    }
+
+    @Override
+    @Transactional
+    public void link(LinkLocalRequest request) {
+        User user = userRepository.findByPhoneNumber(request.getPhoneNumber())
+                .orElseThrow(() -> new UserNotFoundException(SecurityCode.USER_NOT_FOUND));
+
+        if (!request.getPassword().equals(request.getPasswordConfirm())) {
+            log.info("비밀번호가 일치하지 않음");
+            throw new PasswordMismatchException(SecurityCode.PASSWORD_MISMATCH);
+        }
+
+        if (userRepository.findByEmail(request.getEmail()).isPresent()) {
+            throw new DuplicateEmailException(SecurityCode.DUPLICATE_EMAIL);
+        }
+
+        user.setEmail(request.getEmail());
+        user.setPassword(passwordEncoder.encode(request.getPassword()));
+    }
 }

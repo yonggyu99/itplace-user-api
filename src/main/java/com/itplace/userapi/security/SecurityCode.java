@@ -21,6 +21,7 @@ public enum SecurityCode implements BaseCode {
     // 회원가입
     PASSWORD_MISMATCH("PASSWORD_MISMATCH", HttpStatus.BAD_REQUEST, "비밀번호가 일치하지 않습니다."),
     SIGNUP_SUCCESS("SIGNUP_SUCCESS", HttpStatus.OK, "성공적으로 회원가입 되었습니다."),
+    LOAD_OAUTH_DATA_SUCCESS("LOAD_OAUTH_DATA_SUCCESS", HttpStatus.OK, "성공적으로 OAuth 정보를 불러왔습니다."),
     LINK_LOCAL_SUCCESS("LINK_LOCAL_SUCCESS", HttpStatus.OK, "로컬 계정이 소셜 계정에 성공적으로 연결되었습니다."),
     LINK_OAUTH_SUCCESS("LINK_OAUTH_SUCCESS", HttpStatus.OK, "소셜 계정이 로컬 계정에 성공적으로 연동되었습니다."),
     INVALID_INPUT_VALUE("INVALID_INPUT_VALUE", HttpStatus.BAD_REQUEST, "입력값이 올바르지 않습니다."),
