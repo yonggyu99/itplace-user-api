@@ -9,8 +9,8 @@ import com.itplace.userapi.security.exception.SmsVerificationException;
 import com.itplace.userapi.security.exception.UserNotFoundException;
 import com.itplace.userapi.security.verification.OtpUtil;
 import com.itplace.userapi.security.verification.email.dto.EmailConfirmRequest;
-import com.itplace.userapi.user.dto.request.ChangePasswordRequest;
 import com.itplace.userapi.user.UserCode;
+import com.itplace.userapi.user.dto.request.ChangePasswordRequest;
 import com.itplace.userapi.user.dto.request.FindEmailConfirmRequest;
 import com.itplace.userapi.user.dto.request.ResetPasswordRequest;
 import com.itplace.userapi.user.dto.response.FindEmailResponse;
@@ -133,9 +133,14 @@ public class UserServiceImpl implements UserService {
 
     @Transactional
     @Override
-    public void withdraw(Long userId) {
+    public void withdraw(Long userId, String password) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new UserNotFoundException(UserCode.USER_NOT_FOUND));
+
+        // 비밀번호 일치 여부 확인
+        if (!passwordEncoder.matches(password, user.getPassword())) {
+            throw new PasswordMismatchException(SecurityCode.PASSWORD_MISMATCH);
+        }
 
         favoriteRepository.deleteByUser_Id(userId);
         socialAccountRepository.deleteByUser_Id(userId);

@@ -20,5 +20,5 @@ public interface UserService {
 
     void changePassword(PrincipalDetails principalDetails, ChangePasswordRequest request);
 
-    void withdraw(Long userId);
+    void withdraw(Long userId, String password);
 }

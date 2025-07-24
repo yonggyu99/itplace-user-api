@@ -13,6 +13,7 @@ import com.itplace.userapi.security.verification.sms.service.SmsService;
 import com.itplace.userapi.user.UserCode;
 import com.itplace.userapi.user.dto.request.FindEmailConfirmRequest;
 import com.itplace.userapi.user.dto.request.ResetPasswordRequest;
+import com.itplace.userapi.user.dto.request.WithdrawRequest;
 import com.itplace.userapi.user.dto.response.FindEmailResponse;
 import com.itplace.userapi.user.dto.response.FindPasswordConfirmResponse;
 import com.itplace.userapi.user.dto.response.UserInfoResponse;
@@ -103,9 +104,10 @@ public class UserController {
 
     @DeleteMapping
     public ResponseEntity<ApiResponse<Void>> withdraw(
-            @AuthenticationPrincipal PrincipalDetails principalDetails
+            @AuthenticationPrincipal PrincipalDetails principalDetails,
+            @RequestBody WithdrawRequest request
     ) {
-        userService.withdraw(principalDetails.getUserId());
+        userService.withdraw(principalDetails.getUserId(), request.getPassword());
         ApiResponse<Void> body = ApiResponse.ok(UserCode.USER_WITHDRAWAL_SUCCESS);
         return ResponseEntity
                 .status(body.getStatus())
