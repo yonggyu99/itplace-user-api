@@ -4,10 +4,10 @@ import com.itplace.userapi.benefit.entity.Benefit;
 import com.itplace.userapi.benefit.entity.enums.Grade;
 import com.itplace.userapi.benefit.repository.BenefitRepository;
 import com.itplace.userapi.history.repository.MembershipHistoryRepository;
+import com.itplace.userapi.log.dto.LogScoreResult;
+import com.itplace.userapi.log.repository.LogRepository;
 import com.itplace.userapi.rag.service.EmbeddingService;
 import com.itplace.userapi.recommend.domain.UserFeature;
-import com.itplace.userapi.recommend.enums.RecommendationCode;
-import com.itplace.userapi.recommend.exception.NotMembershipUserException;
 import com.itplace.userapi.recommend.projection.BenefitCount;
 import com.itplace.userapi.recommend.projection.CategoryCount;
 import com.itplace.userapi.security.SecurityCode;
@@ -17,8 +17,10 @@ import com.itplace.userapi.user.entity.User;
 import com.itplace.userapi.user.repository.MembershipRepository;
 import com.itplace.userapi.user.repository.UserRepository;
 import java.time.LocalDateTime;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -31,6 +33,7 @@ public class UserFeatureServiceImpl implements UserFeatureService {
     private final EmbeddingService embeddingService;
     private final BenefitRepository benefitRepo;
     private final MembershipRepository membershipRepo;
+    private final LogRepository logRepository;
 
     public UserFeature loadUserFeature(Long userId) {
         // 최근 1년 혜택 이력
@@ -39,9 +42,9 @@ public class UserFeatureServiceImpl implements UserFeatureService {
         User user = userRepo.findById(userId)
                 .orElseThrow(() -> new UserNotFoundException(SecurityCode.USER_NOT_FOUND));
         String membershipId = user.getMembershipId();
-        // 멤버십 회원 아니면 사용자 피쳐 생성 불가
+        // 멤버십 회원 아니면 콜드 사용자 로직 (로그 기반)
         if (membershipId == null || membershipId.isBlank()) {
-            throw new NotMembershipUserException(RecommendationCode.USER_NOT_MEMBERSHIP);
+            return loadUserFeatureFromLogsOnly(userId, 10);
         }
 
         Grade grade = membershipRepo.findByMembershipId(membershipId)
@@ -102,4 +105,33 @@ public class UserFeatureServiceImpl implements UserFeatureService {
         return uf.getEmbeddingContext(); // UserFeature 내부 메서드 사용
     }
 
+    @Override
+    public UserFeature loadUserFeatureFromLogsOnly(Long userId, int topK) {
+        List<LogScoreResult> logScores = logRepository.aggregateUserLogScores(userId, topK);
+
+        // benefitId → 점수
+        Map<Long, Integer> benefitUsageCounts = logScores.stream()
+                .filter(score -> score.getBenefitId() != null)
+                .collect(Collectors.toMap(
+                        LogScoreResult::getBenefitId,
+                        LogScoreResult::getTotalScore
+                ));
+
+        // partnerName 상위 N개 (정렬된 순서 유지)
+        List<String> topPartners = logScores.stream()
+                .map(LogScoreResult::getPartnerName)
+                .filter(Objects::nonNull)
+                .distinct()
+                .limit(topK)
+                .toList();
+
+        return UserFeature.builder()
+                .userId(userId)
+                .grade(null) // 콜드 스타트
+                .recentCategoryScores(Collections.emptyMap())
+                .topCategories(Collections.emptyList())
+                .benefitUsageCounts(benefitUsageCounts)
+                .recentPartnerNames(topPartners)
+                .build();
+    }
 }
