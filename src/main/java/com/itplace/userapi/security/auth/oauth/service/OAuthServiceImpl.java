@@ -5,7 +5,6 @@ import com.itplace.userapi.security.SecurityCode;
 import com.itplace.userapi.security.auth.local.dto.response.LoginResponse;
 import com.itplace.userapi.security.auth.oauth.dto.request.OAuthLinkRequest;
 import com.itplace.userapi.security.auth.oauth.dto.request.OAuthSignUpRequest;
-import com.itplace.userapi.security.auth.oauth.dto.response.KakaoLoginResult;
 import com.itplace.userapi.security.auth.oauth.dto.response.OAuthResult;
 import com.itplace.userapi.security.exception.DuplicatePhoneNumberException;
 import com.itplace.userapi.security.exception.InvalidCredentialsException;
@@ -17,84 +16,27 @@ import com.itplace.userapi.user.entity.Role;
 import com.itplace.userapi.user.entity.SocialAccount;
 import com.itplace.userapi.user.entity.User;
 import com.itplace.userapi.user.repository.MembershipRepository;
-import com.itplace.userapi.user.repository.SocialAccountRepository;
 import com.itplace.userapi.user.repository.UserRepository;
 import io.jsonwebtoken.Claims;
-import java.util.Map;
-import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.redis.core.RedisTemplate;
-import org.springframework.http.HttpEntity;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpMethod;
-import org.springframework.http.MediaType;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.util.LinkedMultiValueMap;
-import org.springframework.util.MultiValueMap;
-import org.springframework.web.client.RestTemplate;
 
 @Slf4j
 @Service
 @RequiredArgsConstructor
 public class OAuthServiceImpl implements OAuthService {
 
-    private final UserRepository userRepository;
-    private final MembershipRepository membershipRepository;
-    private final SocialAccountRepository socialAccountRepository;
-    private final JWTUtil jwtUtil;
     private final RedisTemplate<String, String> redisTemplate;
-    private final RestTemplate restTemplate = new RestTemplate();
+    private final MembershipRepository membershipRepository;
     private final PasswordEncoder passwordEncoder;
-
-    @Value("${spring.security.oauth2.client.registration.kakao.client-id}")
-    private String kakaoClientId;
-    @Value("${spring.security.oauth2.client.registration.kakao.client-secret}")
-    private String kakaoClientSecret;
-    @Value("${spring.security.oauth2.client.registration.kakao.redirect-uri}")
-    private String kakaoRedirectUri;
-    @Value("${spring.security.oauth2.client.provider.kakao.token-uri}")
-    private String kakaoTokenUri;
-    @Value("${spring.security.oauth2.client.provider.kakao.user-info-uri}")
-    private String kakaoUserInfoUri;
-
-    @Override
-    @Transactional(readOnly = true)
-    public KakaoLoginResult processKakaoLogin(String code) {
-        String kakaoAccessToken = getKakaoAccessToken(code);
-        Map<String, Object> userInfo = getKakaoUserInfo(kakaoAccessToken);
-//        Map<String, Object> kakaoAccount = (Map<String, Object>) userInfo.get("kakao_account"); 이메일 정보 미사용으로 주석 처리
-
-        String provider = "kakao";
-        String providerId = userInfo.get("id").toString();
-
-        log.info("======= provider: {}, providerId: {} =======", provider, providerId);
-
-        Optional<SocialAccount> socialAccountOpt = socialAccountRepository.findByProviderAndProviderId(provider, providerId);
-
-        if (socialAccountOpt.isPresent()) {
-            // Case 1: 이미 연동된 기존 사용자 -> 즉시 로그인
-            log.info("===== 이미 연동된 기존 사용자로 로그인 시도 =====");
-            User user = socialAccountOpt.get().getUser();
-            OAuthResult authResult = createAuthResultForUser(user);
-            return KakaoLoginResult.builder()
-                    .isExistingUser(true)
-                    .authResult(authResult)
-                    .build();
-        } else {
-            // Case 2: 신규 사용자 -> 가입 절차를 위한 임시 토큰 생성
-            String tempToken = jwtUtil.createTempJwt(provider, providerId);
-            return KakaoLoginResult.builder()
-                    .isExistingUser(false)
-                    .tempToken(tempToken)
-                    .build();
-        }
-    }
+    private final UserRepository userRepository;
+    private final JWTUtil jwtUtil;
 
     @Override
     @Transactional
@@ -122,7 +64,7 @@ public class OAuthServiceImpl implements OAuthService {
                 .password(passwordEncoder.encode(UUID.randomUUID().toString()))
                 .role(Role.USER)
                 .build();
-        
+
         user.getSocialAccounts().add(SocialAccount.builder()
                 .provider(provider).providerId(providerId).user(user).build());
 
@@ -176,28 +118,6 @@ public class OAuthServiceImpl implements OAuthService {
                 .accessToken(accessToken)
                 .refreshToken(refreshToken)
                 .build();
-    }
-
-    // --- 카카오 통신 Helper 메소드 ---
-    private String getKakaoAccessToken(String code) {
-        HttpHeaders headers = new HttpHeaders();
-        headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
-        MultiValueMap<String, String> params = new LinkedMultiValueMap<>();
-        params.add("grant_type", "authorization_code");
-        params.add("client_id", kakaoClientId);
-        params.add("redirect_uri", kakaoRedirectUri);
-        params.add("client_secret", kakaoClientSecret);
-        params.add("code", code);
-        HttpEntity<MultiValueMap<String, String>> request = new HttpEntity<>(params, headers);
-        Map<String, Object> response = restTemplate.postForObject(kakaoTokenUri, request, Map.class);
-        return (String) response.get("access_token");
-    }
-
-    private Map<String, Object> getKakaoUserInfo(String accessToken) {
-        HttpHeaders headers = new HttpHeaders();
-        headers.setBearerAuth(accessToken);
-        HttpEntity<Void> request = new HttpEntity<>(headers);
-        return restTemplate.exchange(kakaoUserInfoUri, HttpMethod.GET, request, Map.class).getBody();
     }
 
     private Grade getMembershipGrade(String membershipId) {
