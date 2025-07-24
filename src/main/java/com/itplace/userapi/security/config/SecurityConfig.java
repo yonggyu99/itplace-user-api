@@ -3,6 +3,7 @@ package com.itplace.userapi.security.config;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.itplace.userapi.security.CookieUtil;
 import com.itplace.userapi.security.auth.local.filter.LoginFilter;
+import com.itplace.userapi.security.auth.oauth.handler.OAuth2AuthenticationFailureHandler;
 import com.itplace.userapi.security.auth.oauth.handler.OAuth2AuthenticationSuccessHandler;
 import com.itplace.userapi.security.auth.oauth.service.CustomOAuth2UserService;
 import com.itplace.userapi.security.jwt.JWTFilter;
@@ -34,13 +35,14 @@ import org.springframework.web.cors.CorsConfigurationSource;
 public class SecurityConfig {
 
     private final AuthenticationConfiguration authenticationConfiguration;
-    private final JWTUtil jwtUtil;
+    private final OAuth2AuthenticationSuccessHandler oAuth2AuthenticationSuccessHandler;
+    private final OAuth2AuthenticationFailureHandler oAuth2AuthenticationFailureHandler;
+    private final CustomOAuth2UserService customOAuth2UserService;
+    private final MembershipRepository membershipRepository;
     private final StringRedisTemplate redisTemplate;
     private final ObjectMapper objectMapper;
-    private final MembershipRepository membershipRepository;
     private final CookieUtil cookieUtil;
-    private final OAuth2AuthenticationSuccessHandler oAuth2AuthenticationSuccessHandler;
-    private final CustomOAuth2UserService customOAuth2UserService;
+    private final JWTUtil jwtUtil;
 
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http, AuthenticationManager authenticationManager) throws Exception {
@@ -86,7 +88,8 @@ public class SecurityConfig {
                 .oauth2Login(oauth2 -> oauth2
                         .userInfoEndpoint(userInfo -> userInfo
                                 .userService(customOAuth2UserService))
-                        .successHandler(oAuth2AuthenticationSuccessHandler));
+                        .successHandler(oAuth2AuthenticationSuccessHandler)
+                        .failureHandler(oAuth2AuthenticationFailureHandler));
 
         LoginFilter loginFilter = new LoginFilter(
                 authenticationManager(authenticationConfiguration),

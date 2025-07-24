@@ -31,6 +31,9 @@ public class OAuth2AuthenticationSuccessHandler extends SimpleUrlAuthenticationS
     private final MembershipRepository membershipRepository;
     private final RedisTemplate<String, String> redisTemplate;
 
+    private static final String NEW_USER_REDIRECT_URI = "https://itplace.click/login?step=phoneAuth&verifiedType=oauth";
+    private static final String EXIST_USER_REDIRECT_URI = "https://itplace.click/main";
+
     @Override
     public void onAuthenticationSuccess(HttpServletRequest request, HttpServletResponse response, Authentication authentication) throws IOException, ServletException {
         CustomOAuth2User oAuth2User = (CustomOAuth2User) authentication.getPrincipal();
@@ -50,7 +53,7 @@ public class OAuth2AuthenticationSuccessHandler extends SimpleUrlAuthenticationS
             response.addHeader("Set-Cookie", tempTokenCookie.toString());
 
             // 프론트엔드의 휴대폰 인증 및 추가 정보 입력 페이지로 리다이렉트
-            getRedirectStrategy().sendRedirect(request, response, "http://localhost:5173/login?step=phoneAuth&verifiedType=oauth"); // 프론트엔드 URL에 맞게 수정
+            getRedirectStrategy().sendRedirect(request, response, NEW_USER_REDIRECT_URI);
         } else {
             // Case 2: 기존 사용자 -> 즉시 로그인 성공 처리 (JWT 발급)
             log.info("기존 OAuth 사용자. 로그인을 완료합니다.");
@@ -66,7 +69,7 @@ public class OAuth2AuthenticationSuccessHandler extends SimpleUrlAuthenticationS
             cookieUtil.setTokensToCookie(response, accessToken, refreshToken);
 
             // 프론트엔드의 메인 페이지 또는 로그인 후 대시보드 페이지로 리다이렉트
-            getRedirectStrategy().sendRedirect(request, response, "https://itplace.click/main"); // 프론트엔드 URL에 맞게 수정
+            getRedirectStrategy().sendRedirect(request, response, EXIST_USER_REDIRECT_URI);
         }
     }
 }
