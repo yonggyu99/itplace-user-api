@@ -3,6 +3,7 @@ package com.itplace.userapi.security.auth.oauth.controller;
 import com.itplace.userapi.common.ApiResponse;
 import com.itplace.userapi.security.CookieUtil;
 import com.itplace.userapi.security.SecurityCode;
+import com.itplace.userapi.security.auth.common.PrincipalDetails;
 import com.itplace.userapi.security.auth.local.dto.response.LoginResponse;
 import com.itplace.userapi.security.auth.oauth.dto.request.OAuthLinkRequest;
 import com.itplace.userapi.security.auth.oauth.dto.request.OAuthSignUpRequest;
@@ -12,6 +13,7 @@ import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.CookieValue;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -54,5 +56,12 @@ public class OAuthController {
         OAuthResult result = oAuthService.linkOAuthAccount(tempToken, request);
         cookieUtil.setTokensToCookie(httpServletResponse, result.getAccessToken(), result.getRefreshToken());
         return ResponseEntity.ok(ApiResponse.of(SecurityCode.LOGIN_SUCCESS, result.getLoginResponse()));
+    }
+
+    @PostMapping("/result")
+    public ResponseEntity<ApiResponse<LoginResponse>> result(@AuthenticationPrincipal PrincipalDetails principalDetails) {
+        LoginResponse result = oAuthService.result(principalDetails);
+        ApiResponse<LoginResponse> body = ApiResponse.of(SecurityCode.OAUTH_INFO_FOUND, result);
+        return new ResponseEntity<>(body, body.getStatus());
     }
 }
