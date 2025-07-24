@@ -25,6 +25,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Slf4j
 @Service
@@ -114,17 +115,14 @@ public class UserServiceImpl implements UserService {
         }
     }
 
+    @Transactional
     @Override
     public void withdraw(Long userId) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new UserNotFoundException(UserCode.USER_NOT_FOUND));
 
-        // 1. 즐겨찾기 삭제
         favoriteRepository.deleteByUser_Id(userId);
-
-        // 2. 소셜 계정 삭제
         socialAccountRepository.deleteByUser_Id(userId);
-
         userRepository.delete(user);
     }
 }
