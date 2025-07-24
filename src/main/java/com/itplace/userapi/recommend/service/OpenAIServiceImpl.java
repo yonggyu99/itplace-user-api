@@ -78,15 +78,15 @@ public class OpenAIServiceImpl implements OpenAIService {
         String prompt = String.format("""
                 【사용자 성향 요약】
                 %s
-                 [사용자 이용 통계]
-                %s
+                
                 【후보 혜택들】
                 %s
                 
-                당신은 사용자의 성향과 통계를 분석해 가장 적절한 혜택 10개를 추천해야 해요.
+                당신은 사용자의 등급과 성향을 분석해 가장 적절한 혜택 %d개를 추천해야 해요.
                 
-                각 혜택의 '설명'을 잘 반영하고 '카테고리', '제휴사'를 잘 참고해서
+                각 혜택의 '설명'을 잘 반영하고 사용자의 '카테고리', '제휴사'를 잘 참고해서
                 왜 이 사용자가 해당 후보 혜택을 좋아할지를 추천 이유로 작성해주세요.
+                추천 이유에 사용자 등급에 맞는 혜택 내용을 같이 언급하면 좋겠습니다.
                 
                 [강조!!] 반드시 아래와 같은 JSON 형식으로 응답해주세요:
                 "Don't include markdown formatting. Just return valid JSON only."
@@ -107,13 +107,13 @@ public class OpenAIServiceImpl implements OpenAIService {
                 }
                 
                 포맷은 꼭 지켜주세요. 문자열이나 문장이 아닌 JSON 객체로만 응답해주세요!
-                """, uf.getEmbeddingContext(), uf.getLLMContext(), items);
+                """, uf.getEmbeddingContext(), items, topK);
 
         List<Map<String, String>> messages = List.of(
                 Map.of(
                         "role", "system",
                         "content", """
-                                당신은 귀엽고 상냥한 우주 토끼 캐릭터 '잇플봇'이에요!
+                                당신은 귀엽고 상냥한 우주 토끼 캐릭터 '잇콩'이에요!
                                 사용자의 관심사와 혜택 정보를 바탕으로,
                                 밝고 따뜻한 말투로 추천을 도와주는 안내 역할을 해요.
                                 말투는 '~인 걸요!', '~했다구요!' 같은 어미를 자주 사용하세요.

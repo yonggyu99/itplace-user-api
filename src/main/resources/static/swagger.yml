@@ -28,6 +28,8 @@ tags:
     description: 즐겨찾기 관련 API
   - name: History
     description: 멤버십 혜택 사용 내역 관련 API
+  - name : Recommend
+    description: 멤버십 추천 기능 관련 API
 
 paths:
   # =====================================================
@@ -1684,6 +1686,7 @@ paths:
                     data: null
                     timestamp: '2025-07-15T11:00:00.000Z'
 
+
   # =====================================================
   # 혜택 관련 기능 API
   # =====================================================
@@ -1962,6 +1965,10 @@ paths:
                     message: 오프라인 사용 가능한 혜택이 존재하지 않습니다.
                     timestamp: "2025-07-17T18:20:02.2361602"
 
+  # =====================================================
+  # 멤버십 혜택 사용 내역 관련 기능 API
+  # =====================================================
+
   /membership-history:
     get:
       tags:
@@ -2124,6 +2131,90 @@ paths:
                     status: UNAUTHORIZED
                     message: 멤버십 내역 조회는 로그인 후 이용 가능합니다.
                     timestamp: "2025-07-18T14:21:00.123456"
+
+  # =====================================================
+  # 멤버십 추천 관련 기능 API
+  # =====================================================
+  /recommendations:
+    get:
+      tags:
+        - Recommend
+      summary: 지도 페이지 내 사용자 맞춤 추천 결과 조회
+      description: 로그인한 사용자의 ID를 기반으로 맞춤 추천 결과를 조회합니다.
+      parameters:
+        - name: topK
+          in: query
+          required: false
+          schema:
+            type: integer
+            default: 10
+          description: 추천 결과 개수 (기본값 10개)
+      responses:
+        '200':
+          description: 추천 결과 조회 성공
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiResponse'
+              examples:
+                successExample:
+                  value:
+                    data: 
+                      - rank: 1
+                        partnerName: "DBR동아비즈니스리뷰"
+                        reason: "사용자님이 경제와 비즈니스에 관심이 많다면, DBR의 다양한 콘텐츠를 2,500원 할인된 가격에 무제한으로 즐기실 수 있어서 추천 드리는 걸요!"  
+                      - rank: 2
+                        partnerName: "네이버플러스 멤버십"
+                        reason: "네이버 쇼핑 적립 혜택도 받고, 디지털 콘텐츠도 누릴 수 있어 유용할 것 같아 추천합니다!"       
+                    code: RECOMMENDATION_SUCCESS
+                    status: OK
+                    message: 추천 결과 생성 성공
+                    timestamp: "2025-07-24T15:30:00.000000"
+        '400':
+          description: 멤버십 회원이 아님
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiResponse'
+              examples:
+                notMembershipExample:
+                  value:
+                    data: null
+                    code: RECOMMENDATION_USER_NOT_MEMBERSHIP
+                    status: BAD_REQUEST
+                    message: 멤버십 회원이 아닙니다.
+                    timestamp: "2025-07-24T15:30:00.000000"
+
+
+        '404':
+          description: 사용자를 찾을 수 없음
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiResponse'
+              examples:
+                notFoundExample:
+                  value:
+                    data: null
+                    code: SECURITYCODE_USER_NOT_FOUND
+                    status: NOT_FOUND
+                    message: 사용자를 찾을 수 없습니다.
+                    timestamp: "2025-07-24T15:30:00.000000"
+        '500':
+          description: 추천 생성 실패
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiResponse'
+              examples:
+                failExample:
+                  value:
+                    data: null
+                    code: RECOMMENDATION_RESULT_FAIL
+                    status: INTERNAL_SERVER_ERROR
+                    message: 추천 결과 생성 실패
+                    timestamp: "2025-07-24T15:30:00.000000"
+
 
 components:
   schemas:

@@ -32,7 +32,7 @@ public class BenefitSearchServiceImpl implements BenefitSearchService {
             SearchRequest request = SearchRequest.of(s -> s
                     .index("benefit")
                     .knn(knnQuery)
-                    .size(13) //default
+                    .size(13) //default 10
             );
 
             SearchResponse<JsonData> response = esClient.search(request, JsonData.class);
