@@ -22,4 +22,5 @@ public class BenefitDocument {
     private String category;
     private String description;
     private String context;
+    private String imgUrl;
 }

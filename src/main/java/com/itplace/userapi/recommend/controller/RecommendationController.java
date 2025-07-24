@@ -5,7 +5,7 @@ import com.itplace.userapi.recommend.dto.Recommendation;
 import com.itplace.userapi.recommend.enums.RecommendationCode;
 import com.itplace.userapi.recommend.exception.NotMembershipUserException;
 import com.itplace.userapi.recommend.service.OpenAiRecommendationService;
-import com.itplace.userapi.security.auth.local.dto.CustomUserDetails;
+import com.itplace.userapi.security.auth.common.PrincipalDetails;
 import com.itplace.userapi.user.exception.UserNotFoundException;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
@@ -25,11 +25,11 @@ public class RecommendationController {
 
     @GetMapping
     public ResponseEntity<ApiResponse<List<Recommendation>>> recommend(
-            @AuthenticationPrincipal CustomUserDetails userDetails,
+            @AuthenticationPrincipal PrincipalDetails principalDetails,
             @RequestParam(defaultValue = "10") int topK) {
 
         try {
-            Long userId = userDetails.getUserId();
+            Long userId = principalDetails.getUserId();
             List<Recommendation> result = recommendationService.recommend(userId, topK);
             return ResponseEntity.ok(ApiResponse.of(RecommendationCode.RECOMMENDATION_SUCCESS, result));
 

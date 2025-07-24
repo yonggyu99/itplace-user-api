@@ -32,7 +32,7 @@ public class BenefitSearchServiceImpl implements BenefitSearchService {
             SearchRequest request = SearchRequest.of(s -> s
                     .index("benefit")
                     .knn(knnQuery)
-                    .size(13) //default 10
+                    .size(15) //default 10
             );
 
             SearchResponse<JsonData> response = esClient.search(request, JsonData.class);
@@ -49,6 +49,7 @@ public class BenefitSearchServiceImpl implements BenefitSearchService {
                                 .category(node.get("category").asText())
                                 .description(node.get("description").asText())
                                 .context(node.get("context").asText())
+                                .imgUrl(node.get("imgUrl").asText())
                                 .build();
                     })
                     .toList();

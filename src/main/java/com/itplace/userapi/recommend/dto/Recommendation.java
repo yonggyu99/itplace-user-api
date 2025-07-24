@@ -7,5 +7,6 @@ public class Recommendation {
     private int rank;
     private String partnerName;
     private String reason;
+    private String imgUrl;
 }
 

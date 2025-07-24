@@ -38,13 +38,13 @@
 //
 //                Partner p = b.getPartner();
 //
-//                // 임베딩용 텍스트
 //                String embeddingText = String.format(
-//                        "%s, %s  %s",
-//                        b.getBenefitName(),
+//                        "%s 카테고리에 해당하는 '%s' 혜택입니다. %s",
 //                        p.getCategory(),
-//                        b.getDescription() != null ? b.getDescription() : ""
+//                        b.getBenefitName(),
+//                        b.getDescription() != null ? b.getDescription() : "추가 설명은 없습니다."
 //                );
+//
 //                List<Float> embedding = embeddingService.embed(embeddingText);
 //
 //                String context = String.format("""
@@ -75,6 +75,7 @@
 //                        .description(b.getDescription())
 //                        .context(context)
 //                        .embedding(embedding)
+//                        .imgUrl(p.getImage())
 //                        .build();
 //
 //                esClient.index(i -> i

@@ -65,6 +65,7 @@ public class OpenAIServiceImpl implements OpenAIService {
                                카테고리: %s
                                설명: %s
                                등급별 혜택 요약 %s
+                               이미지 : %s
                             
                             """,
                     i + 1,
@@ -72,7 +73,8 @@ public class OpenAIServiceImpl implements OpenAIService {
                     c.getPartnerName(),
                     c.getCategory(),
                     c.getDescription() != null ? c.getDescription() : "설명 없음",
-                    c.getContext() != null ? c.getContext() : "추가 정보 없음"
+                    c.getContext() != null ? c.getContext() : "추가 정보 없음",
+                    c.getImgUrl() != null ? c.getImgUrl() : "<UNK> <UNK> <UNK>"
             ));
         }
         String prompt = String.format("""
@@ -87,6 +89,7 @@ public class OpenAIServiceImpl implements OpenAIService {
                 각 혜택의 '설명'을 잘 반영하고 사용자의 '카테고리', '제휴사'를 잘 참고해서
                 왜 이 사용자가 해당 후보 혜택을 좋아할지를 추천 이유로 작성해주세요.
                 추천 이유에 사용자 등급에 맞는 혜택 내용을 같이 언급하면 좋겠습니다.
+                또한 반드시 제공된 후보 혜택들 중에서 추천을 진행해야합니다.
                 
                 [강조!!] 반드시 아래와 같은 JSON 형식으로 응답해주세요:
                 "Don't include markdown formatting. Just return valid JSON only."
@@ -96,11 +99,13 @@ public class OpenAIServiceImpl implements OpenAIService {
                       "rank": 1,
                       "partnerName": "뚜레쥬르",
                       "reason": "빵이 너무 맛있어서 자주 가는 곳이니까 추천드리는 걸요!"
+                      "imgUrl": "https://itplacepartners.s3.ap-northeast-2.amazonaws.com/img/touslesjours.png"
                     },
                     {
                       "rank": 2,
                       "partnerName": "배스킨라빈스",
                       "reason": "달콤한 아이스크림이 요즘처럼 더운 날에 딱이니까요!"
+                      "imgUrl": "https://itplacepartners.s3.ap-northeast-2.amazonaws.com/img/baskinrobbins.png"
                     }
                     ...
                   ]
