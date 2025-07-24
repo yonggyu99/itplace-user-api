@@ -6,6 +6,8 @@ import com.itplace.userapi.benefit.repository.BenefitRepository;
 import com.itplace.userapi.history.repository.MembershipHistoryRepository;
 import com.itplace.userapi.rag.service.EmbeddingService;
 import com.itplace.userapi.recommend.domain.UserFeature;
+import com.itplace.userapi.recommend.enums.RecommendationCode;
+import com.itplace.userapi.recommend.exception.NotMembershipUserException;
 import com.itplace.userapi.recommend.projection.BenefitCount;
 import com.itplace.userapi.recommend.projection.CategoryCount;
 import com.itplace.userapi.security.SecurityCode;
@@ -37,6 +39,10 @@ public class UserFeatureServiceImpl implements UserFeatureService {
         User user = userRepo.findById(userId)
                 .orElseThrow(() -> new UserNotFoundException(SecurityCode.USER_NOT_FOUND));
         String membershipId = user.getMembershipId();
+        // 멤버십 회원 아니면 사용자 피쳐 생성 불가
+        if (membershipId == null || membershipId.isBlank()) {
+            throw new NotMembershipUserException(RecommendationCode.USER_NOT_MEMBERSHIP);
+        }
 
         Grade grade = membershipRepo.findByMembershipId(membershipId)
                 .map(Membership::getGrade)

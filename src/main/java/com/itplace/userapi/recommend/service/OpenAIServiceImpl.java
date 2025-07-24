@@ -82,7 +82,7 @@ public class OpenAIServiceImpl implements OpenAIService {
                 【후보 혜택들】
                 %s
                 
-                당신은 사용자의 등급과 성향을 분석해 가장 적절한 혜택 10개를 추천해야 해요.
+                당신은 사용자의 등급과 성향을 분석해 가장 적절한 혜택 %d개를 추천해야 해요.
                 
                 각 혜택의 '설명'을 잘 반영하고 사용자의 '카테고리', '제휴사'를 잘 참고해서
                 왜 이 사용자가 해당 후보 혜택을 좋아할지를 추천 이유로 작성해주세요.
@@ -107,7 +107,7 @@ public class OpenAIServiceImpl implements OpenAIService {
                 }
                 
                 포맷은 꼭 지켜주세요. 문자열이나 문장이 아닌 JSON 객체로만 응답해주세요!
-                """, uf.getEmbeddingContext(), items);
+                """, uf.getEmbeddingContext(), items, topK);
 
         List<Map<String, String>> messages = List.of(
                 Map.of(

@@ -24,19 +24,4 @@ public class UserFeature {
                 String.join(", ", recentPartnerNames)
         );
     }
-
-//    // LLM 재랭킹용 통계 컨텍스트 생성
-//    public String getLLMContext() {
-//        StringBuilder sb = new StringBuilder();
-//
-//        sb.append("· 카테고리별 이용 횟수:\n");
-//        recentCategoryScores.entrySet().stream()
-//                .sorted(Map.Entry.<String, Integer>comparingByValue().reversed())
-//                .forEach(e -> sb.append(String.format("  - %s: %d회\n", e.getKey(), e.getValue())));
-//
-//        sb.append("· 자주 이용한 제휴사:\n");
-//        recentPartnerNames.forEach(p -> sb.append("  - ").append(p).append("\n"));
-//
-//        return sb.toString();
-//    }
 }

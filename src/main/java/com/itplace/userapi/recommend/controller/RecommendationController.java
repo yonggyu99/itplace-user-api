@@ -3,35 +3,49 @@ package com.itplace.userapi.recommend.controller;
 import com.itplace.userapi.common.ApiResponse;
 import com.itplace.userapi.recommend.dto.Recommendation;
 import com.itplace.userapi.recommend.enums.RecommendationCode;
+import com.itplace.userapi.recommend.exception.NotMembershipUserException;
 import com.itplace.userapi.recommend.service.OpenAiRecommendationService;
+import com.itplace.userapi.security.auth.local.dto.CustomUserDetails;
+import com.itplace.userapi.user.exception.UserNotFoundException;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("/api/recommendations")
+@RequestMapping("/api/v1/recommendations")
 public class RecommendationController {
 
     private final OpenAiRecommendationService recommendationService;
 
-    @GetMapping("/{userId}")
+    @GetMapping
     public ResponseEntity<ApiResponse<List<Recommendation>>> recommend(
-            @PathVariable Long userId,
+            @AuthenticationPrincipal CustomUserDetails userDetails,
             @RequestParam(defaultValue = "10") int topK) {
 
         try {
+            Long userId = userDetails.getUserId();
             List<Recommendation> result = recommendationService.recommend(userId, topK);
             return ResponseEntity.ok(ApiResponse.of(RecommendationCode.RECOMMENDATION_SUCCESS, result));
+
+        } catch (NotMembershipUserException e) {
+            return ResponseEntity
+                    .status(e.getCode().getStatus())
+                    .body(ApiResponse.of(e.getCode(), null));
+
+        } catch (UserNotFoundException e) {
+            return ResponseEntity
+                    .status(e.getCode().getStatus())
+                    .body(ApiResponse.of(e.getCode(), null));
+
         } catch (Exception e) {
             return ResponseEntity
-                    .status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .status(RecommendationCode.RECOMMENDATION_FAIL.getStatus())
                     .body(ApiResponse.of(RecommendationCode.RECOMMENDATION_FAIL, null));
         }
     }
