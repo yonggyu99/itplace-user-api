@@ -6,7 +6,7 @@ import com.itplace.userapi.benefit.dto.response.PagedResponse;
 import com.itplace.userapi.benefit.repository.BenefitRepository;
 import com.itplace.userapi.common.ApiResponse;
 import com.itplace.userapi.log.service.LogService;
-import com.itplace.userapi.security.auth.local.dto.CustomUserDetails;
+import com.itplace.userapi.security.auth.common.PrincipalDetails;
 import jakarta.servlet.http.HttpServletRequest;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
@@ -18,7 +18,6 @@ import org.springframework.http.server.ServerHttpRequest;
 import org.springframework.http.server.ServerHttpResponse;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
@@ -118,11 +117,12 @@ public class BenefitLogAdvice implements ResponseBodyAdvice<Object> {
 
     private Long getUserId() {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        Object principal = auth.getPrincipal();
 
-        if (auth.getPrincipal() instanceof UserDetails) {
-            CustomUserDetails userDetails = (CustomUserDetails) auth.getPrincipal();
-            return userDetails.getUser().getId();
+        if (principal instanceof PrincipalDetails principalDetails) {
+            return principalDetails.getUserId();
         }
+
         log.info("user 정보 없음");
         return null;
     }

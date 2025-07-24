@@ -9,7 +9,7 @@ import com.itplace.userapi.benefit.entity.enums.MainCategory;
 import com.itplace.userapi.benefit.entity.enums.UsageType;
 import com.itplace.userapi.benefit.service.BenefitService;
 import com.itplace.userapi.common.ApiResponse;
-import com.itplace.userapi.security.auth.local.dto.CustomUserDetails;
+import com.itplace.userapi.security.auth.common.PrincipalDetails;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -34,13 +34,13 @@ public class BenefitController {
             @RequestParam(required = false) UsageType filter,
             @RequestParam(required = false, defaultValue = "POPULARITY") String sort,
             @RequestParam(required = false) String keyword,
-            @AuthenticationPrincipal CustomUserDetails userDetails,
+            @AuthenticationPrincipal PrincipalDetails principalDetails,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "12") int size
     ) {
 
         Pageable pageable = PageRequest.of(page, size);
-        Long userId = (userDetails != null) ? userDetails.getUserId() : null;
+        Long userId = (principalDetails != null) ? principalDetails.getUserId() : null;
         PagedResponse<BenefitListResponse> result = benefitService.getBenefitList(
                 mainCategory, category, filter, keyword, userId, pageable
         );
@@ -60,9 +60,9 @@ public class BenefitController {
             @RequestParam Long storeId,
             @RequestParam Long partnerId,
             @RequestParam MainCategory mainCategory,
-            @AuthenticationPrincipal CustomUserDetails userDetails
+            @AuthenticationPrincipal PrincipalDetails principalDetails
     ) {
-        Long userId = (userDetails != null) ? userDetails.getUserId() : null;
+        Long userId = (principalDetails != null) ? principalDetails.getUserId() : null;
         MapBenefitDetailResponse detail = benefitService.getMapBenefitDetail(storeId, partnerId, mainCategory, userId);
         ApiResponse<MapBenefitDetailResponse> body = ApiResponse.of(BenefitCode.BENEFIT_DETAIL_SUCCESS, detail);
         return ResponseEntity.status(body.getStatus()).body(body);
