@@ -2,6 +2,7 @@ package com.itplace.userapi.user.controller;
 
 import com.itplace.userapi.common.ApiResponse;
 import com.itplace.userapi.security.SecurityCode;
+import com.itplace.userapi.security.auth.common.PrincipalDetails;
 import com.itplace.userapi.security.auth.local.dto.CustomUserDetails;
 import com.itplace.userapi.security.exception.UserNotFoundException;
 import com.itplace.userapi.security.verification.email.dto.EmailConfirmRequest;
@@ -102,9 +103,9 @@ public class UserController {
 
     @DeleteMapping
     public ResponseEntity<ApiResponse<Void>> withdraw(
-            @AuthenticationPrincipal CustomUserDetails userDetails
+            @AuthenticationPrincipal PrincipalDetails principalDetails
     ) {
-        userService.withdraw(userDetails.getUserId());
+        userService.withdraw(principalDetails.getUserId());
         ApiResponse<Void> body = ApiResponse.ok(UserCode.USER_WITHDRAWAL_SUCCESS);
         return ResponseEntity
                 .status(body.getStatus())
