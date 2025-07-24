@@ -16,6 +16,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.CookieValue;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -58,7 +59,7 @@ public class OAuthController {
         return ResponseEntity.ok(ApiResponse.of(SecurityCode.LOGIN_SUCCESS, result.getLoginResponse()));
     }
 
-    @PostMapping("/result")
+    @GetMapping("/result")
     public ResponseEntity<ApiResponse<LoginResponse>> result(@AuthenticationPrincipal PrincipalDetails principalDetails) {
         LoginResponse result = oAuthService.result(principalDetails);
         ApiResponse<LoginResponse> body = ApiResponse.of(SecurityCode.OAUTH_INFO_FOUND, result);
