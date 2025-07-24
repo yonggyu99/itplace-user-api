@@ -1,5 +1,6 @@
 package com.itplace.userapi.user.service;
 
+import com.itplace.userapi.favorite.repository.FavoriteRepository;
 import com.itplace.userapi.security.SecurityCode;
 import com.itplace.userapi.security.auth.common.PrincipalDetails;
 import com.itplace.userapi.security.exception.EmailVerificationException;
@@ -9,6 +10,7 @@ import com.itplace.userapi.security.exception.UserNotFoundException;
 import com.itplace.userapi.security.verification.OtpUtil;
 import com.itplace.userapi.security.verification.email.dto.EmailConfirmRequest;
 import com.itplace.userapi.user.dto.request.ChangePasswordRequest;
+import com.itplace.userapi.user.UserCode;
 import com.itplace.userapi.user.dto.request.FindEmailConfirmRequest;
 import com.itplace.userapi.user.dto.request.ResetPasswordRequest;
 import com.itplace.userapi.user.dto.response.FindEmailResponse;
@@ -17,6 +19,7 @@ import com.itplace.userapi.user.dto.response.UserInfoResponse;
 import com.itplace.userapi.user.entity.Membership;
 import com.itplace.userapi.user.entity.User;
 import com.itplace.userapi.user.repository.MembershipRepository;
+import com.itplace.userapi.user.repository.SocialAccountRepository;
 import com.itplace.userapi.user.repository.UserRepository;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
@@ -37,6 +40,8 @@ public class UserServiceImpl implements UserService {
     private final StringRedisTemplate redisTemplate;
     private final OtpUtil otpUtil;
     private final PasswordEncoder passwordEncoder;
+    private final FavoriteRepository favoriteRepository;
+    private final SocialAccountRepository socialAccountRepository;
 
     private static final String RESET_PASSWORD_PREFIX = "resetPassword:";
     private static final String RESET_PASSWORD_VALUE = "true";
@@ -124,5 +129,16 @@ public class UserServiceImpl implements UserService {
         } else {
             throw new PasswordMismatchException(SecurityCode.PASSWORD_MISMATCH);
         }
+    }
+
+    @Transactional
+    @Override
+    public void withdraw(Long userId) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new UserNotFoundException(UserCode.USER_NOT_FOUND));
+
+        favoriteRepository.deleteByUser_Id(userId);
+        socialAccountRepository.deleteByUser_Id(userId);
+        userRepository.delete(user);
     }
 }

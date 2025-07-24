@@ -19,4 +19,6 @@ public interface UserService {
     void resetPassword(ResetPasswordRequest request);
 
     void changePassword(PrincipalDetails principalDetails, ChangePasswordRequest request);
+
+    void withdraw(Long userId);
 }
