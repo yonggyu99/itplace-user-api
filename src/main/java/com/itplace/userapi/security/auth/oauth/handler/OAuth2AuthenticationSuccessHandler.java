@@ -1,27 +1,20 @@
 package com.itplace.userapi.security.auth.oauth.handler;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.itplace.userapi.benefit.entity.enums.Grade;
-import com.itplace.userapi.common.ApiResponse;
 import com.itplace.userapi.security.CookieUtil;
-import com.itplace.userapi.security.SecurityCode;
-import com.itplace.userapi.security.auth.local.dto.response.LoginResponse;
 import com.itplace.userapi.security.auth.oauth.dto.CustomOAuth2User;
 import com.itplace.userapi.security.jwt.JWTConstants;
 import com.itplace.userapi.security.jwt.JWTUtil;
-import com.itplace.userapi.user.entity.Membership;
 import com.itplace.userapi.user.entity.User;
 import com.itplace.userapi.user.repository.MembershipRepository;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
-import java.util.Optional;
 import java.util.concurrent.TimeUnit;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.redis.core.RedisTemplate;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseCookie;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.web.authentication.SimpleUrlAuthenticationSuccessHandler;
@@ -39,7 +32,7 @@ public class OAuth2AuthenticationSuccessHandler extends SimpleUrlAuthenticationS
     private final RedisTemplate<String, String> redisTemplate;
 
     private static final String NEW_USER_REDIRECT_URI = "https://itplace.click/login?step=phoneAuth&verifiedType=oauth";
-    private static final String EXIST_USER_REDIRECT_URI = "https://itplace.click/main";
+    private static final String EXIST_USER_REDIRECT_URI = "http://localhost:5173/login?oauth=processing";
 
     @Override
     public void onAuthenticationSuccess(HttpServletRequest request, HttpServletResponse response, Authentication authentication) throws IOException, ServletException {
@@ -76,37 +69,8 @@ public class OAuth2AuthenticationSuccessHandler extends SimpleUrlAuthenticationS
             // 쿠키에 토큰 설정
             cookieUtil.setTokensToCookie(response, accessToken, refreshToken);
 
-            LoginResponse loginResponse = getLoginResponse(user);
-
             // ApiResponse JSON 형식으로 응답
-            response.setContentType("application/json;charset=UTF-8");
-            response.setStatus(HttpStatus.OK.value());
-            ApiResponse<LoginResponse> apiResponse = ApiResponse.of(SecurityCode.LOGIN_SUCCESS, loginResponse);
-            objectMapper.writeValue(response.getOutputStream(), apiResponse);
+            getRedirectStrategy().sendRedirect(request, response, EXIST_USER_REDIRECT_URI);
         }
-    }
-
-    /**
-     * User 엔티티를 기반으로 LoginResponse DTO를 생성합니다.
-     *
-     * @param user 로그인한 사용자 정보
-     * @return 생성된 LoginResponse 객체
-     */
-    private LoginResponse getLoginResponse(User user) {
-        String name = user.getName();
-        String membershipId = user.getMembershipId();
-        Grade membershipGrade = null;
-
-        if (membershipId != null) {
-            Optional<Membership> membershipOpt = membershipRepository.findById(membershipId);
-            if (membershipOpt.isPresent()) {
-                membershipGrade = membershipOpt.get().getGrade();
-            }
-        }
-
-        return LoginResponse.builder()
-                .name(name)
-                .membershipGrade(membershipGrade)
-                .build();
     }
 }
