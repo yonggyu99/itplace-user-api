@@ -32,7 +32,7 @@ public class OAuth2AuthenticationSuccessHandler extends SimpleUrlAuthenticationS
     private final RedisTemplate<String, String> redisTemplate;
 
     private static final String NEW_USER_REDIRECT_URI = "https://itplace.click/login?step=phoneAuth&verifiedType=oauth";
-    private static final String EXIST_USER_REDIRECT_URI = "http://localhost:5173/login?oauth=processing";
+    private static final String EXIST_USER_REDIRECT_URI = "https://itplace.click/login?oauth=processing";
 
     @Override
     public void onAuthenticationSuccess(HttpServletRequest request, HttpServletResponse response, Authentication authentication) throws IOException, ServletException {
