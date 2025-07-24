@@ -28,7 +28,7 @@ tags:
     description: 즐겨찾기 관련 API
   - name: History
     description: 멤버십 혜택 사용 내역 관련 API
-  - name : Recommend
+  - name: Recommend
     description: 멤버십 추천 기능 관련 API
 
 paths:
@@ -1988,6 +1988,79 @@ paths:
                     message: 오프라인 사용 가능한 혜택이 존재하지 않습니다.
                     timestamp: "2025-07-17T18:20:02.2361602"
 
+  /partners/search-ranking:
+    get:
+      tags:
+        - Benefit
+      summary: 제휴처 검색 순위 조회
+      description: 제휴처별 검색 순위를 조회합니다.
+      operationId: getPartnerRanking
+      parameters:
+        - name: recentperiod
+          in: query
+          description: 최근 조회 기간
+          required: false
+          schema:
+            type: integer
+            default: 2
+        - name: prevperiod
+          in: query
+          description: 이전 조회 기간
+          required: false
+          schema:
+            type: integer
+            default: 3
+      responses:
+        '200':
+          description: 제휴처 검색 순위 조회 성공
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiResponse'
+              examples:
+                플랫폼 검색 순위 조회 성공:
+                  value:
+                    code: "PARTNERS_SEARCH_RANKING_SUCCESS"
+                    status: "OK"
+                    message: "제휴처 검색 순위가 성공적으로 조회되었습니다."
+                    data:
+                      - partnerName: "네이버플러스 멤버십"
+                        searchCount: 3420
+                        rank: 1
+                        previousRank: 2
+                        rankChange: 1
+                        changeDerection: "UP"
+                      - partnerName: "CGV"
+                        searchCount: 2890
+                        rank: 2
+                        previousRank: 1
+                        rankChange: -1
+                        changeDerection: "DOWN"
+                      - partnerName: "GS25"
+                        searchCount: 2560
+                        rank: 3
+                        previousRank: 0
+                        rankChange: 0
+                        changeDerection: "SAME"
+                      - partnerName: "배스킨라빈스"
+                        searchCount: 2420
+                        rank: 4
+                        previousRank: 5
+                        rankChange: 1
+                        changeDerection: "UP"
+                      - partnerName: "메가박스"
+                        searchCount: 1890
+                        rank: 5
+                        previousRank: 4
+                        rankChange: -1
+                        changeDerection: "DOWN"
+                      - partnerName: "파리바게뜨"
+                        searchCount: 1560
+                        rank: 6
+                        previousRank: 99999
+                        rankChange: 0
+                        changeDerection: "NEW"
+                    timestamp: "2025-07-04T11:27:06.789Z"
   # =====================================================
   # 멤버십 혜택 사용 내역 관련 기능 API
   # =====================================================
@@ -2182,15 +2255,15 @@ paths:
               examples:
                 successExample:
                   value:
-                    data: 
+                    data:
                       - rank: 1
                         partnerName: "DBR동아비즈니스리뷰"
-                        reason: "사용자님이 경제와 비즈니스에 관심이 많다면, DBR의 다양한 콘텐츠를 2,500원 할인된 가격에 무제한으로 즐기실 수 있어서 추천 드리는 걸요!"  
+                        reason: "사용자님이 경제와 비즈니스에 관심이 많다면, DBR의 다양한 콘텐츠를 2,500원 할인된 가격에 무제한으로 즐기실 수 있어서 추천 드리는 걸요!"
                         imgUrl: "https://itplacepartners.s3.ap-northeast-2.amazonaws.com/img/DBRBusiness.png"
                       - rank: 2
                         partnerName: "네이버플러스 멤버십"
                         reason: "네이버 쇼핑 적립 혜택도 받고, 디지털 콘텐츠도 누릴 수 있어 유용할 것 같아 추천합니다!"
-                        imgUrl: "https://itplacepartners.s3.ap-northeast-2.amazonaws.com/img/naverplus.jpg"  
+                        imgUrl: "https://itplacepartners.s3.ap-northeast-2.amazonaws.com/img/naverplus.jpg"
                     code: RECOMMENDATION_SUCCESS
                     status: OK
                     message: 추천 결과 생성 성공
