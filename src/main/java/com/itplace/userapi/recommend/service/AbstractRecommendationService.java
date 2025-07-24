@@ -15,10 +15,12 @@ public abstract class AbstractRecommendationService {
     protected final RankingStrategy rankingStrategy;
 
     public List<Recommendation> recommend(Long userId, int topK) throws Exception {
-        // 사용자 분석
+        // 사용자 피처 추출
         UserFeature uf = ufService.loadUserFeature(userId);
         // 추천 리스트
-        List<Candidate> cands = retrievalStrategy.retrieve(uf, 70);
-        return rankingStrategy.rank(uf, cands, topK);
+        List<Candidate> cands = retrievalStrategy.retrieve(uf, 50);
+        // 재랭킹 및 추천 텍스트 생성
+        List<Recommendation> recommendations = rankingStrategy.rank(uf, cands, topK);
+        return recommendations;
     }
 }

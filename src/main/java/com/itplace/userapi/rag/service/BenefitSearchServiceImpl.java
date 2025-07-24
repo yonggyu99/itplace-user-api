@@ -7,6 +7,9 @@ import co.elastic.clients.elasticsearch.core.SearchResponse;
 import co.elastic.clients.json.JsonData;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.itplace.userapi.benefit.entity.Benefit;
+import com.itplace.userapi.benefit.entity.enums.Grade;
+import com.itplace.userapi.benefit.repository.BenefitRepository;
 import com.itplace.userapi.recommend.dto.Candidate;
 import java.io.IOException;
 import java.util.List;
@@ -19,8 +22,9 @@ public class BenefitSearchServiceImpl implements BenefitSearchService {
 
     private final ElasticsearchClient esClient;
     private final ObjectMapper objectMapper;
+    private final BenefitRepository benefitRepository;
 
-    public List<Candidate> queryVector(List<Float> userEmbedding, int CandidateSize) {
+    public List<Candidate> queryVector(Grade grade, List<Float> userEmbedding, int CandidateSize) {
         try {
             KnnQuery knnQuery = KnnQuery.of(k -> k
                     .field("embedding")
@@ -38,18 +42,28 @@ public class BenefitSearchServiceImpl implements BenefitSearchService {
             SearchResponse<JsonData> response = esClient.search(request, JsonData.class);
             return response.hits().hits().stream()
                     .map(hit -> {
-                        JsonData source = hit.source();
-                        JsonNode node = source.to(JsonNode.class);
+                        JsonNode node = hit.source().to(JsonNode.class);
+                        Long benefitId = node.get("benefitId").asLong();
+
+                        // DB에서 상세 정보 조회
+                        Benefit benefit = benefitRepository.findById(benefitId)
+                                .orElseThrow(() -> new RuntimeException("혜택 정보가 존재하지 않습니다: " + benefitId));
+
+                        // context 추출
+                        String context = benefit.getTierBenefits().stream()
+                                .filter(tb -> tb.getGrade() == grade)
+                                .map(tb -> tb.getContext() != null ? tb.getContext() : "")
+                                .findFirst()
+                                .orElse("등급별 혜택 정보 없음");
 
                         return Candidate.builder()
-                                .partnerId(node.get("partnerId").asLong())
-                                .benefitId(node.get("benefitId").asLong())
+                                .benefitId(benefitId)
+                                .partnerId(node.get("benefitId").asLong())
                                 .benefitName(node.get("benefitName").asText())
                                 .partnerName(node.get("partnerName").asText())
                                 .category(node.get("category").asText())
                                 .description(node.get("description").asText())
-                                .context(node.get("context").asText())
-                                .imgUrl(node.get("imgUrl").asText())
+                                .context(context)
                                 .build();
                     })
                     .toList();
