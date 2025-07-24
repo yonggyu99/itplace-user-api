@@ -29,8 +29,6 @@ public interface FavoriteRepository extends JpaRepository<Favorite, FavoriteId> 
 
     boolean existsByUserAndBenefit(User user, Benefit benefit);
 
-    void deleteByUserAndBenefit(User user, Benefit benefit);
-
     @Query("SELECT f.benefit.benefitId FROM Favorite f WHERE f.user.id = :userId AND f.benefit.benefitId IN :benefitIds")
     List<Long> findFavoriteBenefitIdsByUser(@Param("userId") Long userId, @Param("benefitIds") List<Long> benefitIds);
 
