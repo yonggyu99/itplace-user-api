@@ -1110,6 +1110,14 @@ paths:
         - User
       summary: 사용자 탈퇴
       description: 현재 로그인된 사용자를 탈퇴 처리합니다. 즐겨찾기, 소셜 계정 연관 정보가 모두 삭제되며 복구할 수 없습니다.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/WithdrawRequest'
+            example:
+              password: "1234"
       responses:
         '200':
           description: 사용자 탈퇴 성공
@@ -1141,6 +1149,21 @@ paths:
                     code: USER_NOT_FOUND
                     status: NOT_FOUND
                     message: 사용자 정보를 찾을 수 없습니다.
+                    timestamp: '2025-07-23T15:00:00.000Z'
+        '400':
+          description: 비밀번호 불일치
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiResponse'
+              examples:
+                userNotFound:
+                  summary: 사용자 없음 예시
+                  value:
+                    data: null
+                    code: PASSWORD_MISMATCH
+                    status: BAD_REQUEST
+                    message: 비밀번호가 일치하지 않습니다.
                     timestamp: '2025-07-23T15:00:00.000Z'
 
   /users/findEmail:
@@ -2470,6 +2493,14 @@ components:
           type: string
           description: "새 비밀번호 확인"
           example: "newStrongPassword456!"
+
+    WithdrawRequest:
+      type: object
+      properties:
+        password:
+          type: string
+          description: 사용자가 입력한 비밀번호
+
     # ----------------------------------------------------
     # Response DTOs
     # ----------------------------------------------------
