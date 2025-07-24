@@ -18,7 +18,7 @@ public class UserFeature {
 
     public String getEmbeddingContext() {
         return String.format(
-                "이 사용자의 등급은 '%s'이며, 최근 '%s' 카테고리에 관심이 많았고, '%s' 제휴사의 혜택을 자주 이용했습니다.",
+                "이 사용자의 멤버십 등급은 '%s'이며, 최근 '%s' 카테고리에 관심이 많았고, '%s' 제휴사의 혜택을 자주 이용했습니다.",
                 grade.toString(),
                 String.join(", ", topCategories),
                 String.join(", ", recentPartnerNames)

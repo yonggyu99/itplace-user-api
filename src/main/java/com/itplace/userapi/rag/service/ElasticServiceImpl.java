@@ -26,6 +26,7 @@ public class ElasticServiceImpl implements ElasticService {
                                 .properties("category", p -> p.keyword(k -> k))
                                 .properties("description", p -> p.text(t -> t))
                                 .properties("context", p -> p.text(t -> t))
+                                .properties("imgUrl", p -> p.text(t -> t))
                         )
                 );
                 System.out.println("Created index: " + indexName);
