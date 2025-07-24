@@ -4,6 +4,7 @@ import com.itplace.userapi.benefit.entity.Benefit;
 import com.itplace.userapi.benefit.repository.BenefitRepository;
 import com.itplace.userapi.log.entity.LogDocument;
 import com.itplace.userapi.log.repository.LogRepository;
+import jakarta.transaction.Transactional;
 import java.time.Instant;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
