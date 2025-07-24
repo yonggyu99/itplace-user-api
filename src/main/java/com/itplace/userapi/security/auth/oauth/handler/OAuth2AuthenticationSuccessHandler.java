@@ -48,6 +48,7 @@ public class OAuth2AuthenticationSuccessHandler extends SimpleUrlAuthenticationS
                     .secure(true)
                     .sameSite("None")
                     .httpOnly(true)
+                    .domain("itplace.click")
                     .maxAge(TimeUnit.MINUTES.toSeconds(10))
                     .build();
             response.addHeader("Set-Cookie", tempTokenCookie.toString());
