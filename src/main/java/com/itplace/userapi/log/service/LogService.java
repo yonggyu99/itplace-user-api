@@ -1,6 +1,7 @@
 package com.itplace.userapi.log.service;
 
 import com.itplace.userapi.log.dto.LogScoreResult;
+import com.itplace.userapi.log.dto.SearchRankResponse;
 import java.util.List;
 
 public interface LogService {
@@ -9,4 +10,6 @@ public interface LogService {
     void saveResponseLog(Long userId, String event, Long benefitId, Long partnerId, String path, String param);
 
     List<LogScoreResult> getUserLogScores(Long userId, int topK);
+
+    List<SearchRankResponse> searchRank(int recentDay, int prevDay);
 }

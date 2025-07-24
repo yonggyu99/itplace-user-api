@@ -3,11 +3,21 @@ package com.itplace.userapi.log.service;
 import com.itplace.userapi.benefit.entity.Benefit;
 import com.itplace.userapi.benefit.repository.BenefitRepository;
 import com.itplace.userapi.log.dto.LogScoreResult;
+import com.itplace.userapi.log.dto.RankResult;
+import com.itplace.userapi.log.dto.SearchRankResponse;
 import com.itplace.userapi.log.entity.LogDocument;
 import com.itplace.userapi.log.repository.LogRepository;
+import com.itplace.userapi.partner.entity.Partner;
+import com.itplace.userapi.partner.repository.PartnerRepository;
 import jakarta.transaction.Transactional;
+import java.time.Duration;
 import java.time.Instant;
+import java.util.Comparator;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.concurrent.atomic.AtomicLong;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -20,6 +30,7 @@ public class LogServiceImpl implements LogService {
 
     private final LogRepository logRepository;
     private final BenefitRepository benefitRepository;
+    private final PartnerRepository partnerRepository;
 
     // 클릭
     @Override
@@ -75,5 +86,58 @@ public class LogServiceImpl implements LogService {
     @Override
     public List<LogScoreResult> getUserLogScores(Long userId, int topK) {
         return logRepository.aggregateUserLogScores(userId, topK);
+    }
+
+    @Override
+    public List<SearchRankResponse> searchRank(int recentDay, int prevDay) {
+        Instant now = Instant.now();
+        Instant from = now.minus(Duration.ofDays(recentDay));
+        Instant prevFrom = from.minus(Duration.ofDays(prevDay));
+        Instant prevTo = from;
+
+        List<RankResult> recentRanks = logRepository.findTopSearchRank(from, now);
+        List<RankResult> prevRanks = logRepository.findTopSearchRank(prevFrom, prevTo);
+
+        Map<Long, Long> prevRankMap = new HashMap<>();
+        AtomicLong prevCount = new AtomicLong(1);
+        prevRanks.stream().sorted(Comparator.comparing(RankResult::getCount).reversed())
+                .forEach(searchRank ->
+                        prevRankMap.put(searchRank.getId(), prevCount.getAndIncrement()));
+
+        AtomicLong rankCount = new AtomicLong(1);
+
+        return recentRanks.stream().map(r -> {
+            Optional<Partner> partnerOpt = partnerRepository.findById(r.getId());
+            String partnerName = null;
+            if (partnerOpt.isPresent()) {
+                Partner partner = partnerOpt.get();
+                partnerName = partner.getPartnerName();
+            }
+            long rank = rankCount.getAndIncrement();
+
+            Long prevRank = prevRankMap.getOrDefault(r.getId(), 0L);
+            System.out.println("prevRank: " + prevRank);
+
+            long rankChange = prevRank == 0 ? 0 : prevRank - rank;
+
+            String changeDirection;
+            if (prevRank == 0L) {
+                changeDirection = "NEW";
+            } else if (rankChange > 0) {
+                changeDirection = "UP";
+            } else if (rankChange < 0) {
+                changeDirection = "DOWN";
+            } else {
+                changeDirection = "SAME";
+            }
+
+            return new SearchRankResponse(
+                    partnerName,
+                    r.getCount(),
+                    rank,
+                    prevRank == 0L ? 99999 : prevRank,
+                    rankChange,
+                    changeDirection);
+        }).toList();
     }
 }
