@@ -73,7 +73,7 @@ public class User extends BaseTimeEntity {
     private List<SocialAccount> socialAccounts = new ArrayList<>();
 
     public Collection<? extends GrantedAuthority> getAuthorities() {
-        return Collections.singletonList(new SimpleGrantedAuthority(this.role.name()));
+        return Collections.singletonList(new SimpleGrantedAuthority(this.role.getKey()));
     }
 
     // OAuth2를 통한 신규 유저 생성을 위한 정적 팩토리 메소드

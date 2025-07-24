@@ -20,7 +20,7 @@ spring:
       client:
         registration:
           kakao:
-            redirect-uri: http://localhost:5173/oauth/callback/kakao
+            redirect-uri: http://localhost:8080/login/oauth2/code/kakao
 
 server:
   port: 8080
@@ -39,7 +39,7 @@ spring:
       client:
         registration:
           kakao:
-            redirect-uri: https://itplace.click/oauth/callback/kakao
+            redirect-uri: https://user-api.itplace.click/login/oauth2/code/kakao
 
 server:
   port: 8080
@@ -58,7 +58,7 @@ spring:
       client:
         registration:
           kakao:
-            redirect-uri: https://itplace.click/oauth/callback/kakao
+            redirect-uri: https://user-api.itplace.click/login/oauth2/code/kakao
 
 server:
   port: 8081

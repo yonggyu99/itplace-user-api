@@ -2,8 +2,11 @@ package com.itplace.userapi.security.auth.local.controller;
 
 import com.itplace.userapi.common.ApiResponse;
 import com.itplace.userapi.security.SecurityCode;
+import com.itplace.userapi.security.auth.local.dto.request.LinkLocalRequest;
+import com.itplace.userapi.security.auth.local.dto.request.LoadOAuthDataRequest;
 import com.itplace.userapi.security.auth.local.dto.request.SignUpRequest;
 import com.itplace.userapi.security.auth.local.dto.request.UplusDataRequest;
+import com.itplace.userapi.security.auth.local.dto.response.LoadOAuthDataResponse;
 import com.itplace.userapi.security.auth.local.dto.response.UplusDataResponse;
 import com.itplace.userapi.security.auth.local.service.AuthService;
 import com.itplace.userapi.security.verification.sms.service.SmsService;
@@ -51,5 +54,19 @@ public class RegistrationController {
                             .status(body.getStatus())
                             .body(body);
                 });
+    }
+
+    @PostMapping("/loadOAuthData")
+    public ResponseEntity<ApiResponse<LoadOAuthDataResponse>> loadOAuthData(@RequestBody @Validated LoadOAuthDataRequest request) {
+        LoadOAuthDataResponse loadOAuthDataResponse = authService.loadOAuthData(request);
+        ApiResponse<LoadOAuthDataResponse> body = ApiResponse.of(SecurityCode.LOAD_OAUTH_DATA_SUCCESS, loadOAuthDataResponse);
+        return new ResponseEntity<>(body, body.getStatus());
+    }
+
+    @PostMapping("/link")
+    public ResponseEntity<ApiResponse<Void>> link(@RequestBody @Validated LinkLocalRequest request) {
+        authService.link(request);
+        ApiResponse<Void> body = ApiResponse.ok(SecurityCode.LINK_LOCAL_SUCCESS);
+        return new ResponseEntity<>(body, body.getStatus());
     }
 }

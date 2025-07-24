@@ -3,6 +3,8 @@ package com.itplace.userapi.security.config;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.itplace.userapi.security.CookieUtil;
 import com.itplace.userapi.security.auth.local.filter.LoginFilter;
+import com.itplace.userapi.security.auth.oauth.handler.OAuth2AuthenticationSuccessHandler;
+import com.itplace.userapi.security.auth.oauth.service.CustomOAuth2UserService;
 import com.itplace.userapi.security.jwt.JWTFilter;
 import com.itplace.userapi.security.jwt.JWTUtil;
 import com.itplace.userapi.user.repository.MembershipRepository;
@@ -37,6 +39,8 @@ public class SecurityConfig {
     private final ObjectMapper objectMapper;
     private final MembershipRepository membershipRepository;
     private final CookieUtil cookieUtil;
+    private final OAuth2AuthenticationSuccessHandler oAuth2AuthenticationSuccessHandler;
+    private final CustomOAuth2UserService customOAuth2UserService;
 
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http, AuthenticationManager authenticationManager) throws Exception {
@@ -77,6 +81,12 @@ public class SecurityConfig {
                 .authorizeHttpRequests((auth) -> auth
                         .requestMatchers("/**").permitAll()
                         .anyRequest().authenticated());
+
+        http
+                .oauth2Login(oauth2 -> oauth2
+                        .userInfoEndpoint(userInfo -> userInfo
+                                .userService(customOAuth2UserService))
+                        .successHandler(oAuth2AuthenticationSuccessHandler));
 
         LoginFilter loginFilter = new LoginFilter(
                 authenticationManager(authenticationConfiguration),

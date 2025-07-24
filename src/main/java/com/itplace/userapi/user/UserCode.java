@@ -13,6 +13,7 @@ public enum UserCode implements BaseCode {
     EMAIL_FIND_FAILURE("EMAIL_FIND_FAILURE", HttpStatus.BAD_REQUEST, "이메일 찾기를 실패했습니다."),
     USER_NOT_FOUND("USER_NOT_FOUND", HttpStatus.NOT_FOUND, "사용자 정보를 찾을 수 없습니다."),
     NO_MEMBERSHIP("NO_MEMBERSHIP", HttpStatus.BAD_REQUEST, "해당 사용자는 멤버십 정보를 가지고 있지 않습니다."),
+    PASSWORD_CHANGE_SUCCESS("PASSWORD_CHANGE_SUCCESS", HttpStatus.OK, "비밀번호 변경에 성공했습니다."),
     USER_WITHDRAWAL_SUCCESS("USER_WITHDRAWAL_SUCCESS", HttpStatus.OK, "회원 탈퇴가 완료되었습니다.");
 
 

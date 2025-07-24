@@ -2,11 +2,14 @@ package com.itplace.userapi.user.service;
 
 import com.itplace.userapi.favorite.repository.FavoriteRepository;
 import com.itplace.userapi.security.SecurityCode;
+import com.itplace.userapi.security.auth.common.PrincipalDetails;
 import com.itplace.userapi.security.exception.EmailVerificationException;
+import com.itplace.userapi.security.exception.PasswordMismatchException;
 import com.itplace.userapi.security.exception.SmsVerificationException;
 import com.itplace.userapi.security.exception.UserNotFoundException;
 import com.itplace.userapi.security.verification.OtpUtil;
 import com.itplace.userapi.security.verification.email.dto.EmailConfirmRequest;
+import com.itplace.userapi.user.dto.request.ChangePasswordRequest;
 import com.itplace.userapi.user.UserCode;
 import com.itplace.userapi.user.dto.request.FindEmailConfirmRequest;
 import com.itplace.userapi.user.dto.request.ResetPasswordRequest;
@@ -112,6 +115,19 @@ public class UserServiceImpl implements UserService {
             }
         } else {
             throw new IllegalArgumentException("유효하지 않은 토큰입니다.");
+        }
+    }
+
+    @Override
+    @Transactional
+    public void changePassword(PrincipalDetails principalDetails, ChangePasswordRequest request) {
+        User user = userRepository.findById(principalDetails.getUserId())
+                .orElseThrow(() -> new UserNotFoundException(SecurityCode.USER_NOT_FOUND));
+
+        if (passwordEncoder.matches(request.getOldPassword(), user.getPassword())) {
+            user.setPassword(passwordEncoder.encode(request.getNewPassword()));
+        } else {
+            throw new PasswordMismatchException(SecurityCode.PASSWORD_MISMATCH);
         }
     }
 

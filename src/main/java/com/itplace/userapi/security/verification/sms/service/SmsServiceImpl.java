@@ -64,7 +64,7 @@ public class SmsServiceImpl implements SmsService {
             log.info("SMS 인증 성공");
             Optional<User> userOpt = userRepository.findByPhoneNumber(phoneNumber);
             UserStatus userStatus = userOpt.isPresent() ? UserStatus.EXISTING_USER : UserStatus.NEW_USER;
-            boolean isLocalUser = userOpt.map(user -> user.getPassword() != null).orElse(false);
+            boolean isLocalUser = userOpt.map(user -> user.getEmail() != null).orElse(false);
             boolean uplusData = uplusDataRepository.findByPhoneNumber(phoneNumber).isPresent();
             log.info("UserStatus: {}, isLocalUser: {}, UplusData: {}", userStatus, isLocalUser, uplusData);
             return SmsConfirmResponse.builder()
