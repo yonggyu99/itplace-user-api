@@ -61,6 +61,7 @@ public enum SecurityCode implements BaseCode {
     INVALID_TOKEN_TYPE("INVALID_TOKEN_TYPE", HttpStatus.UNAUTHORIZED, "잘못된 토큰 타입입니다."),
 
     // OAuth2, 추가 정보 입력 전 임시 인증 성공
+    OAUTH_INFO_FOUND("OAUTH_INFO_FOUND", HttpStatus.OK, "OAuth 유저 정보를 찾았습니다."),
     PRE_AUTHENTICATION_SUCCESS("PRE_AUTHENTICATION_SUCCESS", HttpStatus.OK, "임시 인증에 성공했습니다. 추가 정보 입력이 필요합니다."),
     // 회원가입
     INVALID_REGISTRATION_SESSION("INVALID_REGISTRATION_SESSION", HttpStatus.BAD_REQUEST, "잘못된 가입 요청입니다.");

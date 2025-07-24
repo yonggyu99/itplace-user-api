@@ -2,6 +2,7 @@ package com.itplace.userapi.security.auth.oauth.service;
 
 import com.itplace.userapi.benefit.entity.enums.Grade;
 import com.itplace.userapi.security.SecurityCode;
+import com.itplace.userapi.security.auth.common.PrincipalDetails;
 import com.itplace.userapi.security.auth.local.dto.response.LoginResponse;
 import com.itplace.userapi.security.auth.oauth.dto.request.OAuthLinkRequest;
 import com.itplace.userapi.security.auth.oauth.dto.request.OAuthSignUpRequest;
@@ -18,6 +19,7 @@ import com.itplace.userapi.user.entity.User;
 import com.itplace.userapi.user.repository.MembershipRepository;
 import com.itplace.userapi.user.repository.UserRepository;
 import io.jsonwebtoken.Claims;
+import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 import lombok.RequiredArgsConstructor;
@@ -93,6 +95,28 @@ public class OAuthServiceImpl implements OAuthService {
         }
 
         return createAuthResultForUser(user);
+    }
+
+    @Override
+    public LoginResponse result(PrincipalDetails principalDetails) {
+        User user = userRepository.findById(principalDetails.getUserId())
+                .orElseThrow(() -> new UserNotFoundException(SecurityCode.USER_NOT_FOUND));
+
+        String name = user.getName();
+        String membershipId = user.getMembershipId();
+        Grade membershipGrade = null;
+
+        if (membershipId != null) {
+            Optional<Membership> membershipOpt = membershipRepository.findById(membershipId);
+            if (membershipOpt.isPresent()) {
+                membershipGrade = membershipOpt.get().getGrade();
+            }
+        }
+
+        return LoginResponse.builder()
+                .name(name)
+                .membershipGrade(membershipGrade)
+                .build();
     }
 
     private Claims getVerifiedClaims(String tempToken) {
