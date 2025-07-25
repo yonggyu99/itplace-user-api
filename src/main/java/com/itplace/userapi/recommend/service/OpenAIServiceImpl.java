@@ -82,8 +82,9 @@ public class OpenAIServiceImpl implements OpenAIService {
                 【후보 혜택들】
                 %s
                 
-                사용자 성향과 혜택 설명을 바탕으로 가장 적절한 혜택 %d개를 골라주세요.
+                사용자 성향과 혜택 설명을 바탕으로 가장 적절한 혜택 %d개 이상 골라주세요.
                 추천 이유에는 반드시 혜택에 대한 내용을 반영해야합니다.
+                제휴사는 중복되지 않도록 해주세요.
                 
                 "Don't include markdown formatting. Just return valid JSON only."
                 {
@@ -121,7 +122,7 @@ public class OpenAIServiceImpl implements OpenAIService {
         ResponseEntity<ChatCompletionResponse> response = restTemplate
                 .exchange(url, HttpMethod.POST, request, ChatCompletionResponse.class);
         long end = System.nanoTime();
-        System.out.println("LLM 응답 생성 시간: " + (end - start) / 1_000_000);
+        System.out.println("LLM 응답 생성 시간 (ms): " + (end - start) / 1_000_000);
         ChatCompletionResponse cr = response.getBody();
         if (cr != null && !cr.getChoices().isEmpty()) {
             String jsonString = cr.getChoices().get(0).getMessage().getContent();
