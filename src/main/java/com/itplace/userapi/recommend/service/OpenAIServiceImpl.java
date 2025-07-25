@@ -2,6 +2,9 @@ package com.itplace.userapi.recommend.service;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.itplace.userapi.benefit.entity.enums.Grade;
+import com.itplace.userapi.partner.entity.Partner;
+import com.itplace.userapi.partner.repository.PartnerRepository;
 import com.itplace.userapi.rag.service.BenefitSearchService;
 import com.itplace.userapi.rag.service.EmbeddingService;
 import com.itplace.userapi.recommend.domain.UserFeature;
@@ -27,6 +30,7 @@ public class OpenAIServiceImpl implements OpenAIService {
     private final RestTemplate restTemplate = new RestTemplate();
     private final EmbeddingService embeddingService;
     private final BenefitSearchService benefitSearchService;
+    private final PartnerRepository partnerRepository;
 
     @Value("${spring.ai.openai.api.key}")
     private String apiKey;
@@ -41,7 +45,8 @@ public class OpenAIServiceImpl implements OpenAIService {
     @Override
     public List<Candidate> vectorSearch(UserFeature uf, int CandidateSize) {
         List<Float> userEmbedding = embeddingService.embed(uf.getEmbeddingContext());
-        return benefitSearchService.queryVector(userEmbedding, CandidateSize);
+        Grade grade = uf.getGrade();
+        return benefitSearchService.queryVector(grade, userEmbedding, CandidateSize);
     }
 
 
@@ -53,28 +58,23 @@ public class OpenAIServiceImpl implements OpenAIService {
         headers.setBearerAuth(apiKey);
         headers.setContentType(MediaType.APPLICATION_JSON);
 
+        System.out.println("후보 사이즈: " + cands.size());
         StringBuilder items = new StringBuilder();
         for (int i = 0; i < cands.size(); i++) {
             Candidate c = cands.get(i);
+            String description = c.getDescription() != null ? c.getDescription().replaceAll("[\\r\\n]+", " ") : "설명 없음";
+            String context = c.getContext() != null ? c.getContext().replaceAll("[\\r\\n]+", " ") : "추가 정보 없음";
+
             items.append(String.format(
-                    """
-                            %d. 혜택명: %s
-                               제휴사: %s
-                               카테고리: %s
-                               설명: %s
-                               등급별 혜택 요약 %s
-                               이미지 : %s
-                            
-                            """,
+                    "%d. [%s] %s - %s / 혜택: %s\n",
                     i + 1,
-                    c.getBenefitName(),
-                    c.getPartnerName(),
                     c.getCategory(),
-                    c.getDescription() != null ? c.getDescription() : "설명 없음",
-                    c.getContext() != null ? c.getContext() : "추가 정보 없음",
-                    c.getImgUrl() != null ? c.getImgUrl() : "<UNK> <UNK> <UNK>"
+                    c.getPartnerName(),
+                    description,
+                    context
             ));
         }
+
         String prompt = String.format("""
                 【사용자 성향 요약】
                 %s
@@ -82,34 +82,20 @@ public class OpenAIServiceImpl implements OpenAIService {
                 【후보 혜택들】
                 %s
                 
-                당신은 사용자의 등급과 성향을 분석해 가장 적절한 혜택 %d개를 추천해야 해요.
+                사용자 성향과 혜택 설명을 바탕으로 가장 적절한 혜택 %d개를 골라주세요.
+                추천 이유에는 반드시 혜택에 대한 내용을 반영해야합니다.
                 
-                각 혜택의 '설명'을 잘 반영하고 사용자의 '카테고리', '제휴사'를 잘 참고해서
-                왜 이 사용자가 해당 후보 혜택을 좋아할지를 추천 이유로 작성해주세요.
-                추천 이유에 사용자 등급에 맞는 혜택 내용을 같이 언급하면 좋겠습니다.
-                [강조!!] 반드시 제공된 후보 혜택들 중에서만 추천을 진행해야합니다.
-                
-                [강조!!] 반드시 아래와 같은 JSON 형식으로 응답해주세요:
                 "Don't include markdown formatting. Just return valid JSON only."
                 {
                   "recommendations": [
                     {
                       "rank": 1,
                       "partnerName": "뚜레쥬르",
-                      "reason": "빵이 너무 맛있어서 자주 가는 곳이니까 추천드리는 걸요!"
-                      "imgUrl": "https://itplacepartners.s3.ap-northeast-2.amazonaws.com/img/touslesjours.png"
+                      "reason": "푸드 카테고리에 관심이 많으시고, 뚜레쥬르 혜택이 실속 있어서 추천드리는 걸요!"
                     },
-                    {
-                      "rank": 2,
-                      "partnerName": "배스킨라빈스",
-                      "reason": "달콤한 아이스크림이 요즘처럼 더운 날에 딱이니까요!"
-                      "imgUrl": "https://itplacepartners.s3.ap-northeast-2.amazonaws.com/img/baskinrobbins.png"
-                    }
                     ...
                   ]
                 }
-                
-                포맷은 꼭 지켜주세요. 문자열이나 문장이 아닌 JSON 객체로만 응답해주세요!
                 """, uf.getEmbeddingContext(), items, topK);
 
         List<Map<String, String>> messages = List.of(
@@ -131,17 +117,29 @@ public class OpenAIServiceImpl implements OpenAIService {
         );
 
         HttpEntity<Map<String, Object>> request = new HttpEntity<>(body, headers);
-
+        long start = System.nanoTime();
         ResponseEntity<ChatCompletionResponse> response = restTemplate
                 .exchange(url, HttpMethod.POST, request, ChatCompletionResponse.class);
-
+        long end = System.nanoTime();
+        System.out.println("LLM 응답 생성 시간: " + (end - start) / 1_000_000);
         ChatCompletionResponse cr = response.getBody();
         if (cr != null && !cr.getChoices().isEmpty()) {
             String jsonString = cr.getChoices().get(0).getMessage().getContent();
             try {
                 JsonNode root = mapper.readTree(jsonString);
                 JsonNode recList = root.get("recommendations");
-                return mapper.readerForListOf(Recommendation.class).readValue(recList);
+                List<Recommendation> recommendations = mapper.readerForListOf(Recommendation.class).readValue(recList);
+
+                for (Recommendation rec : recommendations) {
+                    String imgUrl = partnerRepository.findByPartnerName(rec.getPartnerName())
+                            .map(Partner::getImage)
+                            .orElse("<UNKNOWN>");
+
+                    rec.setImgUrl(imgUrl);
+
+                }
+
+                return recommendations;
             } catch (Exception e) {
                 throw new RuntimeException("LLM 추천 결과 파싱 실패", e);
             }
