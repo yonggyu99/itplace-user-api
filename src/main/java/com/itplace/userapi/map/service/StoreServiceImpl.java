@@ -13,7 +13,6 @@ import com.itplace.userapi.map.exception.StoreKeywordException;
 import com.itplace.userapi.map.repository.StoreRepository;
 import com.itplace.userapi.partner.entity.Partner;
 import java.util.List;
-import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -133,7 +132,7 @@ public class StoreServiceImpl implements StoreService {
 
 
     private double calculateDistance(double userLat, double userLng, double storeLat, double storeLng) {
-        final int earthRadius = 6371000; // 미터
+        final int earthRadius = 6378137; // 미터
 
         double dLat = Math.toRadians(storeLat - userLat);
         double dLng = Math.toRadians(storeLng - userLng);
@@ -150,20 +149,15 @@ public class StoreServiceImpl implements StoreService {
 
     private List<Benefit> selectBenefits(List<Benefit> benefits, String storeName) {
         // 오프라인/온라인이 나뉘어져 있는 경우
-        Optional<Benefit> offlineBenefit = benefits.stream()
+        List<Benefit> offlineBenefit = benefits.stream()
                 .filter(benefit -> benefit.getBenefitName().contains("오프라인"))
-                .findFirst();
-
-        if (offlineBenefit.isPresent()) {
-            return List.of(offlineBenefit.get());
-        }
-
-        // benefits 이 3개 이상일 경우
-        if (benefits.size() >= 3) {
-            return benefits.stream()
-                    .filter(benefit -> benefit.getBenefitName().equals(storeName))
-                    .toList();
-        }
+                .findFirst()
+                .map(List::of)
+                .orElseGet(() -> benefits.size() >= 3 ?
+                        benefits.stream()
+                                .filter(benefit -> benefit.getBenefitName().equals(storeName))
+                                .toList()
+                        : benefits);
 
         return benefits;
     }
