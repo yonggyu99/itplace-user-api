@@ -16,8 +16,8 @@ public class RecaptchaService {
 
     private final WebClient webClient;
 
-    @Value("${google.recaptcha.key.site}")
-    private String recaptchaSite;
+    @Value("${google.recaptcha.key.url}")
+    private String recaptchaUrl;
 
     @Value("${google.recaptcha.key.secret}")
     private String recaptchaSecret;
@@ -33,7 +33,7 @@ public class RecaptchaService {
         formData.add("response", recaptchaToken);
 
         RecaptchaResponse response = webClient.post()
-                .uri(recaptchaSite)
+                .uri(recaptchaUrl)
                 .body(BodyInserters.fromFormData(formData))
                 .retrieve()
                 .bodyToMono(RecaptchaResponse.class)
