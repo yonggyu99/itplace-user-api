@@ -1,9 +1,11 @@
 package com.itplace.userapi.recommend.dto;
 
+import lombok.Builder;
 import lombok.Data;
 
 @Data
-public class Recommendation {
+@Builder
+public class Recommendations {
     private int rank;
     private String partnerName;
     private String reason;

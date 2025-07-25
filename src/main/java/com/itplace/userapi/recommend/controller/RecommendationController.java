@@ -1,7 +1,7 @@
 package com.itplace.userapi.recommend.controller;
 
 import com.itplace.userapi.common.ApiResponse;
-import com.itplace.userapi.recommend.dto.Recommendation;
+import com.itplace.userapi.recommend.dto.Recommendations;
 import com.itplace.userapi.recommend.enums.RecommendationCode;
 import com.itplace.userapi.recommend.exception.NotMembershipUserException;
 import com.itplace.userapi.recommend.service.OpenAiRecommendationService;
@@ -24,13 +24,13 @@ public class RecommendationController {
     private final OpenAiRecommendationService recommendationService;
 
     @GetMapping
-    public ResponseEntity<ApiResponse<List<Recommendation>>> recommend(
+    public ResponseEntity<ApiResponse<List<Recommendations>>> recommend(
             @AuthenticationPrincipal PrincipalDetails principalDetails,
             @RequestParam(defaultValue = "10") int topK) {
 
         try {
             Long userId = principalDetails.getUserId();
-            List<Recommendation> result = recommendationService.recommend(userId, topK);
+            List<Recommendations> result = recommendationService.recommend(userId, topK);
             return ResponseEntity.ok(ApiResponse.of(RecommendationCode.RECOMMENDATION_SUCCESS, result));
 
         } catch (NotMembershipUserException e) {
