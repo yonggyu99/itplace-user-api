@@ -37,21 +37,28 @@ public class LoggingInterceptor implements HandlerInterceptor {
 
     private Long extractBenefitIdFromUri(String uri) {
         String[] parts = uri.split("/");
-        String path = parts[parts.length - 2];
-        String benefitId = parts[parts.length - 1];
-        try {
-            if (path != null && path.equals("benefit")) {
-                return Long.parseLong(benefitId);
-            } else {
-                return null;
-            }
-        } catch (NumberFormatException e) {
+        if (parts.length < 2) {
             return null;
         }
+        String path = parts[parts.length - 2];
+        String benefitId = parts[parts.length - 1];
+
+        if (path != null && path.equals("benefit")) {
+            try {
+                return Long.parseLong(benefitId);
+            } catch (NumberFormatException e) {
+                return null;
+            }
+        }
+        return null;
     }
 
     private Long extractUserId() {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        if (auth == null) {
+            log.info("Authentication 정보 없음");
+            return null;
+        }
         Object principal = auth.getPrincipal();
 
         if (principal instanceof PrincipalDetails principalDetails) {
