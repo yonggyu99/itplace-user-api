@@ -94,7 +94,7 @@ public class BenefitLogAdvice implements ResponseBodyAdvice<Object> {
                     partnerId = benefit.getPartnerId();
 
                     logService.saveResponseLog(
-                            getUserId(),
+                            userId,
                             "search",
                             benefitId,
                             partnerId,
