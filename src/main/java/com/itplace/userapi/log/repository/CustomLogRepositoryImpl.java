@@ -1,10 +1,13 @@
 package com.itplace.userapi.log.repository;
 
 import com.itplace.userapi.log.dto.LogScoreResult;
+import com.itplace.userapi.log.dto.RankResult;
+import java.time.Instant;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.bson.Document;
 import org.springframework.data.domain.Sort;
+import org.springframework.data.domain.Sort.Direction;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.aggregation.Aggregation;
 import org.springframework.data.mongodb.core.aggregation.AggregationOperation;
@@ -69,6 +72,28 @@ public class CustomLogRepositoryImpl implements CustomLogRepository {
                 mongoTemplate.aggregate(aggregation, "logs", LogScoreResult.class);
 
         return results.getMappedResults();
+    }
+
+    @Override
+    public List<RankResult> findTopSearchRank(Instant from, Instant to) {
+        MatchOperation matchOperation = Aggregation.match(
+                Criteria.where("event").is("search")
+                        .and("loggingAt").gte(from).lt(to)
+        );
+        GroupOperation groupOperation = Aggregation.group("partnerId")
+                .count().as("count");
+        SortOperation sortOperation = Aggregation.sort(Direction.DESC, "count");
+        LimitOperation limitOperation = Aggregation.limit(5);
+
+        ProjectionOperation projectionOperation = Aggregation.project()
+                .and("_id").as("partnerId")
+                .and("count").as("count");
+
+        Aggregation aggregation = Aggregation.newAggregation(
+                matchOperation, groupOperation, sortOperation, limitOperation, projectionOperation);
+
+        return mongoTemplate.aggregate(aggregation, "logs", RankResult.class)
+                .getMappedResults();
     }
 }
 
