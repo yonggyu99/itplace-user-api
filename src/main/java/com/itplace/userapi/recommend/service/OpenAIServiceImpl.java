@@ -10,7 +10,7 @@ import com.itplace.userapi.rag.service.EmbeddingService;
 import com.itplace.userapi.recommend.domain.UserFeature;
 import com.itplace.userapi.recommend.dto.Candidate;
 import com.itplace.userapi.recommend.dto.ChatCompletionResponse;
-import com.itplace.userapi.recommend.dto.Recommendation;
+import com.itplace.userapi.recommend.dto.Recommendations;
 import java.util.List;
 import java.util.Map;
 import lombok.RequiredArgsConstructor;
@@ -51,7 +51,7 @@ public class OpenAIServiceImpl implements OpenAIService {
 
 
     @Override
-    public List<Recommendation> rerankAndExplain(UserFeature uf, List<Candidate> cands, int topK) {
+    public List<Recommendations> rerankAndExplain(UserFeature uf, List<Candidate> cands, int topK) {
         String url = baseUrl + "/v1/chat/completions";
 
         HttpHeaders headers = new HttpHeaders();
@@ -129,9 +129,10 @@ public class OpenAIServiceImpl implements OpenAIService {
             try {
                 JsonNode root = mapper.readTree(jsonString);
                 JsonNode recList = root.get("recommendations");
-                List<Recommendation> recommendations = mapper.readerForListOf(Recommendation.class).readValue(recList);
+                List<Recommendations> recommendations = mapper.readerForListOf(Recommendations.class)
+                        .readValue(recList);
 
-                for (Recommendation rec : recommendations) {
+                for (Recommendations rec : recommendations) {
                     String imgUrl = partnerRepository.findByPartnerName(rec.getPartnerName())
                             .map(Partner::getImage)
                             .orElse("<UNKNOWN>");

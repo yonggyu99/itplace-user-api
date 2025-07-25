@@ -18,6 +18,7 @@ import org.springframework.data.mongodb.repository.config.EnableMongoRepositorie
                 "com.itplace.userapi.partner",
                 "com.itplace.userapi.security",
                 "com.itplace.userapi.user",
+                "com.itplace.userapi.recommend"
         }
 )
 @EnableMongoRepositories(  // mongo 사용되는 패키지
