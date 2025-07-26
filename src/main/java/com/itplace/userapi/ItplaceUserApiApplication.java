@@ -6,7 +6,9 @@ import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
 import org.springframework.data.mongodb.repository.config.EnableMongoRepositories;
+import org.springframework.retry.annotation.EnableRetry;
 
+@EnableRetry
 @SpringBootApplication
 @EnableJpaRepositories(  // jpa 사용되는 패키지
         basePackages = {
@@ -18,7 +20,8 @@ import org.springframework.data.mongodb.repository.config.EnableMongoRepositorie
                 "com.itplace.userapi.partner",
                 "com.itplace.userapi.security",
                 "com.itplace.userapi.user",
-                "com.itplace.userapi.recommend"
+                "com.itplace.userapi.recommend",
+                "com.itplace.userapi.ai"
         }
 )
 @EnableMongoRepositories(  // mongo 사용되는 패키지
