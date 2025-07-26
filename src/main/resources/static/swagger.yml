@@ -1623,15 +1623,6 @@ paths:
             type: number
             format: double
             example: 126.9780
-        - name: radiusMeters
-          in: query
-          required: true
-          description: 검색 반경 (미터 단위)
-          schema:
-            type: number
-            format: double
-            minimum: 0
-            example: 1000
         - name: category
           in: query
           required: false
@@ -1705,7 +1696,7 @@ paths:
                   value:
                     code: KEYWORD_REQUIRED
                     status: BAD_REQUEST
-                    message: 검색 키워드가 필요합니다.
+                    message: 키워드를 입력해주세요
                     data: null
                     timestamp: '2025-07-15T11:00:00.000Z'
 
