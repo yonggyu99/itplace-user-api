@@ -1,8 +1,10 @@
 package com.itplace.userapi.history.repository;
 
+import com.itplace.userapi.benefit.entity.Benefit;
 import com.itplace.userapi.history.entity.MembershipHistory;
 import com.itplace.userapi.recommend.projection.BenefitCount;
 import com.itplace.userapi.recommend.projection.CategoryCount;
+import com.itplace.userapi.user.entity.Membership;
 import java.time.LocalDateTime;
 import java.util.List;
 import org.springframework.data.domain.Page;
@@ -69,5 +71,12 @@ public interface MembershipHistoryRepository extends JpaRepository<MembershipHis
     List<BenefitCount> countByBenefitSince(
             @Param("membershipId") String membershipId,
             @Param("since") LocalDateTime since
+    );
+
+
+    boolean existsByMembershipAndBenefit(Membership membership, Benefit benefit);
+
+    boolean existsByMembershipAndBenefitAndUsedAtBetween(
+            Membership membership, Benefit benefit, LocalDateTime start, LocalDateTime end
     );
 }

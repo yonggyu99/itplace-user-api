@@ -129,7 +129,7 @@ public class BenefitServiceImpl implements BenefitService {
                 .benefitId(benefit.getBenefitId())
                 .benefitName(benefit.getBenefitName())
                 .description(benefit.getDescription())
-                .benefitLimit(benefit.getBenefitLimit().trim())
+                .benefitLimit(benefit.getBenefitPolicy().getName())
                 .manual(benefit.getManual().trim())
                 .url(benefit.getUrl().trim())
                 .partnerName(benefit.getPartner().getPartnerName())

@@ -155,7 +155,7 @@ public class FavoriteServiceImpl implements FavoriteService {
                 .benefitId(benefit.getBenefitId())
                 .benefitName(benefit.getBenefitName())
                 .benefitDescription(benefit.getDescription())
-                .benefitLimit(benefit.getBenefitLimit())
+                .benefitLimit(benefit.getBenefitPolicy().getName())
                 .partnerName(partner != null ? partner.getPartnerName() : null)
                 .partnerImage(partner != null ? partner.getImage() : null)
                 .tiers(tierDtos)

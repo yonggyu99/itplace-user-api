@@ -16,5 +16,7 @@ public interface MembershipHistoryService {
     );
 
     MonthlyDiscountResponse getMonthlyDiscountSummary(Long userId);
+
+    void useMembership(Long userId, Long benefitId, Integer amount);
 }
 
