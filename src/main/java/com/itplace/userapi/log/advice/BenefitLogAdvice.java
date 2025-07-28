@@ -3,7 +3,6 @@ package com.itplace.userapi.log.advice;
 import com.itplace.userapi.benefit.dto.response.BenefitListResponse;
 import com.itplace.userapi.benefit.dto.response.MapBenefitDetailResponse;
 import com.itplace.userapi.benefit.dto.response.PagedResponse;
-import com.itplace.userapi.benefit.repository.BenefitRepository;
 import com.itplace.userapi.common.ApiResponse;
 import com.itplace.userapi.log.service.LogService;
 import com.itplace.userapi.security.auth.common.PrincipalDetails;
@@ -30,8 +29,6 @@ public class BenefitLogAdvice implements ResponseBodyAdvice<Object> {
 
     private final LogService logService;
 
-    private final BenefitRepository benefitRepsoitory;
-
     @Override
     public boolean supports(MethodParameter returnType, Class<? extends HttpMessageConverter<?>> converterType) {
         return true;
@@ -47,84 +44,86 @@ public class BenefitLogAdvice implements ResponseBodyAdvice<Object> {
         String param = req.getQueryString();
         Long userId = getUserId();
 
-        String[] parts = path.split("/");
-        if (parts.length < 1) {
-            return body;
-        }
-        boolean lastIsBenefit = !parts[parts.length - 1].equals("benefit");
-        boolean previsBenefit = parts.length >= 2 && !parts[parts.length - 2].equals("benefit");
-        if (lastIsBenefit && previsBenefit) {
+        if (!isTargetBenefitApi(path)) {
             return body;
         }
 
-        System.out.println("==== beforeBodyWrite 실행됨 ====");
-        if (userId != null) {
-            String partnerIdStr = req.getParameter("partnerId");
-            Long partnerId = null;
-            String event = null;
-            if (partnerIdStr != null && !partnerIdStr.isBlank()) {
-                partnerId = Long.valueOf(partnerIdStr);
-                event = "detail";
+        log.info("==== beforeBodyWrite 실행됨 ====");
+        if (userId == null) {
+            return body;
+        }
+
+        String partnerIdStr = req.getParameter("partnerId");
+        Long partnerId = null;
+        String event = null;
+        if (partnerIdStr != null && !partnerIdStr.isBlank()) {
+            partnerId = Long.valueOf(partnerIdStr);
+            event = "detail";
+        }
+
+        if (!(body instanceof ApiResponse<?> topRes)) {
+            return body;
+        }
+
+        Object data = topRes.getData();
+        if (!(data instanceof PagedResponse<?> dataRes)) {
+            log.info("==== saveResonseLog(detail) 저장 ====");
+            if (data instanceof MapBenefitDetailResponse detail) {
+
+                log.info("data : {}", data.toString());
+                long benefitId = detail.getBenefitId();
+                logService.saveResponseLog(
+                        userId,
+                        event,
+                        benefitId,
+                        partnerId,
+                        path,
+                        param
+                );
             }
+            return body;
+        }
 
-            if (!(body instanceof ApiResponse<?> topRes)) {
-                return body;
-            }
+        Object content = dataRes.getContent();
+        String keyword = req.getParameter("keyword");
+        if (content instanceof List<?> list && keyword != null && !keyword.isBlank()) {
+            for (Object item : list) {
+                if (item instanceof BenefitListResponse benefit) {
+                    log.info("==== saveResonseLog(search) 저장 ====");
+                    long benefitId = benefit.getBenefitId();
+                    partnerId = benefit.getPartnerId();
 
-            Object data = topRes.getData();
-            if (!(data instanceof PagedResponse<?> dataRes)) {
-                System.out.println("==== saveResonseLog(detail) 저장 ====");
-                if (data instanceof MapBenefitDetailResponse detail) {
-
-                    System.out.println("data : " + data.toString());
-                    long benefitId = detail.getBenefitId();
                     logService.saveResponseLog(
-                            getUserId(),
-                            event,
+                            userId,
+                            "search",
                             benefitId,
                             partnerId,
                             path,
                             param
                     );
                 }
-                return body;
-            }
-
-            Object content = dataRes.getContent();
-            String keyword = req.getParameter("keyword");
-            if (content instanceof List<?> list && keyword != null && !keyword.isBlank()) {
-                for (Object item : list) {
-                    if (item instanceof BenefitListResponse benefit) {
-                        System.out.println("==== saveResonseLog(search) 저장 ====");
-                        long benefitId = benefit.getBenefitId();
-                        partnerId = benefit.getPartnerId();
-
-                        logService.saveResponseLog(
-                                getUserId(),
-                                "search",
-                                benefitId,
-                                partnerId,
-                                path,
-                                param
-                        );
-                    }
-                }
             }
         }
-
         return body;
     }
 
     private Long getUserId() {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        if (auth == null) {
+            log.info("Authentication 정보 없음");
+            return null;
+        }
         Object principal = auth.getPrincipal();
 
         if (principal instanceof PrincipalDetails principalDetails) {
             return principalDetails.getUserId();
         }
-
         log.info("user 정보 없음");
         return null;
+    }
+
+    private boolean isTargetBenefitApi(String path) {
+        return path.contains("v1/benefit");
     }
 
 }

@@ -35,52 +35,57 @@ public class LogServiceImpl implements LogService {
     // 클릭
     @Override
     public void saveRequestLog(Long userId, String event, Long benefitId, String path, String param) {
-        Benefit benefit = benefitRepository.findById(benefitId).orElse(null);
-        if (benefit != null) {
-            Long partnerId = benefit.getPartner().getPartnerId();
-            String partnerName = benefit.getPartner().getPartnerName();
-
-            log.info("REQUEST: {}, path={}, event={}, benefitId={}, partnerId={}",
-                    userId, path, event, benefitId, partnerId);
-
-            LogDocument logDocument = LogDocument.builder()
-                    .userId(userId)
-                    .event(event)
-                    .benefitId(benefitId)
-                    .benefitName(benefit.getBenefitName())
-                    .partnerId(partnerId)
-                    .partnerName(partnerName)
-                    .path(path)
-                    .param(param)
-                    .loggingAt(Instant.now())
-                    .build();
-            logRepository.save(logDocument);
+        Optional<Benefit> benefitOpt = benefitRepository.findById(benefitId);
+        if (benefitOpt.isEmpty()) {
+            return;
         }
+        Benefit benefit = benefitOpt.get();
+
+        Long partnerId = benefit.getPartner().getPartnerId();
+        String partnerName = benefit.getPartner().getPartnerName();
+
+        log.info("REQUEST: {}, path={}, event={}, benefitId={}, partnerId={}",
+                userId, path, event, benefitId, partnerId);
+
+        LogDocument logDocument = LogDocument.builder()
+                .userId(userId)
+                .event(event)
+                .benefitId(benefitId)
+                .benefitName(benefit.getBenefitName())
+                .partnerId(partnerId)
+                .partnerName(partnerName)
+                .path(path)
+                .param(param)
+                .loggingAt(Instant.now())
+                .build();
+        logRepository.save(logDocument);
     }
 
     // 검색, 상세
     @Override
     public void saveResponseLog(Long userId, String event, Long benefitId, Long partnerId, String path, String param) {
-        Benefit benefit = benefitRepository.findById(benefitId).orElse(null);
-        if (benefit != null) {
-            String partnerName = benefit.getPartner().getPartnerName();
-
-            log.info("RESPONSE: {}, path={}, event={}, benefitId={}, partnerId={}",
-                    userId, path, event, benefitId, partnerId);
-
-            LogDocument logDocument = LogDocument.builder()
-                    .userId(userId)
-                    .event(event)
-                    .benefitId(benefitId)
-                    .benefitName(benefit.getBenefitName())
-                    .partnerId(partnerId)
-                    .partnerName(partnerName)
-                    .path(path)
-                    .param(param)
-                    .loggingAt(Instant.now())
-                    .build();
-            logRepository.save(logDocument);
+        Optional<Benefit> benefitOpt = benefitRepository.findById(benefitId);
+        if (benefitOpt.isEmpty()) {
+            return;
         }
+        Benefit benefit = benefitOpt.get();
+        String partnerName = benefit.getPartner().getPartnerName();
+
+        log.info("RESPONSE: {}, path={}, event={}, benefitId={}, partnerId={}",
+                userId, path, event, benefitId, partnerId);
+
+        LogDocument logDocument = LogDocument.builder()
+                .userId(userId)
+                .event(event)
+                .benefitId(benefitId)
+                .benefitName(benefit.getBenefitName())
+                .partnerId(partnerId)
+                .partnerName(partnerName)
+                .path(path)
+                .param(param)
+                .loggingAt(Instant.now())
+                .build();
+        logRepository.save(logDocument);
     }
 
     @Override
@@ -99,24 +104,23 @@ public class LogServiceImpl implements LogService {
         List<RankResult> prevRanks = logRepository.findTopSearchRank(prevFrom, prevTo);
 
         Map<Long, Long> prevRankMap = new HashMap<>();
-        AtomicLong prevCount = new AtomicLong(1);
-        prevRanks.stream().sorted(Comparator.comparing(RankResult::getCount).reversed())
-                .forEach(searchRank ->
-                        prevRankMap.put(searchRank.getId(), prevCount.getAndIncrement()));
+        long rnk = 1;
+        for (RankResult prevRank : prevRanks.stream()
+                .sorted(Comparator.comparing(RankResult::getCount).reversed())
+                .toList()) {
+            prevRankMap.put(prevRank.getId(), rnk++);
+        }
 
         AtomicLong rankCount = new AtomicLong(1);
 
         return recentRanks.stream().map(r -> {
-            Optional<Partner> partnerOpt = partnerRepository.findById(r.getId());
-            String partnerName = null;
-            if (partnerOpt.isPresent()) {
-                Partner partner = partnerOpt.get();
-                partnerName = partner.getPartnerName();
-            }
+            String partnerName = partnerRepository.findById(r.getId())
+                    .map(Partner::getPartnerName)
+                    .orElse(null);
             long rank = rankCount.getAndIncrement();
 
             Long prevRank = prevRankMap.getOrDefault(r.getId(), 0L);
-            System.out.println("prevRank: " + prevRank);
+            log.debug("prevRank: {}", prevRank);
 
             long rankChange = prevRank == 0 ? 0 : prevRank - rank;
 
