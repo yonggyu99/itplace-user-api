@@ -13,13 +13,16 @@ import com.itplace.userapi.user.UserCode;
 import com.itplace.userapi.user.dto.request.ChangePasswordRequest;
 import com.itplace.userapi.user.dto.request.FindEmailConfirmRequest;
 import com.itplace.userapi.user.dto.request.ResetPasswordRequest;
+import com.itplace.userapi.user.dto.response.CheckUplusDataResponse;
 import com.itplace.userapi.user.dto.response.FindEmailResponse;
 import com.itplace.userapi.user.dto.response.FindPasswordConfirmResponse;
 import com.itplace.userapi.user.dto.response.UserInfoResponse;
 import com.itplace.userapi.user.entity.Membership;
+import com.itplace.userapi.user.entity.UplusData;
 import com.itplace.userapi.user.entity.User;
 import com.itplace.userapi.user.repository.MembershipRepository;
 import com.itplace.userapi.user.repository.SocialAccountRepository;
+import com.itplace.userapi.user.repository.UplusDataRepository;
 import com.itplace.userapi.user.repository.UserRepository;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
@@ -36,6 +39,7 @@ import org.springframework.transaction.annotation.Transactional;
 public class UserServiceImpl implements UserService {
 
     private final UserRepository userRepository;
+    private final UplusDataRepository uplusDataRepository;
     private final MembershipRepository membershipRepository;
     private final StringRedisTemplate redisTemplate;
     private final OtpUtil otpUtil;
@@ -145,5 +149,28 @@ public class UserServiceImpl implements UserService {
         favoriteRepository.deleteByUser_Id(userId);
         socialAccountRepository.deleteByUser_Id(userId);
         userRepository.delete(user);
+    }
+
+    @Override
+    public CheckUplusDataResponse checkUplusData(PrincipalDetails principalDetails) {
+        User user = userRepository.findById(principalDetails.getUserId())
+                .orElseThrow(() -> new UserNotFoundException(SecurityCode.USER_NOT_FOUND));
+        String phoneNumber = user.getPhoneNumber();
+        boolean uplusDataExists = uplusDataRepository.findByPhoneNumber(phoneNumber).isPresent();
+        return CheckUplusDataResponse.builder()
+                .uplusDataExists(uplusDataExists)
+                .build();
+    }
+
+    @Override
+    @Transactional
+    public void linkUplusData(PrincipalDetails principalDetails) {
+        User user = userRepository.findById(principalDetails.getUserId())
+                .orElseThrow(() -> new UserNotFoundException(SecurityCode.USER_NOT_FOUND));
+        String phoneNumber = user.getPhoneNumber();
+        UplusData uplusData = uplusDataRepository.findByPhoneNumber(phoneNumber).get();
+        user.setGender(uplusData.getGender());
+        user.setBirthday(uplusData.getBirthday());
+        user.setMembershipId(uplusData.getMembershipId());
     }
 }

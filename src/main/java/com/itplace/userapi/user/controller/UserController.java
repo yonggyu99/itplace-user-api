@@ -3,7 +3,6 @@ package com.itplace.userapi.user.controller;
 import com.itplace.userapi.common.ApiResponse;
 import com.itplace.userapi.security.SecurityCode;
 import com.itplace.userapi.security.auth.common.PrincipalDetails;
-import com.itplace.userapi.security.auth.local.dto.CustomUserDetails;
 import com.itplace.userapi.security.exception.UserNotFoundException;
 import com.itplace.userapi.security.verification.email.dto.EmailConfirmRequest;
 import com.itplace.userapi.security.verification.email.dto.EmailVerificationRequest;
@@ -14,6 +13,7 @@ import com.itplace.userapi.user.UserCode;
 import com.itplace.userapi.user.dto.request.FindEmailConfirmRequest;
 import com.itplace.userapi.user.dto.request.ResetPasswordRequest;
 import com.itplace.userapi.user.dto.request.WithdrawRequest;
+import com.itplace.userapi.user.dto.response.CheckUplusDataResponse;
 import com.itplace.userapi.user.dto.response.FindEmailResponse;
 import com.itplace.userapi.user.dto.response.FindPasswordConfirmResponse;
 import com.itplace.userapi.user.dto.response.UserInfoResponse;
@@ -40,11 +40,11 @@ public class UserController {
     private final EmailService emailService;
 
     @GetMapping
-    public ResponseEntity<ApiResponse<?>> getUser(@AuthenticationPrincipal CustomUserDetails userDetails) {
-        if (userDetails == null) {
+    public ResponseEntity<ApiResponse<?>> getUser(@AuthenticationPrincipal PrincipalDetails principalDetails) {
+        if (principalDetails == null) {
             throw new UserNotFoundException(SecurityCode.USER_NOT_FOUND);
         }
-        UserInfoResponse userInfoDto = userService.getUserInfo(userDetails.getUserId());
+        UserInfoResponse userInfoDto = userService.getUserInfo(principalDetails.getUserId());
         ApiResponse<?> body = ApiResponse.of(UserCode.USER_INFO_SUCCESS, userInfoDto);
 
         return ResponseEntity
@@ -86,8 +86,7 @@ public class UserController {
     public ResponseEntity<ApiResponse<FindPasswordConfirmResponse>> findPasswordConfirm(
             @RequestBody @Validated EmailConfirmRequest request) {
         FindPasswordConfirmResponse response = userService.findPasswordConfirm(request);
-        ApiResponse<FindPasswordConfirmResponse> body = ApiResponse.of(SecurityCode.EMAIL_VERIFICATION_SUCCESS,
-                response);
+        ApiResponse<FindPasswordConfirmResponse> body = ApiResponse.of(SecurityCode.EMAIL_VERIFICATION_SUCCESS, response);
         return ResponseEntity
                 .status(body.getStatus())
                 .body(body);
@@ -109,6 +108,29 @@ public class UserController {
     ) {
         userService.withdraw(principalDetails.getUserId(), request.getPassword());
         ApiResponse<Void> body = ApiResponse.ok(UserCode.USER_WITHDRAWAL_SUCCESS);
+        return ResponseEntity
+                .status(body.getStatus())
+                .body(body);
+    }
+
+    @GetMapping("/checkUplusData")
+    public ResponseEntity<ApiResponse<CheckUplusDataResponse>> checkUplusData(@AuthenticationPrincipal PrincipalDetails principalDetails) {
+        CheckUplusDataResponse checkUplusDataResponse = userService.checkUplusData(principalDetails);
+        ApiResponse<CheckUplusDataResponse> body;
+        if (checkUplusDataResponse.isUplusDataExists()) {
+            body = ApiResponse.ok(UserCode.UPLUS_DATA_EXISTS);
+        } else {
+            body = ApiResponse.ok(UserCode.UPLUS_DATA_NOT_EXISTS);
+        }
+        return ResponseEntity
+                .status(body.getStatus())
+                .body(body);
+    }
+
+    @GetMapping("/linkUplusData")
+    public ResponseEntity<ApiResponse<Void>> linkUplusData(@AuthenticationPrincipal PrincipalDetails principalDetails) {
+        userService.linkUplusData(principalDetails);
+        ApiResponse<Void> body = ApiResponse.ok(UserCode.UPLUS_DATA_LINKED);
         return ResponseEntity
                 .status(body.getStatus())
                 .body(body);
