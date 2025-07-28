@@ -17,7 +17,6 @@ import com.itplace.userapi.user.entity.User;
 import com.itplace.userapi.user.repository.MembershipRepository;
 import com.itplace.userapi.user.repository.UserRepository;
 import java.time.LocalDateTime;
-import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -36,17 +35,43 @@ public class UserFeatureServiceImpl implements UserFeatureService {
     private final LogRepository logRepository;
 
     public UserFeature loadUserFeature(Long userId) {
-        // 최근 1년 혜택 이력
         LocalDateTime since = LocalDateTime.now().minusYears(1);
 
         User user = userRepo.findById(userId)
                 .orElseThrow(() -> new UserNotFoundException(SecurityCode.USER_NOT_FOUND));
         String membershipId = user.getMembershipId();
-        // 멤버십 회원 아니면 콜드 사용자 로직 (로그 기반)
+
+        // 로그 기반 정보 수집
+        List<LogScoreResult> logScores = logRepository.aggregateUserLogScores(userId, 10);
+        Map<Long, Integer> logBenefitScores = logScores.stream()
+                .filter(score -> score.getBenefitId() != null)
+                .collect(Collectors.toMap(
+                        LogScoreResult::getBenefitId,
+                        LogScoreResult::getTotalScore
+                ));
+
+        List<String> logPartners = logScores.stream()
+                .map(LogScoreResult::getPartnerName)
+                .filter(Objects::nonNull)
+                .distinct()
+                .limit(5)
+                .toList();
+
+        // 콜드 스타트
         if (membershipId == null || membershipId.isBlank()) {
-            return loadUserFeatureFromLogsOnly(userId, 10);
+            return UserFeature.builder()
+                    .userId(userId)
+                    .grade(null)
+                    .recentCategoryScores(Map.of())
+                    .topCategories(List.of())
+                    .benefitUsageCounts(Map.of()) // 없음
+                    .recentPartnerNames(List.of()) // 없음
+                    .logBasedBenefitScores(logBenefitScores)
+                    .logBasedPartnerNames(logPartners)
+                    .build();
         }
 
+        // 멤버십 사용자 처리
         Grade grade = membershipRepo.findByMembershipId(membershipId)
                 .map(Membership::getGrade)
                 .orElse(null);
@@ -92,46 +117,20 @@ public class UserFeatureServiceImpl implements UserFeatureService {
                 .topCategories(topCats)
                 .benefitUsageCounts(benefitUsage)
                 .recentPartnerNames(topPartners)
+                .logBasedBenefitScores(logBenefitScores)
+                .logBasedPartnerNames(logPartners)
                 .build();
 
     }
 
 
     public List<Float> embedUserFeatures(UserFeature uf) {
-        return embeddingService.embed(uf.getEmbeddingContext());
+        return embeddingService.embed(uf.getEmbeddingText());
     }
 
     public String getUserEmbeddingContext(UserFeature uf) {
-        return uf.getEmbeddingContext(); // UserFeature 내부 메서드 사용
+        return uf.getEmbeddingText(); // UserFeature 내부 메서드 사용
     }
 
-    @Override
-    public UserFeature loadUserFeatureFromLogsOnly(Long userId, int topK) {
-        List<LogScoreResult> logScores = logRepository.aggregateUserLogScores(userId, topK);
 
-        // benefitId → 점수
-        Map<Long, Integer> benefitUsageCounts = logScores.stream()
-                .filter(score -> score.getBenefitId() != null)
-                .collect(Collectors.toMap(
-                        LogScoreResult::getBenefitId,
-                        LogScoreResult::getTotalScore
-                ));
-
-        // partnerName 상위 N개 (정렬된 순서 유지)
-        List<String> topPartners = logScores.stream()
-                .map(LogScoreResult::getPartnerName)
-                .filter(Objects::nonNull)
-                .distinct()
-                .limit(topK)
-                .toList();
-
-        return UserFeature.builder()
-                .userId(userId)
-                .grade(null) // 콜드 스타트
-                .recentCategoryScores(Collections.emptyMap())
-                .topCategories(Collections.emptyList())
-                .benefitUsageCounts(benefitUsageCounts)
-                .recentPartnerNames(topPartners)
-                .build();
-    }
 }

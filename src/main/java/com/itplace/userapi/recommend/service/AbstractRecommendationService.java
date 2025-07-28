@@ -27,7 +27,7 @@ public abstract class AbstractRecommendationService {
 
 
     public List<Recommendations> recommend(Long userId, int topK) throws Exception {
-        // 최근 1주일 이내 추천 이력 확인
+//         최근 1주일 이내 추천 이력 확인
         LocalDateTime threshold = LocalDateTime.now().minusDays(EXPIRED_DAYS);
         List<Recommendation> saved = recommendationRepository
                 .findByUser_IdAndCreatedDateAfterOrderByRankAsc(userId, threshold);

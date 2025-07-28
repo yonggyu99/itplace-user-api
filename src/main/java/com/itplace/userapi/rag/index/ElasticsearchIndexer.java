@@ -39,32 +39,15 @@
 //                Partner p = b.getPartner();
 //
 //                String embeddingText = String.format(
-//                        "%s 카테고리에 해당하는 '%s' 혜택입니다. %s",
+//                        """
+//                                이 혜택은 '%s' 카테고리에 해당하며, '%s' 제휴사의 '%s' 혜택입니다.
+//                                """,
 //                        p.getCategory(),
-//                        b.getBenefitName(),
-//                        b.getDescription() != null ? b.getDescription() : "추가 설명은 없습니다."
+//                        p.getPartnerName(),
+//                        b.getBenefitName()
 //                );
 //
 //                List<Float> embedding = embeddingService.embed(embeddingText);
-//
-//                String context = String.format("""
-//                                [VIP콕 혜택]
-//                                %s
-//
-//                                [VVIP 혜택]
-//                                %s
-//
-//                                [VIP 혜택]
-//                                %s
-//
-//                                [기본 혜택]
-//                                %s
-//                                """,
-//                        getBenefitTextForGrade(b, "VIP콕"),
-//                        getBenefitTextForGrade(b, "VVIP"),
-//                        getBenefitTextForGrade(b, "VIP"),
-//                        getBenefitTextForGrade(b, "BASIC")
-//                );
 //
 //                BenefitDocument doc = BenefitDocument.builder()
 //                        .benefitId(benefitId)
@@ -73,9 +56,7 @@
 //                        .partnerName(p.getPartnerName())
 //                        .category(p.getCategory())
 //                        .description(b.getDescription())
-//                        .context(context)
 //                        .embedding(embedding)
-//                        .imgUrl(p.getImage())
 //                        .build();
 //
 //                esClient.index(i -> i

@@ -44,6 +44,7 @@ public class RecommendationController {
                     .body(ApiResponse.of(e.getCode(), null));
 
         } catch (Exception e) {
+            e.printStackTrace();
             return ResponseEntity
                     .status(RecommendationCode.RECOMMENDATION_FAIL.getStatus())
                     .body(ApiResponse.of(RecommendationCode.RECOMMENDATION_FAIL, null));

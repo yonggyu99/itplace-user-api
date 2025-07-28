@@ -14,7 +14,7 @@ import org.springframework.web.reactive.function.client.WebClient;
 @RequiredArgsConstructor
 public class EmbeddingServiceImpl implements EmbeddingService {
 
-    @Value("${spring.ai.openai.api.key}")
+    @Value("${spring.ai.openai.api-key}")
     private String apiKey;
 
     public List<Float> embed(String text) {
@@ -35,7 +35,7 @@ public class EmbeddingServiceImpl implements EmbeddingService {
                 .retrieve()
                 .bodyToMono(Map.class)
                 .block();
-        
+
         List<?> rawVector = (List<?>) ((Map<?, ?>) ((List<?>) response.get("data")).get(0)).get("embedding");
 
         List<Float> vector = rawVector.stream()

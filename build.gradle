@@ -49,10 +49,6 @@ dependencies {
     implementation 'io.jsonwebtoken:jjwt-impl:0.12.3'
     implementation 'io.jsonwebtoken:jjwt-jackson:0.12.3'
 
-    // OpenAI
-    implementation 'com.openai:openai-java:2.17.0'
-    implementation 'com.openai:openai-java-client-okhttp:2.17.0'
-
     // Swagger
     implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:2.8.9")
 
