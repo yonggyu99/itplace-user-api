@@ -86,8 +86,7 @@ public class UserController {
     public ResponseEntity<ApiResponse<FindPasswordConfirmResponse>> findPasswordConfirm(
             @RequestBody @Validated EmailConfirmRequest request) {
         FindPasswordConfirmResponse response = userService.findPasswordConfirm(request);
-        ApiResponse<FindPasswordConfirmResponse> body = ApiResponse.of(SecurityCode.EMAIL_VERIFICATION_SUCCESS,
-                response);
+        ApiResponse<FindPasswordConfirmResponse> body = ApiResponse.of(SecurityCode.EMAIL_VERIFICATION_SUCCESS, response);
         return ResponseEntity
                 .status(body.getStatus())
                 .body(body);
