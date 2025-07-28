@@ -10,5 +10,4 @@ public interface UserFeatureService {
 
     String getUserEmbeddingContext(UserFeature uf);
 
-    UserFeature loadUserFeatureFromLogsOnly(Long userId, int topK);
 }

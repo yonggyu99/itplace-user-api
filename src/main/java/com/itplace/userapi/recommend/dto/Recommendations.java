@@ -1,5 +1,6 @@
 package com.itplace.userapi.recommend.dto;
 
+import java.util.List;
 import lombok.Builder;
 import lombok.Data;
 
@@ -10,5 +11,6 @@ public class Recommendations {
     private String partnerName;
     private String reason;
     private String imgUrl;
+    private List<Long> benefitIds;
 }
 

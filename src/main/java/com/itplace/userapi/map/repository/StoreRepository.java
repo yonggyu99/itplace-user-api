@@ -33,6 +33,26 @@ public interface StoreRepository extends JpaRepository<Store, Long> {
             @Param("minLng") double minLng, @Param("maxLng") double maxLng
     );
 
+    @Query(
+            value = """
+                    SELECT s.*
+                    FROM store s
+                    JOIN partner p ON s.partnerId = p.partnerId
+                    WHERE s.location IS NOT NULL
+                    AND (:category IS NULL OR p.category = :category)
+                    AND (LOWER(s.storeName) LIKE CONCAT('%',LOWER(:keyword),'%') OR
+                        LOWER(s.business) LIKE CONCAT('%',LOWER(:keyword),'%') OR
+                        LOWER(p.partnerName) LIKE CONCAT('%',LOWER(:keyword),'%') OR
+                        LOWER(p.category) LIKE CONCAT('%',LOWER(:keyword),'%')
+                    )
+                    ORDER BY ST_Distance_Sphere(location, ST_SRID(Point(:lng, :lat),4326)) ASC
+                    LIMIT 30
+                    """,
+            nativeQuery = true
+    )
+    List<Store> searchNearbyStores(@Param("lng") double lng, @Param("lat") double lat,
+                                   @Param("category") String category, @Param("keyword") String keyword);
+
     @Query("SELECT s FROM Store s JOIN FETCH s.partner WHERE s.storeId = :storeId")
     Optional<Store> findByIdWithPartner(@Param("storeId") Long storeId);
 

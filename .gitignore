@@ -37,6 +37,7 @@ out/
 .vscode/
 
 application-secret.yml
+application-secret-for-deploy.yml
 settings.json
 GEMINI.md
 
