@@ -2218,6 +2218,145 @@ paths:
                     status: UNAUTHORIZED
                     message: 멤버십 내역 조회는 로그인 후 이용 가능합니다.
                     timestamp: "2025-07-18T14:21:00.123456"
+  /membership-history/use:
+    post:
+      tags:
+        - History
+      summary: 멤버십 혜택 사용
+      description: 로그인된 사용자가 특정 혜택을 사용할 때 사용 내역을 기록합니다.
+      security:
+        - bearerAuth: [ ]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/MembershipUseRequest'
+            examples:
+              discountBenefit:
+                summary: 혜택id와 사용금액을 입력
+                value:
+                  benefitId: 101
+                  amount: 30000
+      responses:
+        '200':
+          description: 멤버십 혜택 사용 성공
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/ApiResponse'
+              examples:
+                success:
+                  summary: 멤버십 혜택 사용 성공 예시
+                  value:
+                    data: null
+                    code: MEMBERSHIP_USE_SUCCESS
+                    status: OK
+                    message: 멤버십 혜택 사용에 성공했습니다.
+                    timestamp: '2025-07-28T15:00:00.000Z'
+        '400':
+          description: 잘못된 요청(사용 제한 또는 금액 누락 등)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiResponse'
+              examples:
+                amountRequired:
+                  summary: 금액 입력 누락(% 할인의 경우)
+                  value:
+                    data: null
+                    code: AMOUNT_REQUIRED
+                    status: BAD_REQUEST
+                    message: 할인 금액 계산을 위해 유효한 금액을 입력해야 합니다.
+                    timestamp: '2025-07-28T15:00:00.000Z'
+                alreadyUsedToday:
+                  summary: 일일 사용 제한 위반
+                  value:
+                    data: null
+                    code: ALREADY_USED_TODAY
+                    status: BAD_REQUEST
+                    message: 오늘 이미 사용한 혜택입니다.
+                    timestamp: '2025-07-28T15:00:00.000Z'
+                alreadyUsedMonth:
+                  summary: 월 사용 제한 위반
+                  value:
+                    data: null
+                    code: ALREADY_USED_THIS_MONTH
+                    status: BAD_REQUEST
+                    message: 이번 달에 이미 사용한 혜택입니다.
+                    timestamp: '2025-07-28T15:00:00.000Z'
+                alreadyUsedOnce:
+                  summary: 최초 1회 사용 제한 위반
+                  value:
+                    data: null
+                    code: ALREADY_USED_ONCE
+                    status: BAD_REQUEST
+                    message: 해당 혜택은 최초 1회만 사용할 수 있습니다.
+                    timestamp: '2025-07-28T15:00:00.000Z'
+                invalidGrade:
+                  summary: BASIC 등급에서 VIP_COCK 혜택 사용 시
+                  value:
+                    data: null
+                    code: INVALID_GRADE_FOR_BENEFIT
+                    status: BAD_REQUEST
+                    message: 해당 등급은 이 혜택을 사용할 수 없습니다.
+                    timestamp: '2025-07-28T15:00:00.000Z'
+                noMembership:
+                  summary: 멤버십 없음
+                  value:
+                    data: null
+                    code: NO_MEMBERSHIP
+                    status: BAD_REQUEST
+                    message: 해당 사용자는 멤버십 정보를 가지고 있지 않습니다.
+                    timestamp: '2025-07-28T15:00:00.000Z'
+                tierBenefitNotFound:
+                  summary: tierBenefit 정보 없음
+                  value:
+                    data: null
+                    code: TIER_BENEFIT_NOT_FOUND
+                    status: BAD_REQUEST
+                    message: 해당 등급은 이 혜택을 사용할 수 없습니다.
+                    timestamp: '2025-07-28T15:00:00.000Z'
+                invalidBenefitType:
+                  summary: 잘못된 benefitType
+                  value:
+                    data: null
+                    code: INVALID_BENEFIT_TYPE
+                    status: BAD_REQUEST
+                    message: 잘못된 혜택 타입입니다.
+                    timestamp: '2025-07-28T15:00:00.000Z'
+        '404':
+          description: 사용자, 혜택 정보, 멤버십 없음
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiResponse'
+              examples:
+                userNotFound:
+                  summary: 사용자 없음
+                  value:
+                    data: null
+                    code: USER_NOT_FOUND
+                    status: NOT_FOUND
+                    message: 사용자 정보를 찾을 수 없습니다.
+                    timestamp: '2025-07-28T15:00:00.000Z'
+                benefitNotFound:
+                  summary: 혜택 없음
+                  value:
+                    data: null
+                    code: BENEFIT_NOT_FOUND
+                    status: NOT_FOUND
+                    message: 존재하지 않는 혜택입니다.
+                    timestamp: '2025-07-28T15:00:00.000Z'
+                membershipNotFound:
+                  summary: 멤버십 정보 없음
+                  value:
+                    data: null
+                    code: MEMBERSHIP_NOT_FOUND
+                    status: NOT_FOUND
+                    message: 해당 멤버십 정보를 찾을 수 없습니다.
+                    timestamp: '2025-07-28T15:00:00.000Z'
 
   # =====================================================
   # 멤버십 추천 관련 기능 API
@@ -2566,6 +2705,15 @@ components:
         password:
           type: string
           description: 사용자가 입력한 비밀번호
+
+    MembershipUseRequest:
+      type: object
+      properties:
+        benefitId:
+          type: integer
+          format: int64
+        amount:
+          type: integer
 
     # ----------------------------------------------------
     # Response DTOs

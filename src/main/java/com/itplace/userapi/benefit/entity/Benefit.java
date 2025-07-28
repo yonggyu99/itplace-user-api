@@ -58,8 +58,6 @@ public class Benefit extends BaseTimeEntity {
     @Lob
     private String manual;
 
-//    private String benefitLimit;
-
     @Column(name = "usageType")
     @Convert(converter = UsageTypeConverter.class)
     private UsageType usageType;
