@@ -1,5 +1,6 @@
 package com.itplace.userapi.recommend.service;
 
+import com.itplace.userapi.benefit.repository.BenefitRepository;
 import com.itplace.userapi.recommend.repository.RecommendationRepository;
 import com.itplace.userapi.recommend.strategy.RankingStrategy;
 import com.itplace.userapi.recommend.strategy.RetrievalStrategy;
@@ -15,9 +16,11 @@ public class OpenAiRecommendationService extends AbstractRecommendationService {
             @Qualifier("openAiRetrieval") RetrievalStrategy retrievalStrategy,
             @Qualifier("openAiRanking") RankingStrategy rankingStrategy,
             RecommendationRepository recommendationRepository,
-            UserRepository userRepository
+            UserRepository userRepository,
+            BenefitRepository benefitRepository
     ) {
-        super(ufService, retrievalStrategy, rankingStrategy, recommendationRepository, userRepository);
+        super(ufService, retrievalStrategy, rankingStrategy, recommendationRepository, userRepository,
+                benefitRepository);
     }
 }
 

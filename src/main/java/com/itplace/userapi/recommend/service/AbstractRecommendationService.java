@@ -1,5 +1,7 @@
 package com.itplace.userapi.recommend.service;
 
+import com.itplace.userapi.benefit.entity.Benefit;
+import com.itplace.userapi.benefit.repository.BenefitRepository;
 import com.itplace.userapi.recommend.domain.UserFeature;
 import com.itplace.userapi.recommend.dto.Candidate;
 import com.itplace.userapi.recommend.dto.Recommendations;
@@ -24,6 +26,7 @@ public abstract class AbstractRecommendationService {
     protected final RankingStrategy rankingStrategy;
     private final RecommendationRepository recommendationRepository;
     private final UserRepository userRepository;
+    private final BenefitRepository benefitRepository;
 
 
     public List<Recommendations> recommend(Long userId, int topK) throws Exception {
@@ -32,14 +35,7 @@ public abstract class AbstractRecommendationService {
         List<Recommendation> saved = recommendationRepository
                 .findByUser_IdAndCreatedDateAfterOrderByRankAsc(userId, threshold);
         if (!saved.isEmpty()) {
-            return saved.stream()
-                    .map(e -> Recommendations.builder()
-                            .rank(e.getRank())
-                            .partnerName(e.getPartnerName())
-                            .reason(e.getReason())
-                            .imgUrl(e.getImgUrl())
-                            .build())
-                    .toList();
+            return RecommendationMapper.toDtoList(saved);
         }
 
         // 사용자 피처 추출
@@ -52,7 +48,15 @@ public abstract class AbstractRecommendationService {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new UserNotFoundException(SecurityCode.USER_NOT_FOUND));
 
-        List<Recommendation> entities = RecommendationMapper.toEntityList(recommendations, user);
+        List<Recommendation> entities = recommendations.stream()
+                .map(dto -> {
+                    List<Benefit> benefits = dto.getBenefitIds().stream()
+                            .map(benefitRepository::getReferenceById)
+                            .toList();
+                    return RecommendationMapper.toEntity(dto, user, benefits);
+                })
+                .toList();
+
         recommendationRepository.saveAll(entities);
 
         return recommendations;
