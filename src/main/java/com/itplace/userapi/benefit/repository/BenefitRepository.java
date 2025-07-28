@@ -58,4 +58,14 @@ public interface BenefitRepository extends JpaRepository<Benefit, Long> {
 
     List<Benefit> findByPartner_PartnerIdAndMainCategory(Long partnerId, MainCategory mainCategory);
 
+    //ElasticSearch Indexer 사용
+    @Query("""
+                SELECT b FROM Benefit b
+                JOIN FETCH b.partner
+                JOIN FETCH b.tierBenefits
+            """)
+    List<Benefit> findAllWithPartnerAndTierBenefits();
+
+    List<Benefit> findByPartner_PartnerId(Long partnerId);
+
 }

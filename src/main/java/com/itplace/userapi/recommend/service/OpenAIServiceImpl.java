@@ -2,7 +2,9 @@ package com.itplace.userapi.recommend.service;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.itplace.userapi.benefit.entity.Benefit;
 import com.itplace.userapi.benefit.entity.enums.Grade;
+import com.itplace.userapi.benefit.repository.BenefitRepository;
 import com.itplace.userapi.partner.entity.Partner;
 import com.itplace.userapi.partner.repository.PartnerRepository;
 import com.itplace.userapi.rag.service.BenefitSearchService;
@@ -13,38 +15,38 @@ import com.itplace.userapi.recommend.dto.ChatCompletionResponse;
 import com.itplace.userapi.recommend.dto.Recommendations;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpMethod;
-import org.springframework.http.MediaType;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
-import org.springframework.web.client.RestTemplate;
+import org.springframework.web.reactive.function.client.WebClient;
 
 @Service
 @RequiredArgsConstructor
 public class OpenAIServiceImpl implements OpenAIService {
     private final ObjectMapper mapper;
-    private final RestTemplate restTemplate = new RestTemplate();
+    @Qualifier("openAiWebClient")
+    private final WebClient webClient;
     private final EmbeddingService embeddingService;
     private final BenefitSearchService benefitSearchService;
     private final PartnerRepository partnerRepository;
+    private final BenefitRepository benefitRepository;
 
-    @Value("${spring.ai.openai.api.key}")
+    @Value("${spring.ai.openai.api-key}")
     private String apiKey;
 
-    @Value("${spring.ai.openai.api.url}")
+    @Value("${spring.ai.openai.base-url}")
     private String baseUrl;
 
-    @Value("${spring.ai.openai.model.chat}")
+    @Value("${spring.ai.openai.chat.model}")
     private String model;
 
 
     @Override
     public List<Candidate> vectorSearch(UserFeature uf, int CandidateSize) {
-        List<Float> userEmbedding = embeddingService.embed(uf.getEmbeddingContext());
+        List<Float> userEmbedding = embeddingService.embed(uf.getEmbeddingText());
         Grade grade = uf.getGrade();
         return benefitSearchService.queryVector(grade, userEmbedding, CandidateSize);
     }
@@ -53,10 +55,6 @@ public class OpenAIServiceImpl implements OpenAIService {
     @Override
     public List<Recommendations> rerankAndExplain(UserFeature uf, List<Candidate> cands, int topK) {
         String url = baseUrl + "/v1/chat/completions";
-
-        HttpHeaders headers = new HttpHeaders();
-        headers.setBearerAuth(apiKey);
-        headers.setContentType(MediaType.APPLICATION_JSON);
 
         System.out.println("후보 사이즈: " + cands.size());
         StringBuilder items = new StringBuilder();
@@ -76,28 +74,47 @@ public class OpenAIServiceImpl implements OpenAIService {
         }
 
         String prompt = String.format("""
-                【사용자 성향 요약】
-                %s
-                
-                【후보 혜택들】
-                %s
-                
-                사용자 성향과 혜택 설명을 바탕으로 가장 적절한 혜택 %d개 이상 골라주세요.
-                추천 이유에는 반드시 혜택에 대한 내용을 반영해야합니다.
-                제휴사는 중복되지 않도록 해주세요.
-                
-                "Don't include markdown formatting. Just return valid JSON only."
-                {
-                  "recommendations": [
-                    {
-                      "rank": 1,
-                      "partnerName": "뚜레쥬르",
-                      "reason": "푸드 카테고리에 관심이 많으시고, 뚜레쥬르 혜택이 실속 있어서 추천드리는 걸요!"
-                    },
-                    ...
-                  ]
-                }
-                """, uf.getEmbeddingContext(), items, topK);
+                        【사용자 성향 요약】
+                        %s
+                        【행동 로그 기반 관심 제휴사]
+                        - 최근 클릭/검색/상세 행동이 많았던 제휴사: %s
+                        
+                        【멤버십 혜택 이용 이력】
+                        - 실제로 혜택을 자주 사용한 제휴사: %s
+                        
+                        【후보 혜택 목록】
+                        %s
+                        
+                        ※ 아래 후보 혜택들 중 사용자에게 적절한 혜택 %d개 이상을 골라주세요.
+                        
+                        반드시 다음 조건을 지켜주세요:
+                        - 추천 이유에는 해당 혜택의 설명뿐 아니라 '사용자가 최근 행동 로그에서 자주 본 제휴사' 또는 '혜택을 자주 이용한 제휴사'와의 관련성을 명시해야 합니다.
+                        - 예: "최근 CGV를 자주 클릭하셨더라구요!", "실제로 VIPS 혜택을 많이 사용하셨네요!"
+                        - 반드시 제휴사는 중복되지 않도록 해주세요.
+                        
+                        
+                        "Don't include markdown formatting. Just return valid JSON only."
+                        {
+                          "recommendations": [
+                            {
+                              "rank": 1,
+                              "partnerName": "롯데시네마",
+                              "reason": "최근 롯데시네마를 자주 클릭하셨더라구요! 문화/여가 혜택 중 이 혜택이 특히 잘 맞을 것 같아요."
+                            },
+                            {
+                              "rank": 2,
+                              "partnerName": "GS25",
+                              "reason": "GS25에 특히 관심이 많으시니, 일상에서 유용하게 쓰실 수 있겠어요! 1천원 당 100원 할인받으실 수 있다구요!"
+                            }
+                          ]
+                        }
+                        """, uf.getLLMContext(),
+                String.join(", ", uf.getLogBasedPartnerNames()),
+                String.join(", ", uf.getRecentPartnerNames()),
+                items,
+                topK);
+
+//        System.out.println("<UNK> <UNK>: " + prompt);
 
         List<Map<String, String>> messages = List.of(
                 Map.of(
@@ -117,27 +134,45 @@ public class OpenAIServiceImpl implements OpenAIService {
                 "messages", messages
         );
 
-        HttpEntity<Map<String, Object>> request = new HttpEntity<>(body, headers);
         long start = System.nanoTime();
-        ResponseEntity<ChatCompletionResponse> response = restTemplate
-                .exchange(url, HttpMethod.POST, request, ChatCompletionResponse.class);
+
+        ChatCompletionResponse cr = webClient.post()
+                .uri(url)
+                .header(HttpHeaders.AUTHORIZATION, "Bearer " + apiKey)
+                .bodyValue(body)
+                .retrieve()
+                .bodyToMono(ChatCompletionResponse.class)
+                .block();
+
         long end = System.nanoTime();
         System.out.println("LLM 응답 생성 시간 (ms): " + (end - start) / 1_000_000);
-        ChatCompletionResponse cr = response.getBody();
+
         if (cr != null && !cr.getChoices().isEmpty()) {
             String jsonString = cr.getChoices().get(0).getMessage().getContent();
             try {
                 JsonNode root = mapper.readTree(jsonString);
                 JsonNode recList = root.get("recommendations");
+
                 List<Recommendations> recommendations = mapper.readerForListOf(Recommendations.class)
                         .readValue(recList);
 
                 for (Recommendations rec : recommendations) {
-                    String imgUrl = partnerRepository.findByPartnerName(rec.getPartnerName())
-                            .map(Partner::getImage)
-                            .orElse("<UNKNOWN>");
+                    Optional<Partner> partnerOpt = partnerRepository.findByPartnerName(rec.getPartnerName());
+                    if (partnerOpt.isPresent()) {
+                        Partner partner = partnerOpt.get();
 
-                    rec.setImgUrl(imgUrl);
+                        rec.setImgUrl(partner.getImage());
+
+                        List<Long> benefitIds = benefitRepository.findByPartner_PartnerId(partner.getPartnerId())
+                                .stream()
+                                .map(Benefit::getBenefitId)
+                                .toList();
+
+                        rec.setBenefitIds(benefitIds);
+                    } else {
+                        rec.setImgUrl("<UNKNOWN>");
+                        rec.setBenefitIds(List.of());
+                    }
 
                 }
 

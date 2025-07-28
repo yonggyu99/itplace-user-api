@@ -21,6 +21,4 @@ public class BenefitDocument {
     private String benefitName;
     private String category;
     private String description;
-    private String context;
-    private String imgUrl;
 }
