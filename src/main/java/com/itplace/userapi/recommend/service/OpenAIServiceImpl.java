@@ -128,6 +128,8 @@ public class OpenAIServiceImpl implements OpenAIService {
                 ),
                 Map.of("role", "user", "content", prompt)
         );
+        
+        System.out.println("후보 리스트: " + prompt);
 
         Map<String, Object> body = Map.of(
                 "model", model,
