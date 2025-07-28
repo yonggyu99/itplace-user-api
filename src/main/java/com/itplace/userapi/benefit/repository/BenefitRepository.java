@@ -58,4 +58,6 @@ public interface BenefitRepository extends JpaRepository<Benefit, Long> {
 
     List<Benefit> findByPartner_PartnerIdAndMainCategory(Long partnerId, MainCategory mainCategory);
 
+    @Query("SELECT b FROM Benefit b JOIN FETCH b.benefitPolicy WHERE b.benefitId = :benefitId")
+    Optional<Benefit> findByIdWithPolicy(@Param("benefitId") Long benefitId);
 }

@@ -58,7 +58,7 @@ public class Benefit extends BaseTimeEntity {
     @Lob
     private String manual;
 
-    private String benefitLimit;
+//    private String benefitLimit;
 
     @Column(name = "usageType")
     @Convert(converter = UsageTypeConverter.class)
@@ -74,6 +74,11 @@ public class Benefit extends BaseTimeEntity {
 
     @OneToMany(mappedBy = "benefit")
     private List<TierBenefit> tierBenefits = new ArrayList<>();
+
+    // 정책 추가
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "benefitLimit")
+    private BenefitPolicy benefitPolicy;
 
 }
 
