@@ -38,21 +38,20 @@ public class BenefitController {
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "12") int size
     ) {
-
         Pageable pageable = PageRequest.of(page, size);
         Long userId = (principalDetails != null) ? principalDetails.getUserId() : null;
         PagedResponse<BenefitListResponse> result = benefitService.getBenefitList(
                 mainCategory, category, filter, keyword, userId, pageable
         );
         ApiResponse<PagedResponse<BenefitListResponse>> body = ApiResponse.of(BenefitCode.BENEFIT_LIST_SUCCESS, result);
-        return ResponseEntity.status(body.getStatus()).body(body);
+        return new ResponseEntity<>(body, body.getStatus());
     }
 
     @GetMapping("/{benefitId}")
     public ResponseEntity<ApiResponse<BenefitDetailResponse>> getBenefitDetail(@PathVariable Long benefitId) {
         BenefitDetailResponse result = benefitService.getBenefitDetail(benefitId);
         ApiResponse<BenefitDetailResponse> body = ApiResponse.of(BenefitCode.BENEFIT_DETAIL_SUCCESS, result);
-        return ResponseEntity.status(body.getStatus()).body(body);
+        return new ResponseEntity<>(body, body.getStatus());
     }
 
     @GetMapping("/map-detail")
@@ -65,6 +64,6 @@ public class BenefitController {
         Long userId = (principalDetails != null) ? principalDetails.getUserId() : null;
         MapBenefitDetailResponse detail = benefitService.getMapBenefitDetail(storeId, partnerId, mainCategory, userId);
         ApiResponse<MapBenefitDetailResponse> body = ApiResponse.of(BenefitCode.BENEFIT_DETAIL_SUCCESS, detail);
-        return ResponseEntity.status(body.getStatus()).body(body);
+        return new ResponseEntity<>(body, body.getStatus());
     }
 }

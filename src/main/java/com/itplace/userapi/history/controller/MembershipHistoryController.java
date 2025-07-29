@@ -43,7 +43,7 @@ public class MembershipHistoryController {
                 membershipHistoryService.getUserHistory(principalDetails.getUserId(), keyword, startDate, endDate, pageable);
         ApiResponse<PagedResponse<MembershipHistoryResponse>> body = ApiResponse.of(
                 MembershipHistoryCode.MEMBERSHIP_HISTORY_SUCCESS, result);
-        return ResponseEntity.status(body.getStatus()).body(body);
+        return new ResponseEntity<>(body, body.getStatus());
     }
 
     @GetMapping("/summary")
@@ -57,6 +57,6 @@ public class MembershipHistoryController {
         ApiResponse<MonthlyDiscountResponse> body = ApiResponse.of(
                 MembershipHistoryCode.MEMBERSHIP_HISTORY_SUMMARY_SUCCESS,
                 result);
-        return ResponseEntity.status(body.getStatus()).body(body);
+        return new ResponseEntity<>(body, body.getStatus());
     }
 }

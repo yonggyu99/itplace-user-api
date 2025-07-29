@@ -13,7 +13,6 @@ import com.itplace.userapi.user.UserCode;
 import com.itplace.userapi.user.dto.request.FindEmailConfirmRequest;
 import com.itplace.userapi.user.dto.request.ResetPasswordRequest;
 import com.itplace.userapi.user.dto.request.WithdrawRequest;
-import com.itplace.userapi.user.dto.response.CheckUplusDataResponse;
 import com.itplace.userapi.user.dto.response.FindEmailResponse;
 import com.itplace.userapi.user.dto.response.FindPasswordConfirmResponse;
 import com.itplace.userapi.user.dto.response.UserInfoResponse;
@@ -46,10 +45,7 @@ public class UserController {
         }
         UserInfoResponse userInfoDto = userService.getUserInfo(principalDetails.getUserId());
         ApiResponse<?> body = ApiResponse.of(UserCode.USER_INFO_SUCCESS, userInfoDto);
-
-        return ResponseEntity
-                .status(body.getStatus())
-                .body(body);
+        return new ResponseEntity<>(body, body.getStatus());
     }
 
     @PostMapping("/findEmail")
@@ -57,9 +53,7 @@ public class UserController {
         log.info("문자 request:{} ", request);
         smsService.send(request);
         ApiResponse<Void> body = ApiResponse.ok(SecurityCode.SMS_SEND_SUCCESS);
-        return ResponseEntity
-                .status(body.getStatus())
-                .body(body);
+        return new ResponseEntity<>(body, body.getStatus());
     }
 
     @PostMapping("/findEmail/confirm")
@@ -68,18 +62,14 @@ public class UserController {
         log.info("findEmailConfirm request: {}", request);
         FindEmailResponse response = userService.findEmailConfirm(request);
         ApiResponse<FindEmailResponse> body = ApiResponse.of(UserCode.EMAIL_FIND_SUCCESS, response);
-        return ResponseEntity
-                .status(body.getStatus())
-                .body(body);
+        return new ResponseEntity<>(body, body.getStatus());
     }
 
     @PostMapping("/findPassword")
     public ResponseEntity<ApiResponse<Void>> findPassword(@RequestBody @Validated EmailVerificationRequest request) {
         emailService.send(request);
         ApiResponse<Void> body = ApiResponse.ok(SecurityCode.EMAIL_SEND_SUCCESS);
-        return ResponseEntity
-                .status(body.getStatus())
-                .body(body);
+        return new ResponseEntity<>(body, body.getStatus());
     }
 
     @PostMapping("/findPassword/confirm")
@@ -87,18 +77,14 @@ public class UserController {
             @RequestBody @Validated EmailConfirmRequest request) {
         FindPasswordConfirmResponse response = userService.findPasswordConfirm(request);
         ApiResponse<FindPasswordConfirmResponse> body = ApiResponse.of(SecurityCode.EMAIL_VERIFICATION_SUCCESS, response);
-        return ResponseEntity
-                .status(body.getStatus())
-                .body(body);
+        return new ResponseEntity<>(body, body.getStatus());
     }
 
     @PostMapping("/resetPassword")
     public ResponseEntity<ApiResponse<Void>> resetPassword(@RequestBody @Validated ResetPasswordRequest request) {
         userService.resetPassword(request);
         ApiResponse<Void> body = ApiResponse.ok(SecurityCode.RESET_PASSWORD_SUCCESS);
-        return ResponseEntity
-                .status(body.getStatus())
-                .body(body);
+        return new ResponseEntity<>(body, body.getStatus());
     }
 
     @DeleteMapping
@@ -108,31 +94,7 @@ public class UserController {
     ) {
         userService.withdraw(principalDetails.getUserId(), request.getPassword());
         ApiResponse<Void> body = ApiResponse.ok(UserCode.USER_WITHDRAWAL_SUCCESS);
-        return ResponseEntity
-                .status(body.getStatus())
-                .body(body);
+        return new ResponseEntity<>(body, body.getStatus());
     }
 
-    @GetMapping("/checkUplusData")
-    public ResponseEntity<ApiResponse<CheckUplusDataResponse>> checkUplusData(@AuthenticationPrincipal PrincipalDetails principalDetails) {
-        CheckUplusDataResponse checkUplusDataResponse = userService.checkUplusData(principalDetails);
-        ApiResponse<CheckUplusDataResponse> body;
-        if (checkUplusDataResponse.isUplusDataExists()) {
-            body = ApiResponse.ok(UserCode.UPLUS_DATA_EXISTS);
-        } else {
-            body = ApiResponse.ok(UserCode.UPLUS_DATA_NOT_EXISTS);
-        }
-        return ResponseEntity
-                .status(body.getStatus())
-                .body(body);
-    }
-
-    @GetMapping("/linkUplusData")
-    public ResponseEntity<ApiResponse<Void>> linkUplusData(@AuthenticationPrincipal PrincipalDetails principalDetails) {
-        userService.linkUplusData(principalDetails);
-        ApiResponse<Void> body = ApiResponse.ok(UserCode.UPLUS_DATA_LINKED);
-        return ResponseEntity
-                .status(body.getStatus())
-                .body(body);
-    }
 }

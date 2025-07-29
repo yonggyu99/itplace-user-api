@@ -28,15 +28,13 @@ public class SmsController {
         log.info("문자쪽 request:{}", request);
         smsService.send(request);
         ApiResponse<Void> body = ApiResponse.of(SecurityCode.SMS_SEND_SUCCESS, null);
-        return ResponseEntity.status(body.getStatus())
-                .body(body);
+        return new ResponseEntity<>(body, body.getStatus());
     }
 
     @PostMapping("/sms/confirm")
     public ResponseEntity<ApiResponse<SmsConfirmResponse>> confirm(@RequestBody @Validated SmsConfirmRequest request) {
         SmsConfirmResponse data = smsService.confirm(request);
         ApiResponse<SmsConfirmResponse> body = ApiResponse.of(SecurityCode.SMS_VERIFICATION_SUCCESS, data);
-        return ResponseEntity.status(body.getStatus())
-                .body(body);
+        return new ResponseEntity<>(body, body.getStatus());
     }
 }

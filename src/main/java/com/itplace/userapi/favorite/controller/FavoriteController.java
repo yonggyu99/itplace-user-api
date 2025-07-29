@@ -36,11 +36,10 @@ public class FavoriteController {
     @PostMapping
     public ResponseEntity<ApiResponse<Void>> addFavorite(
             @AuthenticationPrincipal PrincipalDetails principalDetails,
-            @RequestBody FavoriteRequest request
-    ) {
+            @RequestBody FavoriteRequest request) {
         favoriteService.addFavorite(principalDetails.getUserId(), request.getBenefitId());
         ApiResponse<Void> body = ApiResponse.ok(FavoriteCode.FAVORITE_ADD_SUCCESS);
-        return ResponseEntity.status(body.getStatus()).body(body);
+        return new ResponseEntity<>(body, body.getStatus());
     }
 
     // 즐겨찾기 삭제
@@ -50,9 +49,8 @@ public class FavoriteController {
             @RequestBody RemoveFavoritesRequest request) {
         favoriteService.removeFavorites(principalDetails.getUserId(), request.getBenefitIds());
         ApiResponse<Void> body = ApiResponse.ok(FavoriteCode.FAVORITE_DELETE_SUCCESS);
-        return ResponseEntity.status(body.getStatus()).body(body);
+        return new ResponseEntity<>(body, body.getStatus());
     }
-
 
     // 즐겨찾기 목록 조회 (페이징, 필터링)
     @GetMapping
@@ -60,14 +58,12 @@ public class FavoriteController {
             @AuthenticationPrincipal PrincipalDetails principalDetails,
             @RequestParam(required = false) String category,
             @PageableDefault(page = 0, size = 6) Pageable pageable) {
-
         Long userId = principalDetails.getUserId();
         Page<FavoriteResponse> page = favoriteService.getFavorites(userId, category, pageable);
         PageResult<FavoriteResponse> result = PageResult.of(page);
         ApiResponse<PageResult<FavoriteResponse>> body = ApiResponse.of(FavoriteCode.FAVORITE_BENEFIT_SUCCESS, result);
-        return ResponseEntity.status(body.getStatus()).body(body);
+        return new ResponseEntity<>(body, body.getStatus());
     }
-
 
     // 즐겨찾기 혜택 이름 검색
     @GetMapping("/search")
@@ -75,11 +71,10 @@ public class FavoriteController {
             @AuthenticationPrincipal PrincipalDetails principalDetails,
             @RequestParam(required = false, defaultValue = "") String keyword,
             @RequestParam(required = false, defaultValue = "전체") String category) {
-
         List<FavoriteResponse> favorites = favoriteService.searchFavorites(principalDetails.getUserId(), keyword, category);
         ApiResponse<List<FavoriteResponse>> body = ApiResponse.of(FavoriteCode.FAVORITE_BENEFIT_SEARCH_SUCCESS,
                 favorites);
-        return ResponseEntity.status(body.getStatus()).body(body);
+        return new ResponseEntity<>(body, body.getStatus());
     }
 
 
@@ -87,11 +82,9 @@ public class FavoriteController {
     @GetMapping("/benefits/{benefitId}")
     public ResponseEntity<ApiResponse<FavoriteDetailResponse>> getBenefitDetail(
             @PathVariable Long benefitId) {
-
         FavoriteDetailResponse detail = favoriteService.getBenefitDetail(benefitId);
         ApiResponse<FavoriteDetailResponse> body = ApiResponse.of(FavoriteCode.FAVORITE_BENEFIT_DETAIL_SUCCESS, detail);
-
-        return ResponseEntity.status(body.getStatus()).body(body);
+        return new ResponseEntity<>(body, body.getStatus());
     }
 }
 

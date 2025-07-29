@@ -32,9 +32,7 @@ public class RegistrationController {
     public ResponseEntity<ApiResponse<Void>> signUp(@RequestBody @Validated SignUpRequest request) {
         authService.signUp(request);
         ApiResponse<Void> body = ApiResponse.ok(SecurityCode.SIGNUP_SUCCESS);
-        return ResponseEntity
-                .status(body.getStatus())
-                .body(body);
+        return new ResponseEntity<>(body, body.getStatus());
     }
 
     @PostMapping("/loadUplusData")
@@ -43,16 +41,12 @@ public class RegistrationController {
                 .map(data -> {
                     ApiResponse<UplusDataResponse> body = ApiResponse.of(
                             SecurityCode.UPLUS_DATA_FOUND, data);
-                    return ResponseEntity
-                            .status(body.getStatus())
-                            .body(body);
+                    return new ResponseEntity<>(body, body.getStatus());
                 })
                 .orElseGet(() -> {
                     ApiResponse<UplusDataResponse> body = ApiResponse.of(
                             SecurityCode.UPLUS_DATA_NOT_FOUND, null);
-                    return ResponseEntity
-                            .status(body.getStatus())
-                            .body(body);
+                    return new ResponseEntity<>(body, body.getStatus());
                 });
     }
 
