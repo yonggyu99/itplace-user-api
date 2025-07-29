@@ -1,17 +1,14 @@
-package com.itplace.userapi.ai.service;
+package com.itplace.userapi.ai.llm.service;
 
-import com.itplace.userapi.ai.dto.RecommendReason;
-import com.itplace.userapi.ai.entity.ChatHistory;
-import com.itplace.userapi.ai.repository.ChatHistoryRepository;
+import com.itplace.userapi.ai.llm.entity.ChatHistory;
+import com.itplace.userapi.ai.llm.repository.ChatHistoryRepository;
 import java.util.List;
-import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import org.springframework.ai.chat.client.ChatClient;
 import org.springframework.ai.chat.memory.ChatMemory;
 import org.springframework.ai.chat.memory.ChatMemoryRepository;
 import org.springframework.ai.chat.memory.MessageWindowChatMemory;
 import org.springframework.ai.chat.messages.AssistantMessage;
-import org.springframework.ai.chat.messages.Message;
 import org.springframework.ai.chat.messages.MessageType;
 import org.springframework.ai.chat.messages.SystemMessage;
 import org.springframework.ai.chat.messages.UserMessage;
@@ -24,6 +21,7 @@ import org.springframework.ai.openai.OpenAiChatModel;
 import org.springframework.ai.openai.OpenAiChatOptions;
 import org.springframework.ai.openai.OpenAiEmbeddingModel;
 import org.springframework.ai.openai.OpenAiEmbeddingOptions;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.dao.CannotAcquireLockException;
 import org.springframework.retry.annotation.Backoff;
 import org.springframework.retry.annotation.Retryable;
@@ -39,64 +37,115 @@ public class OpenAIService {
     private final ChatMemoryRepository chatMemoryRepository;
     private final ChatHistoryRepository chatHistoryRepository;
 
+    @Value("${spring.ai.openai.embedding.model}")
+    private final String EMBEDDING_MODEL;
+
     public String categorize(String userInput) {
 
         ChatClient chatClient = ChatClient.create(openAiChatModel);
 
-        String userId = "test_2";
-        List<ChatHistory> history = chatHistoryRepository.findByUserIdOrderByCreatedAtAsc(userId);
-
-        List<Message> messages = history.stream()
-                .map(chat -> {
-                    if (chat.getType() == MessageType.USER) {
-                        return new UserMessage(chat.getContent());
-                    } else {
-                        return new AssistantMessage(chat.getContent());
-                    }
-                }).collect(Collectors.toList());
-
-        messages.add(new UserMessage(userInput));
-
         // 여기에 프롬프트
         SystemMessage systemMessage = new SystemMessage("""
-                You are a keyword analysis system. Your primary goal is to accurately extract all relevant business categories from a user's request.
+                # 카테고리 추출 프롬프트
                 
-                [Rules]
-                1. Analyze the user's intent and generate a concise reason for the recommendation.
-                2. The output MUST BE a valid JSON object with a single key named "reason".
+                ## 역할
+                당신은 사용자의 자연어 입력을 분석하여 관련된 카테고리를 추출하는 AI 어시스턴트입니다.
                 
-                [Category List]
-                치킨, 피자, 버거, 카페, 제과, 아이스크림/빙수, 쇼핑, 영화관, 편의점, 미용, 심리
+                ## 사용 가능한 카테고리 목록
+                - 경양식
+                - 관광
+                - 관광, 체험
+                - 도서, 음반, 문구
+                - 독서실
+                - 루지
+                - 미술관
+                - 미용
+                - 버거
+                - 쇼핑
+                - 슈퍼마켓
+                - 복합문화
+                - 상담
+                - 식당
+                - 심리
+                - 아이스크림/빙수
+                - 영화관
+                - 자동차 정비소
+                - 온천, 스파
+                - 워터파크
+                - 이탈리아 음식
+                - 전시관
+                - 제과
+                - 치킨
+                - 카페
+                - 키즈카페, 실내놀이터
+                - 타이어 소매업
+                - 테마
+                - 패밀리레스토랑
+                - 편의점
+                - 푸드코트
+                - 피자
+                - 학원
+                - 호텔
                 
-                [Example]
-                User Request: "영화 보고 나와서 간단하게 커피 마실 곳 추천해줘."
-                JSON Output:
+                ## 추출 규칙
+                1. 사용자의 입력을 분석하여 의도와 맥락을 파악하세요
+                2. 위의 카테고리 목록에서 사용자의 요구사항과 가장 관련성이 높은 카테고리를 선택하세요
+                3. 최대 3개까지의 카테고리를 선택할 수 있습니다
+                4. 관련성이 높은 순서대로 배열하세요
+                5. 반드시 JSON 형태로 응답하세요
+                
+                ## 응답 형식
                 {
-                  "reason": "사용자는 영화관람 후 카페 방문을 원하고 있습니다."
+                  "categories": ["카테고리1", "카테고리2", "카테고리3"]
                 }
                 
-                [Actual Task]
-                User Request: "{userInput}"
-                JSON Output: ""
+                ## 예시
+                사용자 입력: "아 덥다"
+                {
+                  "categories": ["아이스크림/빙수", "카페", "워터파크"]
+                }
+                
+                사용자 입력: "놀고싶다"
+                {
+                  "categories": ["관광, 체험", "영화관", "워터파크"]
+                }
+                
+                사용자 입력: "배고프다"
+                {
+                  "categories": ["식당", "패밀리레스토랑", "푸드코트"]
+                }
+                
+                사용자 입력: "치킨 먹고싶다"
+                {
+                  "categories": ["치킨"]
+                }
+                
+                ## 주의사항
+                - 반드시 제공된 카테고리 목록에서만 선택하세요
+                - 사용자의 감정이나 상황을 고려하여 적절한 카테고리를 추천하세요
+                - 예시에 없는 응답은 LLM이 판단하여 어울리는 카테고리를 추천하세요.
+                - 응답은 반드시 유효한 JSON 형태여야 합니다
+                - 카테고리명은 정확히 목록과 일치해야 합니다
                 """
         );
 
-        messages.add(0, systemMessage);
+//        messages.add(0, systemMessage);
 
+        UserMessage userMessage = new UserMessage(userInput);
         OpenAiChatOptions options = OpenAiChatOptions.builder()
                 .model("gpt-4o")
                 .temperature(0.7)
                 .build();
 
-        Prompt prompt = new Prompt(messages, options);
+        Prompt prompt = new Prompt(List.of(systemMessage, userMessage), options);
 
-        RecommendReason reason = chatClient.prompt(prompt)
+        String content = chatClient.prompt(prompt)
                 .call()
-                .entity(RecommendReason.class);
+                .content();
 
-        saveChatHistory(userInput, userId, reason.getReason());
+//        saveChatHistory(userInput, userId, reason.getReason());
 
-        return reason.getReason();
+        return content;
     }
 
     private void saveChatHistory(String userInput, String userId, String response) {
@@ -116,7 +165,7 @@ public class OpenAIService {
 
         // 옵션
         EmbeddingOptions embeddingOptions = OpenAiEmbeddingOptions.builder()
-                .model("text-embedding-3-large")
+                .model(EMBEDDING_MODEL)
                 .build();
 
         // 프롬프트
