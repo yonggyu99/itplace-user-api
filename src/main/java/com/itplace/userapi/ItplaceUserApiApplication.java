@@ -21,7 +21,7 @@ import org.springframework.retry.annotation.EnableRetry;
                 "com.itplace.userapi.security",
                 "com.itplace.userapi.user",
                 "com.itplace.userapi.recommend",
-                "com.itplace.userapi.ai"
+                "com.itplace.userapi.llm"
         }
 )
 @EnableMongoRepositories(  // mongo 사용되는 패키지

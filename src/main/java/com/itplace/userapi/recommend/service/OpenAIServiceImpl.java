@@ -2,13 +2,13 @@ package com.itplace.userapi.recommend.service;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.itplace.userapi.ai.rag.service.BenefitSearchService;
+import com.itplace.userapi.ai.rag.service.EmbeddingService;
 import com.itplace.userapi.benefit.entity.Benefit;
 import com.itplace.userapi.benefit.entity.enums.Grade;
 import com.itplace.userapi.benefit.repository.BenefitRepository;
 import com.itplace.userapi.partner.entity.Partner;
 import com.itplace.userapi.partner.repository.PartnerRepository;
-import com.itplace.userapi.rag.service.BenefitSearchService;
-import com.itplace.userapi.rag.service.EmbeddingService;
 import com.itplace.userapi.recommend.domain.UserFeature;
 import com.itplace.userapi.recommend.dto.Candidate;
 import com.itplace.userapi.recommend.dto.ChatCompletionResponse;
@@ -128,7 +128,7 @@ public class OpenAIServiceImpl implements OpenAIService {
                 ),
                 Map.of("role", "user", "content", prompt)
         );
-        
+
         System.out.println("추천 후보 리스트: " + prompt);
 
         Map<String, Object> body = Map.of(
