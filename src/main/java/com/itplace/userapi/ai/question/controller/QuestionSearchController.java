@@ -3,10 +3,13 @@ package com.itplace.userapi.ai.question.controller;
 import co.elastic.clients.elasticsearch.ElasticsearchClient;
 import co.elastic.clients.elasticsearch.core.SearchResponse;
 import co.elastic.clients.elasticsearch.core.search.Hit;
+import com.itplace.userapi.ai.llm.dto.RecommendationResponse;
+import com.itplace.userapi.ai.question.service.QuestionRecommendationService;
 import com.itplace.userapi.ai.rag.service.EmbeddingService;
 import java.util.List;
 import java.util.Map;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -19,6 +22,7 @@ public class QuestionSearchController {
 
     private final EmbeddingService embeddingService;
     private final ElasticsearchClient elasticsearchClient;
+    private final QuestionRecommendationService questionRecommendationService;
 
     @GetMapping("/search")
     public Map<String, Object> searchSimilarQuestion(@RequestParam String query) throws Exception {
@@ -47,4 +51,15 @@ public class QuestionSearchController {
                 "score", hits.get(0).score()
         );
     }
+
+    @GetMapping("/recommend")
+    public ResponseEntity<RecommendationResponse> recommend(
+            @RequestParam String question,
+            @RequestParam double lat,
+            @RequestParam double lng) throws Exception {
+
+        RecommendationResponse stores = questionRecommendationService.recommendByQuestion(question, lat, lng);
+        return ResponseEntity.ok(stores);
+    }
+
 }
