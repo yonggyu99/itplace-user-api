@@ -9,4 +9,6 @@ public interface StoreService {
     List<StoreDetailDto> findNearbyByCategory(double lat, double lng, double radiusMeters, String category);
 
     List<StoreDetailDto> findNearbyByKeyword(double lat, double lng, String category, String keyword);
+
+    List<StoreDetailDto> findNearbyByPartnerName(double lat, double lng, String partnerName);
 }

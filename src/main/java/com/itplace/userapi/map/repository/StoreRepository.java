@@ -57,4 +57,21 @@ public interface StoreRepository extends JpaRepository<Store, Long> {
     Optional<Store> findByIdWithPartner(@Param("storeId") Long storeId);
 
     Store findByStoreName(String storeName);
+
+    @Query(
+            value = """
+                    SELECT s.*
+                    FROM store s
+                    WHERE s.location IS NOT NULL
+                      AND s.partnerId = :partnerId
+                    ORDER BY ST_Distance_Sphere(location, ST_SRID(Point(:lng, :lat),4326)) ASC
+                    LIMIT 30
+                    """,
+            nativeQuery = true
+    )
+    List<Store> searchNearbyStoresByPartnerId(
+            @Param("lng") double lng,
+            @Param("lat") double lat,
+            @Param("partnerId") Long partnerId
+    );
 }
