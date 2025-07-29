@@ -11,7 +11,10 @@ import com.itplace.userapi.map.dto.TierBenefitDto;
 import com.itplace.userapi.map.entity.Store;
 import com.itplace.userapi.map.exception.StoreKeywordException;
 import com.itplace.userapi.map.repository.StoreRepository;
+import com.itplace.userapi.partner.PartnerCode;
 import com.itplace.userapi.partner.entity.Partner;
+import com.itplace.userapi.partner.exception.PartnerNotFoundException;
+import com.itplace.userapi.partner.repository.PartnerRepository;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -26,6 +29,7 @@ public class StoreServiceImpl implements StoreService {
     private final StoreRepository storeRepository;
     private final BenefitRepository benefitRepository;
     private final TierBenefitRepository tierBenefitRepository;
+    private final PartnerRepository partnerRepository;
 
     @Override
     public List<StoreDetailDto> findNearby(double lat, double lng, double radiusMeters) {
@@ -102,7 +106,7 @@ public class StoreServiceImpl implements StoreService {
         return allStores.stream()
                 .filter(storeDetailDto ->
                         storeDetailDto.getPartner() != null &&
-                        category.equalsIgnoreCase(storeDetailDto.getPartner().getCategory()))
+                                category.equalsIgnoreCase(storeDetailDto.getPartner().getCategory()))
                 .toList();
     }
 
@@ -116,7 +120,7 @@ public class StoreServiceImpl implements StoreService {
         if (category != null && category.isBlank()) {
             category = null;
         }
-        
+
         List<Store> stores = storeRepository.searchNearbyStores(lng, lat, category, keyword);
 
         return stores.stream()
@@ -167,6 +171,68 @@ public class StoreServiceImpl implements StoreService {
                 .toList();
     }
 
+    @Override
+    public List<StoreDetailDto> findNearbyByPartnerName(double lat, double lng, String partnerName) {
+        if (partnerName == null || partnerName.isBlank()) {
+            throw new StoreKeywordException(StoreCode.PARTNERNAME_REQUEST);
+        }
+
+        // partnerName으로 partnerId 조회
+        Partner partner = partnerRepository.findByPartnerName(partnerName)
+                .orElseThrow(() -> new PartnerNotFoundException(PartnerCode.PARTNER_NOT_FOUND));
+
+        // partnerId로 매장 검색
+        List<Store> stores = storeRepository.searchNearbyStoresByPartnerId(lng, lat, partner.getPartnerId());
+
+        return stores.stream()
+                .map(store -> {
+                    double storeLat = store.getLocation().getY();
+                    double storeLng = store.getLocation().getX();
+                    double distance = calculateDistance(lat, lng, storeLat, storeLng);
+
+                    // 제휴사 혜택 조회
+                    List<Benefit> benefits = benefitRepository.findAllByPartner_PartnerId(partner.getPartnerId());
+                    List<Benefit> finalBenefits = selectBenefits(benefits, store.getStoreName());
+
+                    // tierBenefit 매핑
+                    List<TierBenefitDto> tierBenefitDtos = finalBenefits.stream()
+                            .flatMap(benefit ->
+                                    tierBenefitRepository.findAllByBenefit_BenefitId(benefit.getBenefitId()).stream()
+                                            .map(tierBenefit -> TierBenefitDto.builder()
+                                                    .grade(tierBenefit.getGrade())
+                                                    .context(tierBenefit.getContext())
+                                                    .build())
+                            )
+                            .toList();
+
+                    return StoreDetailDto.builder()
+                            .store(StoreDto.builder()
+                                    .storeId(store.getStoreId())
+                                    .storeName(store.getStoreName())
+                                    .business(store.getBusiness())
+                                    .city(store.getCity())
+                                    .town(store.getTown())
+                                    .legalDong(store.getLegalDong())
+                                    .address(store.getAddress())
+                                    .roadName(store.getRoadName())
+                                    .roadAddress(store.getRoadAddress())
+                                    .postCode(store.getPostCode())
+                                    .longitude(store.getLocation().getX())
+                                    .latitude(store.getLocation().getY())
+                                    .build())
+                            .partner(PartnerDto.builder()
+                                    .partnerId(partner.getPartnerId())
+                                    .partnerName(partner.getPartnerName())
+                                    .image(partner.getImage())
+                                    .category(partner.getCategory().trim())
+                                    .build())
+                            .tierBenefit(tierBenefitDtos)
+                            .distance(distance)
+                            .build();
+                })
+                .toList();
+    }
+
     private double calculateDistance(double userLat, double userLng, double storeLat, double storeLng) {
         final int earthRadius = 6378137; // 미터
 
@@ -174,9 +240,9 @@ public class StoreServiceImpl implements StoreService {
         double dLng = Math.toRadians(storeLng - userLng);
 
         double a = Math.sin(dLat / 2) * Math.sin(dLat / 2)
-                   + Math.cos(Math.toRadians(userLat))
-                     * Math.cos(Math.toRadians(storeLat))
-                     * Math.sin(dLng / 2) * Math.sin(dLng / 2);
+                + Math.cos(Math.toRadians(userLat))
+                * Math.cos(Math.toRadians(storeLat))
+                * Math.sin(dLng / 2) * Math.sin(dLng / 2);
         double c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
 
         double d = earthRadius * c * 0.001; // km 단위 거리

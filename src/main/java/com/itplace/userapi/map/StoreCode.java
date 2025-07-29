@@ -13,7 +13,9 @@ public enum StoreCode implements BaseCode {
     KEYWORD_REQUEST("KEYWORD_REQUEST", HttpStatus.BAD_REQUEST, "키워드를 입력해주세요"),
 
     STORE_NOT_FOUND("STORE_NOT_FOUND", HttpStatus.NOT_FOUND, "지점을 찾을 수 없습니다."),
-    STORE_PARTNER_MISMATCH("STORE_PARTNER_MISMATCH", HttpStatus.BAD_REQUEST, "지점과 제휴사가 일치하지 않습니다.");
+    STORE_PARTNER_MISMATCH("STORE_PARTNER_MISMATCH", HttpStatus.BAD_REQUEST, "지점과 제휴사가 일치하지 않습니다."),
+
+    PARTNERNAME_REQUEST("PARTNERNAME_REQUEST", HttpStatus.BAD_REQUEST, "제휴사명을 입력해주세요");
 
     private final String code;
     private final HttpStatus status;
