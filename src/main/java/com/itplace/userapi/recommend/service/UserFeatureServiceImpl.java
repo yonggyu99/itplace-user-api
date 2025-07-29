@@ -1,12 +1,12 @@
 package com.itplace.userapi.recommend.service;
 
+import com.itplace.userapi.ai.rag.service.EmbeddingService;
 import com.itplace.userapi.benefit.entity.Benefit;
 import com.itplace.userapi.benefit.entity.enums.Grade;
 import com.itplace.userapi.benefit.repository.BenefitRepository;
 import com.itplace.userapi.history.repository.MembershipHistoryRepository;
 import com.itplace.userapi.log.dto.LogScoreResult;
 import com.itplace.userapi.log.repository.LogRepository;
-import com.itplace.userapi.rag.service.EmbeddingService;
 import com.itplace.userapi.recommend.domain.UserFeature;
 import com.itplace.userapi.recommend.projection.BenefitCount;
 import com.itplace.userapi.recommend.projection.CategoryCount;
