@@ -20,7 +20,7 @@ import lombok.RequiredArgsConstructor;
 
 @RequiredArgsConstructor
 public abstract class AbstractRecommendationService {
-    private static final int EXPIRED_DAYS = 1;
+    private static final int EXPIRED_DAYS = 3;
     protected final UserFeatureService ufService;
     protected final RetrievalStrategy retrievalStrategy;
     protected final RankingStrategy rankingStrategy;
