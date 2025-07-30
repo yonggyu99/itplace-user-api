@@ -1,35 +1,33 @@
 package com.itplace.userapi.ai.llm.service;
 
+import com.itplace.userapi.ai.llm.dto.RecommendReason;
+import com.itplace.userapi.ai.llm.entity.ChatHistory;
+import com.itplace.userapi.ai.llm.repository.ChatHistoryRepository;
 import jakarta.annotation.PostConstruct;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
-import com.itplace.userapi.ai.llm.dto.RecommendReason;
-import com.itplace.userapi.ai.llm.entity.ChatHistory;
-import com.itplace.userapi.ai.llm.repository.ChatHistoryRepository;
-import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import org.springframework.ai.chat.client.ChatClient;
 import org.springframework.ai.chat.memory.ChatMemory;
 import org.springframework.ai.chat.memory.ChatMemoryRepository;
 import org.springframework.ai.chat.memory.MessageWindowChatMemory;
 import org.springframework.ai.chat.messages.AssistantMessage;
-import org.springframework.ai.chat.prompt.ChatOptions;
-import org.springframework.ai.chat.messages.Message;
 import org.springframework.ai.chat.messages.MessageType;
 import org.springframework.ai.chat.messages.SystemMessage;
 import org.springframework.ai.chat.messages.UserMessage;
+import org.springframework.ai.chat.prompt.ChatOptions;
 import org.springframework.ai.chat.prompt.Prompt;
 import org.springframework.ai.embedding.Embedding;
 import org.springframework.ai.embedding.EmbeddingOptions;
 import org.springframework.ai.embedding.EmbeddingRequest;
 import org.springframework.ai.embedding.EmbeddingResponse;
 import org.springframework.ai.openai.OpenAiChatModel;
+import org.springframework.ai.openai.OpenAiChatOptions;
 import org.springframework.ai.openai.OpenAiEmbeddingModel;
 import org.springframework.ai.openai.OpenAiEmbeddingOptions;
-import org.springframework.beans.factory.annotation.Value
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.Resource;
-import org.springframework.ai.openai.OpenAiChatOptions;
 import org.springframework.dao.CannotAcquireLockException;
 import org.springframework.retry.annotation.Backoff;
 import org.springframework.retry.annotation.Retryable;
@@ -60,9 +58,9 @@ public class OpenAIService {
 
     private String readPrompt(Resource resource) throws IOException {
         return new String(resource.getInputStream().readAllBytes(), StandardCharsets.UTF_8);
+    }
 
-    public String generateReasons(
-            String userInput, String category, List<String> partnerNames) {
+    public String generateReasons(String userInput, String category, List<String> partnerNames) {
 
         ChatClient chatClient = ChatClient.create(openAiChatModel);
 
