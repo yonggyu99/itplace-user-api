@@ -14,7 +14,7 @@ public class ChatHistoryService {
     private final ChatHistoryRepository chatHistoryRepository;
 
     @Transactional
-    public List<ChatHistory> readAllChats(String userId) {
+    public List<ChatHistory> readAllChats(Long userId) {
         return chatHistoryRepository.findByUserIdOrderByCreatedAtAsc(userId);
     }
 }

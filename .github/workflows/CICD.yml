@@ -38,7 +38,7 @@ jobs:
         uses: docker/setup-buildx-action@v2
         with:
           driver: docker-container
-          
+
       # 2. OpenJDK 17 설치
       - name: Install JDK 17
         uses: actions/setup-java@v3
@@ -50,6 +50,7 @@ jobs:
       - name: Build with Gradle
         run: |
           echo ${{secrets.APPLICATION_SECRET}} | base64 --decode > ./src/main/resources/application-secret.yml
+          echo ${{secrets.CATEGORIZE_PROMPT}} | base64 --decode > ./src/main/resources/prompt/categorizePrompt.txt
           chmod +x ./gradlew
           ./gradlew build -x test --parallel --configure-on-demand
 
@@ -153,6 +154,6 @@ jobs:
             else
               echo "Container ${CONTAINER_NAME} not found or not running. Skipping."
             fi
-           
+            
             echo "Pruning unused Docker images..."
             sudo docker image prune -a -f

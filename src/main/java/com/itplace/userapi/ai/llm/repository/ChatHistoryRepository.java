@@ -5,5 +5,5 @@ import java.util.List;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 public interface ChatHistoryRepository extends JpaRepository<ChatHistory, Long> {
-    List<ChatHistory> findByUserIdOrderByCreatedAtAsc(String userId);
+    List<ChatHistory> findByUserIdOrderByCreatedAtAsc(Long userId);
 }
