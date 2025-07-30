@@ -1,8 +1,7 @@
-//package com.itplace.userapi.question.Index;
+//package com.itplace.userapi.ai.question.index;
 //
-//import co.elastic.clients.elasticsearch.ElasticsearchClient;
-//import com.itplace.userapi.question.service.ElasticQuestionService;
-//import com.itplace.userapi.rag.service.EmbeddingService;
+//import com.itplace.userapi.ai.question.service.ElasticQuestionService;
+//import com.itplace.userapi.ai.rag.service.EmbeddingService;
 //import java.io.BufferedReader;
 //import java.nio.file.Files;
 //import java.nio.file.Path;
@@ -19,7 +18,6 @@
 //public class QuestionIndexer implements ApplicationRunner {
 //
 //    private final EmbeddingService embeddingService;
-//    private final ElasticsearchClient elasticsearchClient;
 //    private final ElasticQuestionService elasticQuestionService;
 //
 //    @Override

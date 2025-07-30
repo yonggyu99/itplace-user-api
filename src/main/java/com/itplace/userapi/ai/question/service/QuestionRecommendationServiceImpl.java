@@ -3,13 +3,18 @@ package com.itplace.userapi.ai.question.service;
 import co.elastic.clients.elasticsearch.ElasticsearchClient;
 import co.elastic.clients.elasticsearch.core.SearchResponse;
 import co.elastic.clients.elasticsearch.core.search.Hit;
+import com.itplace.userapi.ai.forbiddenword.exception.ForbiddenWordException;
+import com.itplace.userapi.ai.forbiddenword.service.ForbiddenWordService;
 import com.itplace.userapi.ai.llm.dto.RecommendationResponse;
 import com.itplace.userapi.ai.llm.service.OpenAIService;
+import com.itplace.userapi.ai.question.QuestionCode;
+import com.itplace.userapi.ai.question.exception.QuestionException;
 import com.itplace.userapi.ai.rag.service.EmbeddingService;
 import com.itplace.userapi.map.dto.StoreDetailDto;
 import com.itplace.userapi.map.service.StoreService;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -20,12 +25,21 @@ public class QuestionRecommendationServiceImpl implements QuestionRecommendation
     private final ElasticsearchClient esClient;
     private final StoreService storeService;
     private final OpenAIService openAIService;
+    private final ElasticQuestionService elasticQuestionService;
+    private final ForbiddenWordService forbiddenWordService;
+
 
     public RecommendationResponse recommendByQuestion(String question, double lat, double lng) throws Exception {
-        // 사용자 질문 임베딩
+        // 0. 금칙어 필터링
+        String result = forbiddenWordService.censor(question);
+        if (result.contains("입력할 수 없는 단어")) {
+            throw new ForbiddenWordException();
+
+        }
+        // 1. 사용자 질문 임베딩
         List<Float> embedding = embeddingService.embed(question);
 
-        // ES에서 top1 검색
+        // 2. ES에서 top1 검색
         SearchResponse<Map> response = esClient.search(s -> s
                         .index("questions")
                         .knn(knn -> knn
@@ -38,23 +52,36 @@ public class QuestionRecommendationServiceImpl implements QuestionRecommendation
         );
 
         List<Hit<Map>> hits = response.hits().hits();
-        if (hits.isEmpty()) {
-            throw new IllegalStateException("관련된 질문을 찾을 수 없습니다.");
+
+        String category;
+
+        if (hits.isEmpty() || (hits.get(0).score() != null && hits.get(0).score() < 0.7)) {
+            // 3. score가 낮거나 검색 실패한 경우 → LLM으로 카테고리 분류
+            category = openAIService.categorize(question);
+            // LLM이 카테고리를 못 준 경우 처리
+            if (category == null || category.isBlank()) {
+                throw new QuestionException(QuestionCode.NO_CATEGORY_FOUND);
+            }
+            // 질문 + LLM 카테고리 + 임베딩 결과를 ES에 저장
+            elasticQuestionService.saveQuestion(
+                    "questions",
+                    UUID.randomUUID().toString(),
+                    question,
+                    category,
+                    embedding
+            );
+        } else {
+            // 3-2. score가 높으면 ES 결과에서 카테고리 추출
+            category = (String) hits.get(0).source().get("category");
         }
 
-        // top1 문서에서 category 추출
-        Hit<Map> topHit = hits.get(0);
-        double score = topHit.score() != null ? topHit.score() : 0.0;
-
-        // score 임계값 체크
-        if (score < 0.7) {
-            throw new IllegalStateException("적절한 카테고리를 찾을 수 없습니다 (score: " + score + ")");
-        }
-
-        String category = (String) topHit.source().get("category");
-
-        // 제휴처 목록 조회
+        System.out.println("카테고리 분류: " + category);
+        // 4. 제휴처 목록 조회
         List<StoreDetailDto> stores = storeService.findNearbyByKeyword(lat, lng, null, category);
+
+        if (stores.isEmpty()) {
+            throw new QuestionException(QuestionCode.NO_STORE_FOUND);
+        }
 
         List<String> partnerNames = stores.stream()
                 .map(s -> s.getPartner().getPartnerName())
@@ -62,10 +89,10 @@ public class QuestionRecommendationServiceImpl implements QuestionRecommendation
                 .limit(5)
                 .toList();
 
-        // 추천 이유 생성
+        // 5. 추천 이유 생성
         String reason = openAIService.generateReasons(question, category, partnerNames);
 
-        // partnerName + imgUrl 조립
+        // 6. partnerName + imgUrl 조립
         List<RecommendationResponse.PartnerSummary> partners = partnerNames.stream()
                 .map(name -> {
                     String imgUrl = stores.stream()
