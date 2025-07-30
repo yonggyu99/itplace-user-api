@@ -58,4 +58,16 @@ public class StoreController {
 
         return new ResponseEntity<>(body, body.getStatus());
     }
+
+    @GetMapping("/nearby/itplace-ai")
+    public ResponseEntity<ApiResponse<?>> getNearbyByPartner(
+            @RequestParam("lat") double lat,
+            @RequestParam("lng") double lng,
+            @RequestParam("partnerName") String partnerName
+    ) {
+        List<StoreDetailDto> stores = storeService.findNearbyByPartnerName(lat, lng, partnerName);
+        ApiResponse<?> body = ApiResponse.of(StoreCode.STORE_LIST_SUCCESS, stores);
+
+        return ResponseEntity.status(body.getStatus()).body(body);
+    }
 }
