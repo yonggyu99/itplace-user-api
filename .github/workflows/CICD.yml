@@ -51,6 +51,7 @@ jobs:
         run: |
           echo ${{secrets.APPLICATION_SECRET}} | base64 --decode > ./src/main/resources/application-secret.yml
           echo ${{secrets.CATEGORIZE_PROMPT}} | base64 --decode > ./src/main/resources/prompt/categorizePrompt.txt
+          echo ${{secrets.REASON_PROMPT}} | base64 --decode > ./src/main/resources/prompt/reasonPrompt.txt
           chmod +x ./gradlew
           ./gradlew build -x test --parallel --configure-on-demand
 

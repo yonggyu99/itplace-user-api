@@ -30,6 +30,8 @@ tags:
     description: 멤버십 혜택 사용 내역 관련 API
   - name: Recommend
     description: 멤버십 추천 기능 관련 API
+  - name: Question
+    description: 사용자 질문 기반 제휴처 제공 API
 
 paths:
   # =====================================================
@@ -2541,6 +2543,87 @@ paths:
                     message: 추천 결과 생성 실패
                     timestamp: "2025-07-24T15:30:00.000000"
 
+  # =====================================================
+  # 사용자 질문 기반 제휴처 제공 API
+  # =====================================================
+  /questions/recommend:
+    get:
+      tags:
+       - question
+      summary: 질문 기반 제휴처 추천
+      description: |
+        사용자의 질문에 기반하여 유사 질문 카테고리를 분석하고, 해당 카테고리의 주변 제휴처를 추천합니다.  
+        금칙어가 포함된 경우 400 에러로 응답되며, 추천할 제휴처가 없을 경우 404를 반환합니다.
+      parameters:
+        - name: question
+          in: query
+          description: 사용자 질문 텍스트
+          required: true
+          schema:
+            type: string
+            example: 패밀리 레스토랑 제휴처가 있나?
+        - name: lat
+          in: query
+          description: 사용자 위도
+          required: true
+          schema:
+            type: number
+            format: double
+            example: 37.285428
+        - name: lng
+          in: query
+          description: 사용자 경도
+          required: true
+          schema:
+            type: number
+            format: double
+            example: 126.980717
+      responses:
+        '200':
+          description: 추천 성공
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiResponse'
+              example:
+                code: "QUESTION_SUCCESS"
+                status: "OK"
+                message: "정보를 성공적으로 조회했습니다."
+                data:
+                  reason: "패밀리 레스토랑을 즐기고 싶다면 VIPS와 온더보더가 좋은 선택입니다. VIPS는 신선한 재료로 만든 다양한 샐러드바와 스테이크를 제공하며, 가족 모두가 함께 즐길 수 있는 편안한 분위기를 자랑합니다. 온더보더는 멕시코 요리의 진수를 경험할 수 있는 곳으로, 색다른 메뉴와 활기찬 분위기가 가족 모임에 안성맞춤입니다. 두 곳 모두 다양한 메뉴와 넓은 공간을 제공하여 가족들이 즐거운 시간을 보낼 수 있는 이상적인 장소입니다."
+                  partners:
+                    - partnerName: "VIPS"
+                      imgUrl: "https://itplacepartners.s3.ap-northeast-2.amazonaws.com/img/vips.png"
+                    - partnerName: "온더보더"
+                      imgUrl: "https://itplacepartners.s3.ap-northeast-2.amazonaws.com/img/ontheborder.png"
+                timestamp: "2025-07-30T13:08:37.4218203"
+        
+        '400':
+          description: 금칙어가 포함된 질문입니다.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiResponse'
+              example:
+                code: "FORBIDDEN_WORD_DETECTED"
+                status: "BAD_REQUEST"
+                message: "금칙어가 포함된 질문입니다."
+                data: null
+                timestamp: "2025-07-30T13:38:52.0538393"
+
+
+        '404':
+          description: 추천 가능한 제휴처가 없습니다.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiResponse'
+              example:
+                code: "NO_STORE_FOUND"
+                status: "NOT_FOUND"
+                message: "제공할 제휴처가 없습니다."
+                data: null
+                timestamp: "2025-07-30T13:45:22.1029371"
 
 components:
   schemas:
@@ -3309,3 +3392,25 @@ components:
           type: integer
           format: int64
           description: 총 할인 금액
+
+    RecommendationResponse:
+      type: object
+      properties:
+        reason:
+          type: string
+          example: 패밀리 레스토랑을 즐기고 싶다면 VIPS와 온더보더가 좋은 선택입니다.
+        partners:
+          type: array
+          items:
+            $ref: '#/components/schemas/PartnerSummary'
+
+    PartnerSummary:
+      type: object
+      properties:
+        partnerName:
+          type: string
+          example: VIPS
+        imgUrl:
+          type: string
+          format: uri
+          example: https://itplacepartners.s3.ap-northeast-2.amazonaws.com/img/vips.png

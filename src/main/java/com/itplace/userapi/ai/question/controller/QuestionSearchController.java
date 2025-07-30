@@ -4,8 +4,10 @@ import co.elastic.clients.elasticsearch.ElasticsearchClient;
 import co.elastic.clients.elasticsearch.core.SearchResponse;
 import co.elastic.clients.elasticsearch.core.search.Hit;
 import com.itplace.userapi.ai.llm.dto.RecommendationResponse;
+import com.itplace.userapi.ai.question.QuestionCode;
 import com.itplace.userapi.ai.question.service.QuestionRecommendationService;
 import com.itplace.userapi.ai.rag.service.EmbeddingService;
+import com.itplace.userapi.common.ApiResponse;
 import java.util.List;
 import java.util.Map;
 import lombok.RequiredArgsConstructor;
@@ -53,12 +55,13 @@ public class QuestionSearchController {
     }
 
     @GetMapping("/recommend")
-    public ResponseEntity<RecommendationResponse> recommend(
+    public ResponseEntity<ApiResponse<RecommendationResponse>> recommend(
             @RequestParam String question,
             @RequestParam double lat,
             @RequestParam double lng) throws Exception {
 
-        RecommendationResponse stores = questionRecommendationService.recommendByQuestion(question, lat, lng);
-        return ResponseEntity.ok(stores);
+        RecommendationResponse result = questionRecommendationService.recommendByQuestion(question, lat, lng);
+        ApiResponse<RecommendationResponse> body = ApiResponse.of(QuestionCode.QUESTION_SUCCESS, result);
+        return ResponseEntity.status(body.getStatus()).body(body);
     }
 }

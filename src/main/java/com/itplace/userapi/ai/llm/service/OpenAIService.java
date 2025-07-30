@@ -1,5 +1,6 @@
 package com.itplace.userapi.ai.llm.service;
 
+import com.itplace.userapi.ai.llm.dto.CategoryResponse;
 import com.itplace.userapi.ai.llm.dto.RecommendReason;
 import com.itplace.userapi.ai.llm.entity.ChatHistory;
 import com.itplace.userapi.ai.llm.repository.ChatHistoryRepository;
@@ -88,15 +89,18 @@ public class OpenAIService {
 
     public String categorize(String userInput) {
         ChatClient chatClient = ChatClient.create(openAiChatModel);
-        return chatClient.prompt()
-                .system(categorizePrompt)
+
+        CategoryResponse response = chatClient.prompt()
+                .system(categorizePrompt) // 프롬프트 리소스에서 로딩된 문자열
                 .options(ChatOptions.builder()
                         .model("gpt-4o")
                         .temperature(0.7)
                         .build())
                 .user(userInput)
                 .call()
-                .content();
+                .entity(CategoryResponse.class);
+
+        return response.getCategory();
     }
 
     private void saveChatHistory(String userInput, Long userId, String response) {
