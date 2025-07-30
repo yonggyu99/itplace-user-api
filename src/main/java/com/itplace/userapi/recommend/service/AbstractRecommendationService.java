@@ -14,6 +14,7 @@ import com.itplace.userapi.security.SecurityCode;
 import com.itplace.userapi.security.exception.UserNotFoundException;
 import com.itplace.userapi.user.entity.User;
 import com.itplace.userapi.user.repository.UserRepository;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
@@ -30,12 +31,17 @@ public abstract class AbstractRecommendationService {
 
 
     public List<Recommendations> recommend(Long userId, int topK) throws Exception {
-//         최근 1주일 이내 추천 이력 확인
+
         LocalDateTime threshold = LocalDateTime.now().minusDays(EXPIRED_DAYS);
-        List<Recommendation> saved = recommendationRepository
-                .findByUser_IdAndCreatedDateAfterOrderByRankAsc(userId, threshold);
-        if (!saved.isEmpty()) {
-            return RecommendationMapper.toDtoList(saved);
+
+        LocalDate latestRecommendationDate = recommendationRepository.findLatestRecommendationDate(userId, threshold);
+
+        if (latestRecommendationDate != null) {
+            List<Recommendation> saved = recommendationRepository
+                    .findByUserIdAndCreatedDate(userId, latestRecommendationDate);
+            if (!saved.isEmpty()) {
+                return RecommendationMapper.toDtoList(saved);
+            }
         }
 
         // 사용자 피처 추출
