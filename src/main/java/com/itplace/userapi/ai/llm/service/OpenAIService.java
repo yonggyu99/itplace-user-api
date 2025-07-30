@@ -117,7 +117,7 @@ public class OpenAIService {
                 .content();
     }
 
-    private void saveChatHistory(String userInput, String userId, String response) {
+    private void saveChatHistory(String userInput, Long userId, String response) {
         ChatHistory userChatHistory = new ChatHistory();
         userChatHistory.setUserId(userId);
         userChatHistory.setType(MessageType.USER);

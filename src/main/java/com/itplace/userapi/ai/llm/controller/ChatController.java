@@ -33,7 +33,7 @@ public class ChatController {
 
     @ResponseBody
     @PostMapping("/chat/history/{userid}")
-    public List<ChatHistory> getChatHistory(@PathVariable("userid") String userId) {
+    public List<ChatHistory> getChatHistory(@PathVariable("userid") Long userId) {
         return chatHistoryService.readAllChats(userId);
     }
 
