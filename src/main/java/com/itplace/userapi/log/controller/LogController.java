@@ -26,6 +26,6 @@ public class LogController {
         List<SearchRankResponse> searchRank = logService.searchRank(recentDay, prevDay);
         ApiResponse<?> body = ApiResponse.of(LogCode.PARTNERS_SEARCH_RANKING_SUCCESS, searchRank);
 
-        return ResponseEntity.status(body.getStatus()).body(body);
+        return new ResponseEntity<>(body, body.getStatus());
     }
 }

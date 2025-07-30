@@ -1,9 +1,12 @@
 package com.itplace.userapi.ai.llm.service;
 
+import jakarta.annotation.PostConstruct;
+import java.io.IOException;
+import java.nio.charset.StandardCharsets;
+import java.util.List;
 import com.itplace.userapi.ai.llm.dto.RecommendReason;
 import com.itplace.userapi.ai.llm.entity.ChatHistory;
 import com.itplace.userapi.ai.llm.repository.ChatHistoryRepository;
-import java.util.List;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import org.springframework.ai.chat.client.ChatClient;
@@ -11,6 +14,7 @@ import org.springframework.ai.chat.memory.ChatMemory;
 import org.springframework.ai.chat.memory.ChatMemoryRepository;
 import org.springframework.ai.chat.memory.MessageWindowChatMemory;
 import org.springframework.ai.chat.messages.AssistantMessage;
+import org.springframework.ai.chat.prompt.ChatOptions;
 import org.springframework.ai.chat.messages.Message;
 import org.springframework.ai.chat.messages.MessageType;
 import org.springframework.ai.chat.messages.SystemMessage;
@@ -21,9 +25,11 @@ import org.springframework.ai.embedding.EmbeddingOptions;
 import org.springframework.ai.embedding.EmbeddingRequest;
 import org.springframework.ai.embedding.EmbeddingResponse;
 import org.springframework.ai.openai.OpenAiChatModel;
-import org.springframework.ai.openai.OpenAiChatOptions;
 import org.springframework.ai.openai.OpenAiEmbeddingModel;
 import org.springframework.ai.openai.OpenAiEmbeddingOptions;
+import org.springframework.beans.factory.annotation.Value
+import org.springframework.core.io.Resource;
+import org.springframework.ai.openai.OpenAiChatOptions;
 import org.springframework.dao.CannotAcquireLockException;
 import org.springframework.retry.annotation.Backoff;
 import org.springframework.retry.annotation.Retryable;
@@ -38,6 +44,22 @@ public class OpenAIService {
     private final OpenAiEmbeddingModel openAiEmbeddingModel;
     private final ChatMemoryRepository chatMemoryRepository;
     private final ChatHistoryRepository chatHistoryRepository;
+
+    @Value("${spring.ai.openai.embedding.model}")
+    private final String EMBEDDING_MODEL;
+
+    @Value("${spring.ai.chat.categorizePrompt}")
+    private Resource categorizePromptRes;
+
+    private String categorizePrompt;
+
+    @PostConstruct
+    public void init() throws IOException {
+        categorizePrompt = readPrompt(categorizePromptRes);
+    }
+
+    private String readPrompt(Resource resource) throws IOException {
+        return new String(resource.getInputStream().readAllBytes(), StandardCharsets.UTF_8);
 
     public String generateReasons(
             String userInput, String category, List<String> partnerNames) {
@@ -85,63 +107,16 @@ public class OpenAIService {
     }
 
     public String categorize(String userInput) {
-
         ChatClient chatClient = ChatClient.create(openAiChatModel);
-
-        String userId = "test_2";
-        List<ChatHistory> history = chatHistoryRepository.findByUserIdOrderByCreatedAtAsc(userId);
-
-        List<Message> messages = history.stream()
-                .map(chat -> {
-                    if (chat.getType() == MessageType.USER) {
-                        return new UserMessage(chat.getContent());
-                    } else {
-                        return new AssistantMessage(chat.getContent());
-                    }
-                }).collect(Collectors.toList());
-
-        messages.add(new UserMessage(userInput));
-
-        // 여기에 프롬프트
-        SystemMessage systemMessage = new SystemMessage("""
-                You are a keyword analysis system. Your primary goal is to accurately extract all relevant business categories from a user's request.
-                
-                [Rules]
-                1. Analyze the user's intent and generate a concise reason for the recommendation.
-                2. The output MUST BE a valid JSON object with a single key named "reason".
-                
-                [Category List]
-                치킨, 피자, 버거, 카페, 제과, 아이스크림/빙수, 쇼핑, 영화관, 편의점, 미용, 심리
-                
-                [Example]
-                User Request: "영화 보고 나와서 간단하게 커피 마실 곳 추천해줘."
-                JSON Output:
-                {
-                  "reason": "사용자는 영화관람 후 카페 방문을 원하고 있습니다."
-                }
-                
-                [Actual Task]
-                User Request: "{userInput}"
-                JSON Output: ""
-                """
-        );
-
-        messages.add(0, systemMessage);
-
-        OpenAiChatOptions options = OpenAiChatOptions.builder()
-                .model("gpt-4o")
-                .temperature(0.7)
-                .build();
-
-        Prompt prompt = new Prompt(messages, options);
-
-        RecommendReason reason = chatClient.prompt(prompt)
+        return chatClient.prompt()
+                .system(categorizePrompt)
+                .options(ChatOptions.builder()
+                        .model("gpt-4o")
+                        .temperature(0.7)
+                        .build())
+                .user(userInput)
                 .call()
-                .entity(RecommendReason.class);
-
-        saveChatHistory(userInput, userId, reason.getReason());
-
-        return reason.getReason();
+                .content();
     }
 
     private void saveChatHistory(String userInput, String userId, String response) {
@@ -161,7 +136,7 @@ public class OpenAIService {
 
         // 옵션
         EmbeddingOptions embeddingOptions = OpenAiEmbeddingOptions.builder()
-                .model("text-embedding-3-large")
+                .model(EMBEDDING_MODEL)
                 .build();
 
         // 프롬프트

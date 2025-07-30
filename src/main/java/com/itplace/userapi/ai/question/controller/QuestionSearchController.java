@@ -61,5 +61,4 @@ public class QuestionSearchController {
         RecommendationResponse stores = questionRecommendationService.recommendByQuestion(question, lat, lng);
         return ResponseEntity.ok(stores);
     }
-
 }

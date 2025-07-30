@@ -28,7 +28,7 @@ public class StoreController {
         List<StoreDetailDto> stores = storeService.findNearby(lat, lng, radiusMeters);
         ApiResponse<?> body = ApiResponse.of(StoreCode.STORE_LIST_SUCCESS, stores);
 
-        return ResponseEntity.status(body.getStatus()).body(body);
+        return new ResponseEntity<>(body, body.getStatus());
     }
 
     // 사용자 위치 기반 특정 카테고리 지점 목록
@@ -42,7 +42,7 @@ public class StoreController {
         List<StoreDetailDto> stores = storeService.findNearbyByCategory(lat, lng, radiusMeters, category);
         ApiResponse<?> body = ApiResponse.of(StoreCode.STORE_LIST_SUCCESS, stores);
 
-        return ResponseEntity.status(body.getStatus()).body(body);
+        return new ResponseEntity<>(body, body.getStatus());
     }
 
     // 사용자 위치 기반 키워드 검색한 지점 목록
@@ -56,7 +56,7 @@ public class StoreController {
         List<StoreDetailDto> stores = storeService.findNearbyByKeyword(lat, lng, category, keyword);
         ApiResponse<?> body = ApiResponse.of(StoreCode.STORE_LIST_SUCCESS, stores);
 
-        return ResponseEntity.status(body.getStatus()).body(body);
+        return new ResponseEntity<>(body, body.getStatus());
     }
 
     @GetMapping("/nearby/itplace-ai")

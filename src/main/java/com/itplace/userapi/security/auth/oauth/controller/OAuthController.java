@@ -42,7 +42,8 @@ public class OAuthController {
     ) {
         OAuthResult result = oAuthService.signUpWithOAuth(tempToken, request);
         cookieUtil.setTokensToCookie(httpServletResponse, result.getAccessToken(), result.getRefreshToken());
-        return ResponseEntity.ok(ApiResponse.of(SecurityCode.LOGIN_SUCCESS, result.getLoginResponse()));
+        ApiResponse<LoginResponse> body = ApiResponse.of(SecurityCode.LOGIN_SUCCESS, result.getLoginResponse());
+        return new ResponseEntity<>(body, body.getStatus());
     }
 
     /**
@@ -56,7 +57,8 @@ public class OAuthController {
     ) {
         OAuthResult result = oAuthService.linkOAuthAccount(tempToken, request);
         cookieUtil.setTokensToCookie(httpServletResponse, result.getAccessToken(), result.getRefreshToken());
-        return ResponseEntity.ok(ApiResponse.of(SecurityCode.LOGIN_SUCCESS, result.getLoginResponse()));
+        ApiResponse<LoginResponse> body = ApiResponse.of(SecurityCode.LOGIN_SUCCESS, result.getLoginResponse());
+        return new ResponseEntity<>(body, body.getStatus());
     }
 
     @GetMapping("/result")

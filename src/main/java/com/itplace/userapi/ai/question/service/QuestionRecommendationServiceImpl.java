@@ -19,6 +19,12 @@ public class QuestionRecommendationServiceImpl implements QuestionRecommendation
     private final EmbeddingService embeddingService;
     private final ElasticsearchClient esClient;
     private final StoreService storeService;
+
+    public List<StoreDetailDto> recommendByQuestion(String question, double lat, double lng) throws Exception {
+        // 1. 사용자 질문 임베딩
+        List<Float> embedding = embeddingService.embed(question);
+
+        // 2. ES에서 top1 검색
     private final OpenAIService openAIService;
 
     public RecommendationResponse recommendByQuestion(String question, double lat, double lng) throws Exception {
@@ -39,6 +45,15 @@ public class QuestionRecommendationServiceImpl implements QuestionRecommendation
 
         List<Hit<Map>> hits = response.hits().hits();
         if (hits.isEmpty()) {
+            throw new IllegalStateException("관련된 질문 카테고리를 찾을 수 없습니다.");
+        }
+
+        // 3. top1 문서에서 category 추출
+        Map<String, Object> topHit = hits.get(0).source();
+        String category = (String) topHit.get("category");
+
+        // 4. storeService를 통해 사용자 위치 기준 제휴처 조회
+        return storeService.findNearbyByKeyword(lat, lng, category, null);
             throw new IllegalStateException("관련된 질문을 찾을 수 없습니다.");
         }
 

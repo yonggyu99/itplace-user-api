@@ -26,17 +26,13 @@ public class EmailController {
     public ResponseEntity<ApiResponse<Void>> send(@RequestBody @Validated EmailVerificationRequest request) {
         emailService.send(request);
         ApiResponse<Void> body = ApiResponse.ok(SecurityCode.EMAIL_SEND_SUCCESS);
-        return ResponseEntity
-                .status(body.getStatus())
-                .body(body);
+        return new ResponseEntity<>(body, body.getStatus());
     }
 
     @PostMapping("/email/confirm")
     public ResponseEntity<ApiResponse<Void>> confirm(@RequestBody @Validated EmailConfirmRequest request) {
         emailService.confirm(request);
         ApiResponse<Void> body = ApiResponse.ok(SecurityCode.EMAIL_VERIFICATION_SUCCESS);
-        return ResponseEntity
-                .status(body.getStatus())
-                .body(body);
+        return new ResponseEntity<>(body, body.getStatus());
     }
 }

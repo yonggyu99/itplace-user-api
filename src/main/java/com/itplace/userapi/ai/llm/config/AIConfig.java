@@ -9,8 +9,6 @@ import org.springframework.transaction.PlatformTransactionManager;
 
 @Configuration
 public class AIConfig {
-
-    @Bean
     public ChatMemoryRepository chatMemoryRepository(JdbcTemplate jdbcTemplate,
                                                      PlatformTransactionManager transactionManager) {
         return JdbcChatMemoryRepository.builder()
@@ -18,5 +16,4 @@ public class AIConfig {
                 .transactionManager(transactionManager)
                 .build();
     }
-
 }

@@ -22,12 +22,11 @@ public class MembershipUsageController {
     @PostMapping("/use")
     public ResponseEntity<ApiResponse<Void>> useMembership(
             @AuthenticationPrincipal PrincipalDetails principalDetails,
-            @RequestBody MembershipUseRequest request) {
+            @RequestBody MembershipUseRequest request
+    ) {
         membershipHistoryService.useMembership(principalDetails.getUserId(), request.getBenefitId(),
                 request.getAmount());
         ApiResponse<Void> body = ApiResponse.ok(MembershipHistoryCode.MEMBERSHIP_USE_SUCCESS);
-        return ResponseEntity
-                .status(body.getStatus())
-                .body(body);
+        return new ResponseEntity<>(body, body.getStatus());
     }
 }
