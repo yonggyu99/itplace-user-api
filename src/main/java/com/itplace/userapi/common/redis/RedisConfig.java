@@ -5,6 +5,8 @@ import org.springframework.boot.autoconfigure.data.redis.RedisProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.data.redis.connection.RedisConnectionFactory;
+import org.springframework.data.redis.connection.RedisStandaloneConfiguration;
+import org.springframework.data.redis.connection.lettuce.LettuceClientConfiguration;
 import org.springframework.data.redis.connection.lettuce.LettuceConnectionFactory;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.repository.configuration.EnableRedisRepositories;
@@ -18,10 +20,21 @@ public class RedisConfig {
     // RedisProperties 객체 생성
     private final RedisProperties redisProperties;
 
-    @Bean // 스프링 컨테이너에 RedisConnectionFactory 빈 등록
-    public RedisConnectionFactory redisConnectionFactory(){
-        // LettuceConnectionFactory를 사용하여 Redis 연결 팩토리 생성, 호스트와 포트 정보를 사용
-        return new LettuceConnectionFactory(redisProperties.getHost(), redisProperties.getPort());
+    @Bean
+    public RedisConnectionFactory redisConnectionFactory() {
+        // 1) Standalone 설정에 호스트/포트, 비밀번호(AUTH) 추가
+        RedisStandaloneConfiguration serverConfig =
+                new RedisStandaloneConfiguration();
+        serverConfig.setHostName(redisProperties.getHost());
+        serverConfig.setPort(redisProperties.getPort());
+
+        // 2) Lettuce 클라이언트에 SSL/TLS 활성화
+        LettuceClientConfiguration clientConfig =
+                LettuceClientConfiguration.builder()
+                        .useSsl()
+                        .build();
+
+        return new LettuceConnectionFactory(serverConfig, clientConfig);
     }
 
     @Bean
