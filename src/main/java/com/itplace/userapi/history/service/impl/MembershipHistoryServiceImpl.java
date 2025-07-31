@@ -149,7 +149,7 @@ public class MembershipHistoryServiceImpl implements MembershipHistoryService {
         // tierBenefit 존재 여부 체크
         TierBenefit tierBenefit = tierBenefitRepository.findById(new TierBenefitId(membershipGrade, benefitId))
                 .orElseGet(() -> {
-                    // VIP/VVIP인데 tierBenefit.grade가 VIP콕일 때 fallback 조회
+                    // VIP/VVIP인데 tierBenefit.grade가 VIP콕일 때 조회
                     if ((membershipGrade == Grade.VIP || membershipGrade == Grade.VVIP)
                             && benefit.getMainCategory() == MainCategory.VIP_COCK) {
                         return tierBenefitRepository.findById(new TierBenefitId(Grade.VIP콕, benefitId))

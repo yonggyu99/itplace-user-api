@@ -49,6 +49,8 @@ jobs:
       # 3. Gradle 빌드
       - name: Build with Gradle
         run: |
+          mkdir -p ./src/main/resources/prompt
+          
           echo ${{secrets.APPLICATION_SECRET}} | base64 --decode > ./src/main/resources/application-secret.yml
           echo ${{secrets.CATEGORIZE_PROMPT}} | base64 --decode > ./src/main/resources/prompt/categorizePrompt.txt
           echo ${{secrets.REASON_PROMPT}} | base64 --decode > ./src/main/resources/prompt/reasonPrompt.txt

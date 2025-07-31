@@ -154,7 +154,7 @@ public class BenefitServiceImpl implements BenefitService {
         log.info("[benefits size] found: {}", benefits.size());
 
         if (benefits.isEmpty()) {
-            throw new BenefitNotFoundException(BenefitCode.BENEFIT_NOT_FOUND);
+            throw new BenefitNotFoundException(BenefitCode.BENEFIT_DETAIL_NOT_FOUND);
         }
 
         Benefit selectedBenefit;
