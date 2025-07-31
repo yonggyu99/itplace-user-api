@@ -36,7 +36,6 @@ out/
 ### VS Code ###
 .vscode/
 
-*Prompt.txt
 application-secret.yml
 application-secret-for-deploy.yml
 settings.json
