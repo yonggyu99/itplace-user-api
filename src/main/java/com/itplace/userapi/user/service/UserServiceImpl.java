@@ -51,6 +51,7 @@ public class UserServiceImpl implements UserService {
     private static final String RESET_PASSWORD_VALUE = "true";
 
     @Override
+    @Transactional(readOnly = true)
     public UserInfoResponse getUserInfo(Long userId) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new UserNotFoundException(SecurityCode.USER_NOT_FOUND));
@@ -74,6 +75,7 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
+    @Transactional(readOnly = true)
     public FindEmailResponse findEmailConfirm(FindEmailConfirmRequest request) {
         if (otpUtil.validateSmsOtp(request.getPhoneNumber(), request.getVerificationCode())) {
             log.info("SMS 인증 성공");
@@ -105,6 +107,7 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
+    @Transactional
     public void resetPassword(ResetPasswordRequest request) {
         String resetPasswordToken = request.getResetPasswordToken();
         String value = redisTemplate.opsForValue().get(RESET_PASSWORD_PREFIX + resetPasswordToken);
@@ -135,8 +138,8 @@ public class UserServiceImpl implements UserService {
         }
     }
 
-    @Transactional
     @Override
+    @Transactional
     public void withdraw(Long userId, String password) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new UserNotFoundException(UserCode.USER_NOT_FOUND));
@@ -152,6 +155,7 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
+    @Transactional(readOnly = true)
     public CheckUplusDataResponse checkUplusData(PrincipalDetails principalDetails) {
         User user = userRepository.findById(principalDetails.getUserId())
                 .orElseThrow(() -> new UserNotFoundException(SecurityCode.USER_NOT_FOUND));

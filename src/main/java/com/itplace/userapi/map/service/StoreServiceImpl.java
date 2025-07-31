@@ -32,6 +32,7 @@ public class StoreServiceImpl implements StoreService {
     private final PartnerRepository partnerRepository;
 
     @Override
+    @Transactional(readOnly = true)
     public List<StoreDetailDto> findNearby(double lat, double lng, double radiusMeters) {
         // 지구 반지름 (미터)
         double earthRadius = 6378137.0;
@@ -96,6 +97,7 @@ public class StoreServiceImpl implements StoreService {
     }
 
     @Override
+    @Transactional(readOnly = true)
     public List<StoreDetailDto> findNearbyByCategory(double lat, double lng, double radiusMeters, String category) {
         List<StoreDetailDto> allStores = findNearby(lat, lng, radiusMeters);
 
@@ -112,6 +114,7 @@ public class StoreServiceImpl implements StoreService {
     }
 
     @Override
+    @Transactional(readOnly = true)
     public List<StoreDetailDto> findNearbyByKeyword(double lat, double lng, String category,
                                                     String keyword) {
 
@@ -174,6 +177,7 @@ public class StoreServiceImpl implements StoreService {
     }
 
     @Override
+    @Transactional(readOnly = true)
     public List<StoreDetailDto> findNearbyByPartnerName(double lat, double lng, String partnerName) {
         if (partnerName == null || partnerName.isBlank()) {
             throw new StoreKeywordException(StoreCode.PARTNERNAME_REQUEST);

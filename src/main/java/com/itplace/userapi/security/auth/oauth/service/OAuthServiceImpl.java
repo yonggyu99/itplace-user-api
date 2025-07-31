@@ -98,6 +98,7 @@ public class OAuthServiceImpl implements OAuthService {
     }
 
     @Override
+    @Transactional(readOnly = true)
     public LoginResponse result(PrincipalDetails principalDetails) {
         User user = userRepository.findById(principalDetails.getUserId())
                 .orElseThrow(() -> new UserNotFoundException(SecurityCode.USER_NOT_FOUND));
