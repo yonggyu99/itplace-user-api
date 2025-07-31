@@ -20,4 +20,5 @@ public class StoreDto {
     private String postCode;
     private Double longitude;
     private Double latitude;
+    private Boolean hasCoupon;
 }

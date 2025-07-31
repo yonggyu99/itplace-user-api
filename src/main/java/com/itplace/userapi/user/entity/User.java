@@ -68,6 +68,9 @@ public class User extends BaseTimeEntity {
     @Enumerated(EnumType.STRING)
     private Role role;
 
+    @Column(name = "coupon")
+    private int coupon;
+
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
     @Builder.Default
     private List<SocialAccount> socialAccounts = new ArrayList<>();

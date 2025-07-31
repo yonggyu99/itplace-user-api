@@ -1,11 +1,22 @@
 package com.itplace.userapi.map.entity;
 
 import com.itplace.userapi.partner.entity.Partner;
-import jakarta.persistence.*;
-import lombok.*;
-import org.locationtech.jts.geom.Point;
-
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
+import jakarta.persistence.Table;
 import java.math.BigDecimal;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+import org.locationtech.jts.geom.Point;
 
 @Entity
 @Getter
@@ -14,7 +25,7 @@ import java.math.BigDecimal;
 @AllArgsConstructor
 @Builder
 @Table(name = "store")
-public class Store{
+public class Store {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "storeId", updatable = false, nullable = false)
@@ -59,4 +70,8 @@ public class Store{
 
     @Column(name = "location", columnDefinition = "POINT SRID 4326", nullable = false)
     private Point location;
+
+    @Column(name = "hasCoupon")
+    private boolean hasCoupon;
+
 }
