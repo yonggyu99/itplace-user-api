@@ -16,6 +16,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Slf4j
 @Service
@@ -55,6 +56,7 @@ public class SmsServiceImpl implements SmsService {
     }
 
     @Override
+    @Transactional(readOnly = true)
     public SmsConfirmResponse confirm(SmsConfirmRequest request) {
         log.info("SmsConfirmRequest: {}", request);
         String phoneNumber = request.getPhoneNumber();

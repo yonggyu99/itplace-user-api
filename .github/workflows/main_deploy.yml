@@ -1,0 +1,98 @@
+name: Build, Push, and Deploy to EC2
+
+on:
+  push:
+    branches: [ "develop" ]
+  pull_request:
+    branches: [ "develop" ]
+
+env:
+  AWS_REGION: ap-northeast-2
+  ECR_REPOSITORY: itplace-app
+  S3_BUCKET_NAME: itplace-codedeploy-artifacts
+  CODEDEPLOY_APP_NAME: itplace-app-codedeploy
+  CODEDEPLOY_DEPLOYMENT_GROUP: itplace-app-dg-bluegreen
+  AWS_ACCOUNT_ID: ${{ secrets.AWS_ACCOUNT_ID }}
+
+permissions:
+  id-token: write
+  contents: read
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Cache Gradle packages
+        uses: actions/cache@v3
+        with:
+          path: |
+            ~/.gradle/caches
+            ~/.gradle/wrapper
+          key: gradle-${{ runner.os }}-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
+          restore-keys: |
+            gradle-${{ runner.os }}-
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v3
+        with:
+          distribution: temurin
+          java-version: 17
+
+      - name: Prepare prompt resources
+        run: |
+          mkdir -p src/main/resources/prompt
+          echo "${{ secrets.CATEGORIZE_PROMPT }}" | base64 --decode > src/main/resources/prompt/categorizePrompt.txt
+          echo "${{ secrets.REASON_PROMPT }}"   | base64 --decode > src/main/resources/prompt/reasonPrompt.txt
+
+      - name: Build JAR with Gradle
+        run: |
+          chmod +x ./gradlew
+          ./gradlew bootJar --no-daemon -x test --parallel --configure-on-demand
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: arn:aws:iam::${{ env.AWS_ACCOUNT_ID }}:role/GitHubActions-OIDC-Role-For-Main-UserAPI
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Login to Amazon ECR
+        id: login-ecr
+        uses: aws-actions/amazon-ecr-login@v2
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Build and push Docker image
+        id: build-image
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          push: true
+          tags: ${{ steps.login-ecr.outputs.registry }}/${{ env.ECR_REPOSITORY }}:${{ github.sha }}
+          platforms: linux/arm64
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+      - name: Create application-secret.yml from GitHub Secret
+        run: |
+          echo "${{ secrets.APPLICATION_SECRET }}" | base64 --decode > application-secret.yml
+
+      - name: Create deployment artifact
+        run: |
+          echo "TAG=${{ github.sha }}" > scripts/image.env
+          zip -r deploy.zip appspec.yml scripts/ application-secret.yml
+
+      - name: Upload artifact to S3
+        run: aws s3 cp deploy.zip s3://${{ env.S3_BUCKET_NAME }}/deploy-${{ github.sha }}.zip
+
+      - name: Create CodeDeploy Deployment
+        run: |
+          aws deploy create-deployment \
+            --application-name ${{ env.CODEDEPLOY_APP_NAME }} \
+            --deployment-group-name ${{ env.CODEDEPLOY_DEPLOYMENT_GROUP }} \
+            --s3-location bucket=${{ env.S3_BUCKET_NAME }},key=deploy-${{ github.sha }}.zip,bundleType=zip \
+            --description "Deployment for commit ${{ github.sha }}" \
+            --file-exists-behavior OVERWRITE

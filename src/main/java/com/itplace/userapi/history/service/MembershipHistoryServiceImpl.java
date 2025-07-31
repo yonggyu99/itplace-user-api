@@ -1,4 +1,4 @@
-package com.itplace.userapi.history.service.impl;
+package com.itplace.userapi.history.service;
 
 import com.itplace.userapi.benefit.BenefitCode;
 import com.itplace.userapi.benefit.dto.response.PagedResponse;
@@ -18,7 +18,6 @@ import com.itplace.userapi.history.dto.MonthlyDiscountResponse;
 import com.itplace.userapi.history.entity.MembershipHistory;
 import com.itplace.userapi.history.exception.InvalidBenefitUsageException;
 import com.itplace.userapi.history.repository.MembershipHistoryRepository;
-import com.itplace.userapi.history.service.MembershipHistoryService;
 import com.itplace.userapi.partner.entity.Partner;
 import com.itplace.userapi.security.exception.UserNotFoundException;
 import com.itplace.userapi.user.UserCode;
@@ -51,6 +50,7 @@ public class MembershipHistoryServiceImpl implements MembershipHistoryService {
     private final TierBenefitRepository tierBenefitRepository;
 
     @Override
+    @Transactional(readOnly = true)
     public PagedResponse<MembershipHistoryResponse> getUserHistory(
             Long userId,
             String keyword,
@@ -97,6 +97,7 @@ public class MembershipHistoryServiceImpl implements MembershipHistoryService {
     }
 
     @Override
+    @Transactional(readOnly = true)
     public MonthlyDiscountResponse getMonthlyDiscountSummary(Long userId) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new UserNotFoundException(UserCode.USER_NOT_FOUND));

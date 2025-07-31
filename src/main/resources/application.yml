@@ -3,11 +3,7 @@ spring:
     active: local
     group:
       local: local, common, secret
-      blue: blue, common, secret
-      green: green, common, secret
-
-server:
-  env: blue
+      aws: aws, common, secret
 
 ---
 
@@ -23,16 +19,14 @@ spring:
             redirect-uri: http://localhost:8080/login/oauth2/code/kakao
 server:
   port: 8080
-  serverAddress: localhost
-
-serverName: local_server
 
 ---
 
 spring:
   config:
+    import: file:/app/application-secret.yml
     activate:
-      on-profile: blue
+      on-profile: aws
   security:
     oauth2:
       client:
@@ -41,27 +35,6 @@ spring:
             redirect-uri: https://user-api.itplace.click/login/oauth2/code/kakao
 server:
   port: 8080
-  serverAddress: 3.34.79.67
-
-serverName: blue_server
-
----
-
-spring:
-  config:
-    activate:
-      on-profile: green
-  security:
-    oauth2:
-      client:
-        registration:
-          kakao:
-            redirect-uri: https://user-api.itplace.click/login/oauth2/code/kakao
-server:
-  port: 8081
-  serverAddress: 3.34.79.67
-
-serverName: green_server
 
 ---
 
@@ -75,7 +48,7 @@ spring:
       ddl-auto: update
       naming:
         physical-strategy: org.hibernate.boot.model.naming.PhysicalNamingStrategyStandardImpl
-    database-platform: org.hibernate.dialect.MySQL8Dialect
+    database-platform: org.hibernate.dialect.MySQLDialect
 
   mail:
     host: smtp.gmail.com
@@ -90,8 +63,27 @@ spring:
 springdoc:
   swagger-ui:
     url: /swagger.yml
+
 logging:
   level:
     org.springframework.web: DEBUG
     org.springframework.web.servlet.DispatcherServlet: DEBUG
     com.fasterxml.jackson.databind: DEBUG
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include:
+          - "health"
+          - "info"
+  endpoint:
+    health:
+      show-details: "always"
+  health:
+    mail:
+      enabled: false
+    elasticsearch:
+      enabled: false
+    redis:
+      enabled: false

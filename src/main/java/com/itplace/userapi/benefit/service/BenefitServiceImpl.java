@@ -1,4 +1,4 @@
-package com.itplace.userapi.benefit.service.impl;
+package com.itplace.userapi.benefit.service;
 
 import com.itplace.userapi.benefit.BenefitCode;
 import com.itplace.userapi.benefit.dto.response.BenefitDetailResponse;
@@ -14,7 +14,6 @@ import com.itplace.userapi.benefit.exception.BenefitNotFoundException;
 import com.itplace.userapi.benefit.exception.BenefitOfflineNotFoundException;
 import com.itplace.userapi.benefit.repository.BenefitRepository;
 import com.itplace.userapi.benefit.repository.TierBenefitRepository;
-import com.itplace.userapi.benefit.service.BenefitService;
 import com.itplace.userapi.favorite.repository.FavoriteRepository;
 import com.itplace.userapi.map.StoreCode;
 import com.itplace.userapi.map.entity.Store;
@@ -33,6 +32,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @RequiredArgsConstructor
@@ -45,6 +45,7 @@ public class BenefitServiceImpl implements BenefitService {
     private final StoreRepository storeRepository;
 
     @Override
+    @Transactional(readOnly = true)
     public PagedResponse<BenefitListResponse> getBenefitList(
             MainCategory mainCategory,
             String category,
@@ -121,6 +122,7 @@ public class BenefitServiceImpl implements BenefitService {
     }
 
     @Override
+    @Transactional(readOnly = true)
     public BenefitDetailResponse getBenefitDetail(Long benefitId) {
         Benefit benefit = benefitRepository.findBenefitWithPartnerById(benefitId)
                 .orElseThrow(() -> new BenefitNotFoundException(BenefitCode.BENEFIT_NOT_FOUND));
@@ -138,6 +140,7 @@ public class BenefitServiceImpl implements BenefitService {
     }
 
     @Override
+    @Transactional(readOnly = true)
     public MapBenefitDetailResponse getMapBenefitDetail(Long storeId, Long partnerId, MainCategory mainCategory,
                                                         Long userId) {
         log.info("[getMapBenefitDetail] storeId: {}, partnerId: {}, mainCategory: {}", storeId, partnerId,
