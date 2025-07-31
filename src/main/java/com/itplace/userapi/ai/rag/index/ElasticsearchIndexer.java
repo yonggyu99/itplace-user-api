@@ -1,13 +1,13 @@
-//package com.itplace.userapi.rag.index;
+//package com.itplace.userapi.ai.rag.index;
 //
 //import co.elastic.clients.elasticsearch.ElasticsearchClient;
+//import com.itplace.userapi.ai.rag.document.BenefitDocument;
+//import com.itplace.userapi.ai.rag.service.ElasticService;
+//import com.itplace.userapi.ai.rag.service.EmbeddingService;
 //import com.itplace.userapi.benefit.entity.Benefit;
 //import com.itplace.userapi.benefit.entity.TierBenefit;
 //import com.itplace.userapi.benefit.repository.BenefitRepository;
 //import com.itplace.userapi.partner.entity.Partner;
-//import com.itplace.userapi.rag.document.BenefitDocument;
-//import com.itplace.userapi.rag.service.ElasticService;
-//import com.itplace.userapi.rag.service.EmbeddingService;
 //import java.util.List;
 //import lombok.RequiredArgsConstructor;
 //import org.springframework.boot.ApplicationArguments;
