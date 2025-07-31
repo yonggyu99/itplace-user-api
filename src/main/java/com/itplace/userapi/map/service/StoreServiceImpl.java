@@ -48,6 +48,7 @@ public class StoreServiceImpl implements StoreService {
         List<Store> stores = storeRepository.findNearbyStores(lat, lng, radiusMeters, minLat, maxLat, minLng, maxLng);
 
         return stores.stream()
+                .limit(150)
                 .map(store -> {
                     Partner partner = store.getPartner();
                     double storeLat = store.getLocation().getY();
