@@ -47,7 +47,7 @@ public class StoreServiceImpl implements StoreService {
         double maxLng = lng + Math.toDegrees(dLng);
 
         List<Store> stores = storeRepository.findNearbyStores(lat, lng, radiusMeters, minLat, maxLat, minLng, maxLng);
-
+        log.info("============store count: {}=============", stores.size());
         if (stores.size() > 150) {
             Collections.shuffle(stores);
         }
