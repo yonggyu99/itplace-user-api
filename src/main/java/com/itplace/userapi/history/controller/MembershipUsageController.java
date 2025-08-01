@@ -24,8 +24,12 @@ public class MembershipUsageController {
             @AuthenticationPrincipal PrincipalDetails principalDetails,
             @RequestBody MembershipUseRequest request
     ) {
-        membershipHistoryService.useMembership(principalDetails.getUserId(), request.getBenefitId(),
-                request.getAmount());
+        membershipHistoryService.useMembership(
+                principalDetails.getUserId(),
+                request.getBenefitId(),
+                request.getAmount(),
+                request.getStoreId()
+        );
         ApiResponse<Void> body = ApiResponse.ok(MembershipHistoryCode.MEMBERSHIP_USE_SUCCESS);
         return new ResponseEntity<>(body, body.getStatus());
     }
