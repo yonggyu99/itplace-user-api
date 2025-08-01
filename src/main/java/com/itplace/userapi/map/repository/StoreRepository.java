@@ -11,14 +11,19 @@ public interface StoreRepository extends JpaRepository<Store, Long> {
 
     @Query(
             value = """
-                    SELECT *,
-                           ST_Distance_Sphere(location, ST_SRID(POINT(:lat, :lng), 4326)) AS distance
+                    SELECT *
                     FROM store
                     WHERE
                       longitude BETWEEN :minLng AND :maxLng
                       AND latitude BETWEEN :minLat AND :maxLat
-                      AND ST_Distance_Sphere(location, ST_SRID(POINT(:lat, :lng), 4326)) <= :radiusMeters
-                    ORDER BY distance
+                      AND ST_Distance_Sphere(
+                            location,
+                            ST_GeomFromText(CONCAT('POINT(', :lng, ' ', :lat, ')'), 4326)
+                          ) <= :radiusMeters
+                    ORDER BY ST_Distance_Sphere(
+                            location,
+                            ST_GeomFromText(CONCAT('POINT(', :lng, ' ', :lat, ')'), 4326)
+                          )
                     """,
             nativeQuery = true
     )
