@@ -66,6 +66,7 @@ public class AuthServiceImpl implements AuthService {
                 .secure(true) // 로컬이 아닐때만 secure
                 .sameSite("None")
                 .httpOnly(true)
+                .domain("itplace.click")
                 .maxAge(jwtUtil.getAccessTokenValidityInMS() / 1000)
                 .build();
         response.addHeader("Set-Cookie", accessTokenCookie.toString());
