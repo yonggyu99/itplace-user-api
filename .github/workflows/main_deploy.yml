@@ -90,26 +90,33 @@ jobs:
 
       - name: Wait for existing CodeDeploy deployment to finish
         run: |
-          # 현재 진행 중인 Active deployment ID 가져오기 (InProgress 또는 Created)
           existing=$(aws deploy list-deployments \
             --application-name "${{ env.CODEDEPLOY_APP_NAME }}" \
             --deployment-group-name "${{ env.CODEDEPLOY_DEPLOYMENT_GROUP }}" \
             --include-only-statuses Created InProgress \
             --query 'deployments[0]' --output text)
-
-          if [ -n "$existing" ] ; then
+          
+          if [[ -z "$existing" || "$existing" == "None" ]]; then
+            echo "진행 중인 배포 없음. 바로 생성합니다."
+          else
             echo "진행 중인 배포가 있음: $existing. 끝날 때까지 대기합니다."
+            max_wait=300
+            interval=5
+            waited=0
             while true; do
               status=$(aws deploy get-deployment --deployment-id "$existing" --query 'deploymentInfo.status' --output text)
               echo "현재 상태: $status"
               if [[ "$status" =~ ^(Succeeded|Failed|Stopped)$ ]]; then
                 break
               fi
-              sleep 5
+              if (( waited >= max_wait )); then
+                echo "대기 시간 초과 ($max_wait 초). 계속 진행합니다."
+                break
+              fi
+              sleep $interval
+              (( waited += interval ))
             done
-            echo "기존 배포가 종료되었습니다. 새 배포 생성 가능."
-          else
-            echo "진행 중인 배포 없음. 바로 생성합니다."
+            echo "기존 배포가 종료되었거나 타임아웃. 새 배포 생성 가능."
           fi
 
       - name: Create CodeDeploy Deployment
