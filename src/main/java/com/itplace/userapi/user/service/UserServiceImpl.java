@@ -177,4 +177,11 @@ public class UserServiceImpl implements UserService {
         user.setBirthday(uplusData.getBirthday());
         user.setMembershipId(uplusData.getMembershipId());
     }
+
+    @Override
+    public Integer getUserCouponCount(Long userId) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new UserNotFoundException(UserCode.USER_NOT_FOUND));
+        return user.getCoupon();
+    }
 }
