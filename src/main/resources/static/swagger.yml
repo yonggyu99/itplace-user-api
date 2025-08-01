@@ -32,6 +32,8 @@ tags:
     description: 멤버십 추천 기능 관련 API
   - name: Question
     description: 사용자 질문 기반 제휴처 제공 API
+  - name: Event
+    description: 이벤트 기능 제공 API
 
 paths:
   # =====================================================
@@ -2625,6 +2627,98 @@ paths:
                 data: null
                 timestamp: "2025-07-30T13:45:22.1029371"
 
+
+  # =====================================================
+  # 이벤트 기능 제공 API
+  # =====================================================
+  /gifts:
+    get:
+      tags:
+       - Event
+      summary: 상품 리스트
+      description: |
+        상품 리스트를 반환합니다.
+      responses:
+        '200':
+          description: 경품 목록을 불러왔습니다
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiResponse'
+              example:
+                data:
+                  - giftName: "[브람스] 루카S 안마의자"
+                  - giftName: "[모즈스웨덴] 와인셀러 와인냉장고 71L (22병)"
+                  - giftName: "[로보락] 2025년 NEW F25 RT 아쿠아청소기"
+                  - giftName: "[쿠쿠전자] W8200 타워형 공기청정기"
+                  - giftName: "[소니] WH-CH520"                    
+                code: "GIFT_LIST"
+                status: "OK"
+                message: "경품 목록를 불러왔습니다."
+                timestamp: "2025-07-30T13:08:37.4218203"
+                
+  /gifts/scratch:
+    post:
+      tags:
+        - Event
+      summary: "쿠폰 긁기 - 당첨 예시, 꽝 예시 다 적어놓았습니다."
+      description: "당첨 결과를 반환합니다. total은 총 50명에게 증정 giftCount는 잔여수량"
+      responses:
+        '200':
+          description: "복권을 성공적으로 긁었습니다."
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiResponse'
+              examples:
+                success:
+                  summary: 당첨 예시
+                  value:
+                    data:
+                      success: true
+                      message: "🎉 [소니] WH-CH520 당첨!"
+                      gift:
+                        giftId: 5
+                        giftName: "[소니] WH-CH520"
+                        giftCount: 47
+                        total: 50
+                        imgUrl: "https://itplacegift.s3.ap-northeast-2.amazonaws.com/sony.jpg"
+                    code: "SCRATCH_SUCCESS"
+                    status: "OK"
+                    message: "복권을 성공적으로 긁었습니다."
+                    timestamp: "2025-08-01T10:44:13.6421078"
+
+                fail:
+                  summary: 꽝 예시
+                  value:
+                    data:
+                      success: false
+                      message: "꽝입니다. 다음 기회를 노려보세요!"
+                      gift: null
+                    code: "SCRATCH_SUCCESS"
+                    status: "OK"
+                    message: "복권을 성공적으로 긁었습니다."
+                    timestamp: "2025-08-01T10:44:13.642"
+
+        '400':
+          description: "쿠폰이 부족하여 복권을 긁을 수 없습니다."
+          content:
+            application/json:
+              schema:
+                 $ref: '#/components/schemas/ApiResponse'
+              example:
+                data:
+                  success: false
+                  message: "별이 부족합니다. 별을 다시 모은 후 시도해주세요."
+                  gift: null
+                code: "COUPON_LACK"
+                status: "BAD_REQUEST"
+                message: "별이 부족합니다."
+                timestamp: "2025-08-01T10:51:08.4131952"
+
+
+
+                
 components:
   schemas:
     # ----------------------------------------------------
