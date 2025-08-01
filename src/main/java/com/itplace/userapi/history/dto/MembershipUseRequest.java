@@ -12,4 +12,5 @@ import lombok.NoArgsConstructor;
 public class MembershipUseRequest {
     private Long benefitId;
     private Integer amount;
+    private Long storeId;
 }
