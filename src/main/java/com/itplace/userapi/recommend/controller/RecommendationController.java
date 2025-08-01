@@ -4,7 +4,7 @@ import com.itplace.userapi.common.ApiResponse;
 import com.itplace.userapi.recommend.dto.Recommendations;
 import com.itplace.userapi.recommend.enums.RecommendationCode;
 import com.itplace.userapi.recommend.exception.NotMembershipUserException;
-import com.itplace.userapi.recommend.service.OpenAiRecommendationService;
+import com.itplace.userapi.recommend.service.RecommendationServiceImpl;
 import com.itplace.userapi.security.auth.common.PrincipalDetails;
 import com.itplace.userapi.user.exception.UserNotFoundException;
 import java.util.List;
@@ -21,7 +21,7 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping("/api/v1/recommendations")
 public class RecommendationController {
 
-    private final OpenAiRecommendationService recommendationService;
+    private final RecommendationServiceImpl recommendationService;
 
     @GetMapping
     public ResponseEntity<ApiResponse<List<Recommendations>>> recommend(
