@@ -15,6 +15,7 @@ import com.itplace.userapi.partner.PartnerCode;
 import com.itplace.userapi.partner.entity.Partner;
 import com.itplace.userapi.partner.exception.PartnerNotFoundException;
 import com.itplace.userapi.partner.repository.PartnerRepository;
+import java.util.Collections;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -46,6 +47,10 @@ public class StoreServiceImpl implements StoreService {
         double maxLng = lng + Math.toDegrees(dLng);
 
         List<Store> stores = storeRepository.findNearbyStores(lat, lng, radiusMeters, minLat, maxLat, minLng, maxLng);
+
+        if (stores.size() > 150) {
+            Collections.shuffle(stores);
+        }
 
         return stores.stream()
                 .limit(150)
