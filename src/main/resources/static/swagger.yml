@@ -1409,6 +1409,42 @@ paths:
                 data: null
                 timestamp: "2025-07-24T09:30:01.123Z"
 
+  /users/coupon:
+    get:
+      tags:
+        - User
+      summary: 사용자 쿠폰 개수 조회
+      description: 현재 로그인된 사용자의 보유 쿠폰 개수를 조회합니다.
+      operationId: getMyCouponCount
+      security:
+        - bearerAuth: [ ]
+      responses:
+        '200':
+          description: 쿠폰 개수 조회 성공
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiResponse'
+              example:
+                code: "COUPON_COUNT_SUCCESS"
+                status: "OK"
+                message: "사용자의 쿠폰 개수 조회에 성공했습니다."
+                data: 3
+                timestamp: "2025-07-24T09:30:00.123Z"
+
+        '404':
+          description: 사용자 정보를 찾을 수 없음
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiResponse'
+              example:
+                code: "USER_NOT_FOUND"
+                status: "NOT_FOUND"
+                message: "사용자 정보를 찾을 수 없습니다."
+                data: null
+                timestamp: "2025-07-24T09:30:01.123Z"
+
   # =====================================================
   # 지도 관련 기능 API
   # =====================================================
@@ -2549,7 +2585,7 @@ paths:
   /questions/recommend:
     get:
       tags:
-       - question
+        - question
       summary: 질문 기반 제휴처 추천
       description: |
         사용자의 질문에 기반하여 유사 질문 카테고리를 분석하고, 해당 카테고리의 주변 제휴처를 추천합니다.  
