@@ -27,4 +27,6 @@ public interface UserService {
     CheckUplusDataResponse checkUplusData(@AuthenticationPrincipal PrincipalDetails principalDetails);
 
     void linkUplusData(@AuthenticationPrincipal PrincipalDetails principalDetails);
+
+    Integer getUserCouponCount(Long userId);
 }

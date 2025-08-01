@@ -18,7 +18,9 @@ public enum UserCode implements BaseCode {
     UPLUS_DATA_LINKED("UPLUS_DATA_LINKED", HttpStatus.OK, "유플러스 데이터가 연동되었습니다."),
     PASSWORD_CHANGE_SUCCESS("PASSWORD_CHANGE_SUCCESS", HttpStatus.OK, "비밀번호 변경에 성공했습니다."),
     USER_WITHDRAWAL_SUCCESS("USER_WITHDRAWAL_SUCCESS", HttpStatus.OK, "회원 탈퇴가 완료되었습니다."),
-    MEMBERSHIP_NOT_FOUND("MEMBERSHIP_NOT_FOUND", HttpStatus.NOT_FOUND, "해당 멤버십 정보를 찾을 수 없습니다.");
+    MEMBERSHIP_NOT_FOUND("MEMBERSHIP_NOT_FOUND", HttpStatus.NOT_FOUND, "해당 멤버십 정보를 찾을 수 없습니다."),
+
+    COUPON_COUNT_SUCCESS("COUPON_COUNT_SUCCESS", HttpStatus.OK, "사용자의 쿠폰 개수 조회에 성공했습니다.");
 
     private final String code;
     private final HttpStatus status;
