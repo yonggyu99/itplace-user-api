@@ -43,6 +43,7 @@ public class SecurityConfig {
     private final ObjectMapper objectMapper;
     private final CookieUtil cookieUtil;
     private final JWTUtil jwtUtil;
+    private final JWTFilter jwtFilter;
 
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http, AuthenticationManager authenticationManager) throws Exception {
@@ -102,7 +103,7 @@ public class SecurityConfig {
 
         http
                 .addFilterAt(loginFilter, UsernamePasswordAuthenticationFilter.class)
-                .addFilterBefore(new JWTFilter(jwtUtil), LoginFilter.class);
+                .addFilterBefore(jwtFilter, LoginFilter.class);
 
         // 세션 설정 : STATELESS
         http
