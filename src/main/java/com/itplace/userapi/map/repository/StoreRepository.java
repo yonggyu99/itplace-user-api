@@ -9,16 +9,22 @@ import org.springframework.data.jpa.repository.Query;
 
 public interface StoreRepository extends JpaRepository<Store, Long> {
 
-    @Query(value = """
-            SELECT
-                *, ST_Distance_Sphere(location, POINT(:lng, :lat)) AS distance
-            FROM store
-            WHERE
-                latitude BETWEEN :minLat AND :maxLat
-                AND longitude BETWEEN :minLng AND :maxLng
-                AND ST_Distance_Sphere(location, POINT(:lng, :lat)) <= :radiusMeters
-            ORDER BY distance
-            """, nativeQuery = true)
+    @Query(
+            value = """
+                    SELECT *,
+                           ST_Distance_Sphere(location, ST_SRID(POINT(:lng, :lat), 4326)) AS distance
+                    FROM store
+                    WHERE
+                      longitude BETWEEN :minLng AND :maxLng
+                      AND latitude BETWEEN :minLat AND :maxLat
+                      AND ST_Distance_Sphere(
+                            location,
+                            ST_SRID(POINT(:lng, :lat), 4326)
+                          ) <= :radiusMeters
+                    ORDER BY distance
+                    """,
+            nativeQuery = true
+    )
     List<Store> findNearbyStores(
             @Param("lng") double lng,
             @Param("lat") double lat,
