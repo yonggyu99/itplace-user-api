@@ -48,12 +48,12 @@ public class StoreServiceImpl implements StoreService {
 
         List<Store> stores = storeRepository.findNearbyStores(lat, lng, radiusMeters, minLat, maxLat, minLng, maxLng);
 
-        if (stores.size() > 150) {
+        if (stores.size() > 300) {
             Collections.shuffle(stores);
         }
 
         return stores.stream()
-                .limit(150)
+                .limit(300)
                 .map(store -> {
                     Partner partner = store.getPartner();
                     double storeLat = store.getLocation().getY();
