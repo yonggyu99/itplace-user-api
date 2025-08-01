@@ -2670,7 +2670,7 @@ paths:
   /gifts:
     get:
       tags:
-       - Event
+        - Event
       summary: 상품 리스트
       description: |
         상품 리스트를 반환합니다.
@@ -2687,12 +2687,12 @@ paths:
                   - giftName: "[모즈스웨덴] 와인셀러 와인냉장고 71L (22병)"
                   - giftName: "[로보락] 2025년 NEW F25 RT 아쿠아청소기"
                   - giftName: "[쿠쿠전자] W8200 타워형 공기청정기"
-                  - giftName: "[소니] WH-CH520"                    
+                  - giftName: "[소니] WH-CH520"
                 code: "GIFT_LIST"
                 status: "OK"
                 message: "경품 목록를 불러왔습니다."
                 timestamp: "2025-07-30T13:08:37.4218203"
-                
+
   /gifts/scratch:
     post:
       tags:
@@ -2741,7 +2741,7 @@ paths:
           content:
             application/json:
               schema:
-                 $ref: '#/components/schemas/ApiResponse'
+                $ref: '#/components/schemas/ApiResponse'
               example:
                 data:
                   success: false
@@ -2752,9 +2752,65 @@ paths:
                 message: "별이 부족합니다."
                 timestamp: "2025-08-01T10:51:08.4131952"
 
+  /gifts/history:
+    get:
+      tags:
+        - Event
+      summary: 쿠폰 사용 이력 조회
+      description: 사용자의 쿠폰 사용 이력을 조회합니다. 타입 필터를 통해 성공/실패 결과만 조회할 수 있습니다.
+      parameters:
+        - name: type
+          in: query
+          description: 결과 타입 필터
+          required: false
+          schema:
+            type: string
+          example: SUCCESS
+      security:
+        - bearerAuth: [ ]
+      responses:
+        '200':
+          description: 쿠폰 사용 이력 조회 성공
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiResponse'
+              example:
+                data:
+                  - userId: 1633
+                    historyId: 1
+                    giftName: "[브람스] 루카S 안마의자"
+                    result: "FAIL"
+                    usedDate: "2025-07-31"
+                  - userId: 1633
+                    historyId: 2
+                    giftName: "[로보락] 2025년 NEW F25 RT 아쿠아청소기"
+                    result: "SUCCESS"
+                    usedDate: "2025-08-01"
+                code: "COUPON_HISTORY_SUCCESS"
+                status: "OK"
+                message: "쿠폰 사용이력을 성공적으로 조회했습니다."
+                timestamp: "2025-08-01T13:40:07.235427"
+        '400':
+          description: 잘못된 결과 타입
+          content:
+            application/json:
+              example:
+                code: "INVALID_RESULT_TYPE"
+                status: "BAD_REQUEST"
+                message: "유효하지 않은 결과 타입입니다."
+                timestamp: "2025-08-01T13:40:07.235427"
+        '404':
+          description: 사용자를 찾을 수 없음
+          content:
+            application/json:
+              example:
+                code: "USER_NOT_FOUND"
+                status: "NOT_FOUND"
+                message: "사용자를 찾을 수 없습니다."
+                timestamp: "2025-08-01T13:40:07.235427"
 
 
-                
 components:
   schemas:
     # ----------------------------------------------------
@@ -3544,3 +3600,31 @@ components:
           type: string
           format: uri
           example: https://itplacepartners.s3.ap-northeast-2.amazonaws.com/img/vips.png
+
+    HistoryResponse:
+      type: object
+      properties:
+        userId:
+          type: integer
+          format: int64
+          description: 사용자 ID
+          example: 1633
+        historyId:
+          type: integer
+          format: int64
+          description: 이력 ID
+          example: 1
+        giftName:
+          type: string
+          description: 선물 이름
+          example: "[브람스] 루카S 안마의자"
+        result:
+          type: string
+          enum: [ SUCCESS, FAIL ]
+          description: 쿠폰 사용 결과
+          example: "FAIL"
+        usedDate:
+          type: string
+          format: date
+          description: 사용 날짜
+          example: "2025-07-31"
