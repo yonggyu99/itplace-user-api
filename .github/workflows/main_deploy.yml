@@ -88,6 +88,30 @@ jobs:
       - name: Upload artifact to S3
         run: aws s3 cp deploy.zip s3://${{ env.S3_BUCKET_NAME }}/deploy-${{ github.sha }}.zip
 
+      - name: Wait for existing CodeDeploy deployment to finish
+        run: |
+          # 현재 진행 중인 Active deployment ID 가져오기 (InProgress 또는 Created)
+          existing=$(aws deploy list-deployments \
+            --application-name "${{ env.CODEDEPLOY_APP_NAME }}" \
+            --deployment-group-name "${{ env.CODEDEPLOY_DEPLOYMENT_GROUP }}" \
+            --include-only-statuses Created InProgress \
+            --query 'deployments[0]' --output text)
+
+          if [ -n "$existing" ] ; then
+            echo "진행 중인 배포가 있음: $existing. 끝날 때까지 대기합니다."
+            while true; do
+              status=$(aws deploy get-deployment --deployment-id "$existing" --query 'deploymentInfo.status' --output text)
+              echo "현재 상태: $status"
+              if [[ "$status" =~ ^(Succeeded|Failed|Stopped)$ ]]; then
+                break
+              fi
+              sleep 5
+            done
+            echo "기존 배포가 종료되었습니다. 새 배포 생성 가능."
+          else
+            echo "진행 중인 배포 없음. 바로 생성합니다."
+          fi
+
       - name: Create CodeDeploy Deployment
         run: |
           aws deploy create-deployment \
