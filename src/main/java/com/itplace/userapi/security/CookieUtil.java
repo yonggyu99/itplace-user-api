@@ -36,9 +36,12 @@ public class CookieUtil {
     }
 
     public void expireCookie(HttpServletResponse response, String category) {
-        ResponseCookie expiredCookie = ResponseCookie.from(category, null)
+        ResponseCookie expiredCookie = ResponseCookie.from(category, "")
                 .path("/")
-                .maxAge(0) // 만료 시간을 0으로 설정
+                .domain("itplace.click")
+                .secure(true)
+                .httpOnly(true)
+                .maxAge(0)
                 .build();
         response.addHeader("Set-Cookie", expiredCookie.toString());
     }
