@@ -1,5 +1,6 @@
 package com.itplace.userapi.recommend.service;
 
+
 import com.itplace.userapi.benefit.entity.Benefit;
 import com.itplace.userapi.benefit.repository.BenefitRepository;
 import com.itplace.userapi.recommend.domain.UserFeature;
@@ -8,34 +9,32 @@ import com.itplace.userapi.recommend.dto.Recommendations;
 import com.itplace.userapi.recommend.entity.Recommendation;
 import com.itplace.userapi.recommend.mapper.RecommendationMapper;
 import com.itplace.userapi.recommend.repository.RecommendationRepository;
-import com.itplace.userapi.recommend.strategy.RankingStrategy;
-import com.itplace.userapi.recommend.strategy.RetrievalStrategy;
 import com.itplace.userapi.security.SecurityCode;
-import com.itplace.userapi.security.exception.UserNotFoundException;
 import com.itplace.userapi.user.entity.User;
+import com.itplace.userapi.user.exception.UserNotFoundException;
 import com.itplace.userapi.user.repository.UserRepository;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Service;
 
+@Service
 @RequiredArgsConstructor
-public abstract class AbstractRecommendationService {
+public class RecommendationServiceImpl implements RecommendationService {
     private static final int EXPIRED_DAYS = 3;
-    protected final UserFeatureService ufService;
-    protected final RetrievalStrategy retrievalStrategy;
-    protected final RankingStrategy rankingStrategy;
+
+    private final UserFeatureService userFeatureService;
+    private final OpenAIService aiService;
     private final RecommendationRepository recommendationRepository;
     private final UserRepository userRepository;
     private final BenefitRepository benefitRepository;
 
-
     public List<Recommendations> recommend(Long userId, int topK) throws Exception {
+        LocalDateTime threshold = LocalDateTime.now().minusDays(EXPIRED_DAYS); // 3일 기준으로 추천 갱신
 
-        LocalDateTime threshold = LocalDateTime.now().minusDays(EXPIRED_DAYS);
-
+        // 최근 추천 기록 있으면 캐시된 추천 반환
         LocalDate latestRecommendationDate = recommendationRepository.findLatestRecommendationDate(userId, threshold);
-
         if (latestRecommendationDate != null) {
             List<Recommendation> saved = recommendationRepository
                     .findByUserIdAndCreatedDate(userId, latestRecommendationDate);
@@ -44,13 +43,16 @@ public abstract class AbstractRecommendationService {
             }
         }
 
-        // 사용자 피처 추출
-        UserFeature uf = ufService.loadUserFeature(userId);
-        // 추천 리스트
-        List<Candidate> cands = retrievalStrategy.retrieve(uf, 50);
-        // 재랭킹 및 추천 이유 생성
-        List<Recommendations> recommendations = rankingStrategy.rank(uf, cands, topK);
+        // 사용자 성향 정보 로딩 (멤버십 사용 내역 + 행동 로그 반영)
+        UserFeature uf = userFeatureService.loadUserFeature(userId);
 
+        // 벡터 검색 기반 추천 후보
+        List<Candidate> candidates = aiService.vectorSearch(uf, 50);
+
+        // 재랭킹 및 이유 생성
+        List<Recommendations> recommendations = aiService.rerankAndExplain(uf, candidates, topK);
+
+        // 저장
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new UserNotFoundException(SecurityCode.USER_NOT_FOUND));
 
@@ -67,4 +69,6 @@ public abstract class AbstractRecommendationService {
 
         return recommendations;
     }
+
 }
+
