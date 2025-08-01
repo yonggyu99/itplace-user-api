@@ -11,7 +11,11 @@ public interface StoreRepository extends JpaRepository<Store, Long> {
 
     @Query(
             value = """
-                    SELECT *
+                    SELECT *,
+                           ST_Distance_Sphere(
+                             location,
+                             ST_GeomFromText(CONCAT('POINT(', :lng, ' ', :lat, ')'), 4326)
+                           ) AS distance
                     FROM store
                     WHERE
                       longitude BETWEEN :minLng AND :maxLng
@@ -20,17 +24,18 @@ public interface StoreRepository extends JpaRepository<Store, Long> {
                             location,
                             ST_GeomFromText(CONCAT('POINT(', :lng, ' ', :lat, ')'), 4326)
                           ) <= :radiusMeters
-                    ORDER BY ST_Distance_Sphere(
-                            location,
-                            ST_GeomFromText(CONCAT('POINT(', :lng, ' ', :lat, ')'), 4326)
-                          )
+                    ORDER BY distance
                     """,
             nativeQuery = true
     )
     List<Store> findNearbyStores(
-            @Param("lng") double lng, @Param("lat") double lat, @Param("radiusMeters") double radiusMeters,
-            @Param("minLat") double minLat, @Param("maxLat") double maxLat,
-            @Param("minLng") double minLng, @Param("maxLng") double maxLng
+            @Param("lng") double lng,
+            @Param("lat") double lat,
+            @Param("radiusMeters") double radiusMeters,
+            @Param("minLat") double minLat,
+            @Param("maxLat") double maxLat,
+            @Param("minLng") double minLng,
+            @Param("maxLng") double maxLng
     );
 
     @Query(
