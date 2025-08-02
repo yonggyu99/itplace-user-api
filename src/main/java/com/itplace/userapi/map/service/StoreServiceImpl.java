@@ -48,25 +48,9 @@ public class StoreServiceImpl implements StoreService {
         double maxLat = lat + Math.toDegrees(dLat);
         double minLng = lng - Math.toDegrees(dLng);
         double maxLng = lng + Math.toDegrees(dLng);
-
-        List<Long> allStoreIds = storeRepository.findNearbyStoreIds(lng, lat, radiusMeters);
-        log.info("============ 조회된 전체 store ID 개수: {} =============", allStoreIds.size());
-
-        if (allStoreIds.isEmpty()) {
-            return Collections.emptyList();
-        }
-
-        // 2. 150개가 넘으면 ID 리스트를 무작위로 섞어서 150개만 선택합니다.
-        List<Long> selectedStoreIds;
-        if (allStoreIds.size() > 150) {
-            Collections.shuffle(allStoreIds); // ID 리스트를 무작위로 섞습니다.
-            selectedStoreIds = allStoreIds.subList(0, 150);
-        } else {
-            selectedStoreIds = allStoreIds;
-        }
-
-        // 3. 선택된 150개의 ID로 Store 상세 정보를 한 번에 조회합니다.
-        List<Store> limitedStores = storeRepository.findAllById(selectedStoreIds);
+        // 1. 조건에 맞는 Store 목록을 모두 조회합니다.
+        List<Store> limitedStores = storeRepository.findNearbyStoresRandomly(lat, lng, radiusMeters);
+        log.info("============ DB에서 랜덤 샘플링된 store 개수: {} =============", limitedStores.size());
 
         // --- (이하 N+1 문제 해결 로직) ---
 
