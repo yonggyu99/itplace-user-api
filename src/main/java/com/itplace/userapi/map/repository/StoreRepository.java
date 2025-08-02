@@ -3,59 +3,11 @@ package com.itplace.userapi.map.repository;
 import com.itplace.userapi.map.entity.Store;
 import io.lettuce.core.dynamic.annotation.Param;
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 
 public interface StoreRepository extends JpaRepository<Store, Long> {
-
-    @Query(
-            value = """
-                    SELECT MIN(storeId) as minId, MAX(storeId) as maxId, COUNT(storeId) as count
-                    FROM store
-                    WHERE ST_Contains(ST_Buffer(ST_SRID(POINT(:lng, :lat), 4326), :radiusMeters), location)
-                    """,
-            nativeQuery = true
-    )
-    Map<String, Long> getStoreIdRangeAndCount(
-            @Param("lng") double lng,
-            @Param("lat") double lat,
-            @Param("radiusMeters") double radiusMeters
-    );
-
-    @Query(
-            value = """
-                    SELECT s.* FROM store s
-                    WHERE s.storeId IN (:storeIds)
-                    AND ST_Contains(ST_Buffer(ST_SRID(POINT(:lng, :lat), 4326), :radiusMeters), location)
-                    LIMIT 150
-                    """,
-            nativeQuery = true
-    )
-    List<Store> findStoresByIdsInLocation(
-            @Param("storeIds") List<Long> storeIds,
-            @Param("lng") double lng,
-            @Param("lat") double lat,
-            @Param("radiusMeters") double radiusMeters
-    );
-
-    @Query(
-            value = """
-                    SELECT s.*
-                    FROM store s
-                    WHERE
-                      ST_Contains(ST_Buffer(ST_SRID(POINT(:lng, :lat), 4326), :radiusMeters), location)
-                    ORDER BY ST_Distance_Sphere(location, ST_SRID(POINT(:lng, :lat), 4326))
-                    LIMIT 150
-                    """,
-            nativeQuery = true
-    )
-    List<Store> findNearbyStoresByDistance(
-            @Param("lng") double lng,
-            @Param("lat") double lat,
-            @Param("radiusMeters") double radiusMeters
-    );
 
     @Query(
             value = """
