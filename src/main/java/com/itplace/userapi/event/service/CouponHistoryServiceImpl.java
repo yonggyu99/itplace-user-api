@@ -35,7 +35,7 @@ public class CouponHistoryServiceImpl implements CouponHistoryService {
                     .map(history -> new HistoryResponse(
                             user.getId(),
                             history.getHistoryId(),
-                            history.getGift().getGiftName(),
+                            history.getGift() != null ? history.getGift().getGiftName() : null,
                             history.getResult(),
                             history.getUsedDate()
                     )).toList();
@@ -53,7 +53,7 @@ public class CouponHistoryServiceImpl implements CouponHistoryService {
                 .map(history -> new HistoryResponse(
                         user.getId(),
                         history.getHistoryId(),
-                        history.getGift().getGiftName(),
+                        history.getGift() != null ? history.getGift().getGiftName() : null,
                         history.getResult(),
                         history.getUsedDate()
                 )).toList();
