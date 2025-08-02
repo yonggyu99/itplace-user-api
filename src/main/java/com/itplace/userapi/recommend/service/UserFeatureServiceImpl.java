@@ -41,8 +41,8 @@ public class UserFeatureServiceImpl implements UserFeatureService {
                 .orElseThrow(() -> new UserNotFoundException(SecurityCode.USER_NOT_FOUND));
         String membershipId = user.getMembershipId();
 
-        // 로그 기반 정보 수집
-        List<LogScoreResult> logScores = logRepository.aggregateUserLogScores(userId, 10);
+        // 로그 기반 정보 수집 (클릭,상세,검색)
+        List<LogScoreResult> logScores = logRepository.aggregateUserLogScores(userId, 5);
         Map<Long, Integer> logBenefitScores = logScores.stream()
                 .filter(score -> score.getBenefitId() != null)
                 .collect(Collectors.toMap(
@@ -57,7 +57,7 @@ public class UserFeatureServiceImpl implements UserFeatureService {
                 .limit(5)
                 .toList();
 
-        // 콜드 스타트
+        // 콜드 스타트 (멤버십 이용 내역 X)
         if (membershipId == null || membershipId.isBlank()) {
             return UserFeature.builder()
                     .userId(userId)

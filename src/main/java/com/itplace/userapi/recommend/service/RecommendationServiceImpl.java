@@ -43,12 +43,11 @@ public class RecommendationServiceImpl implements RecommendationService {
             }
         }
 
-        // 사용자 성향 정보 로딩 (멤버십 사용 내역 + 행동 로그 반영)
+        // 사용자 성향 정보 로딩
         UserFeature uf = userFeatureService.loadUserFeature(userId);
 
         // 벡터 검색 기반 추천 후보
         List<Candidate> candidates = aiService.vectorSearch(uf, 50);
-
         // 재랭킹 및 이유 생성
         List<Recommendations> recommendations = aiService.rerankAndExplain(uf, candidates, topK);
 

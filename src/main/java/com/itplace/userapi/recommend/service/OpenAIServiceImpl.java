@@ -114,8 +114,6 @@ public class OpenAIServiceImpl implements OpenAIService {
                 items,
                 topK);
 
-//        System.out.println("<UNK> <UNK>: " + prompt);
-
         List<Map<String, String>> messages = List.of(
                 Map.of(
                         "role", "system",
@@ -187,4 +185,3 @@ public class OpenAIServiceImpl implements OpenAIService {
 
     }
 }
-
