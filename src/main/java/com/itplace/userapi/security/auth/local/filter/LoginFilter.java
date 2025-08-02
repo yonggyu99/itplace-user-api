@@ -87,11 +87,6 @@ public class LoginFilter extends UsernamePasswordAuthenticationFilter {
         Long refreshTokenValidityInMS = jwtUtil.getRefreshTokenValidityInMS();
         redisTemplate.opsForValue().set(key, refreshToken, refreshTokenValidityInMS, TimeUnit.MILLISECONDS);
 
-//        response.addHeader("Authorization", "Bearer " + accessToken);
-//        response.addHeader("Authorization_Refresh", "Bearer " + refreshToken);
-//        response.addCookie(createAccessTokenCookie(accessToken));
-//        response.addCookie(createRefreshTokenCookie(refreshToken));
-
         cookieUtil.setTokensToCookie(response, accessToken, refreshToken);
 
         response.setContentType("application/json;charset=UTF-8");
