@@ -16,6 +16,7 @@ import com.itplace.userapi.partner.PartnerCode;
 import com.itplace.userapi.partner.entity.Partner;
 import com.itplace.userapi.partner.exception.PartnerNotFoundException;
 import com.itplace.userapi.partner.repository.PartnerRepository;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -48,9 +49,47 @@ public class StoreServiceImpl implements StoreService {
         double maxLat = lat + Math.toDegrees(dLat);
         double minLng = lng - Math.toDegrees(dLng);
         double maxLng = lng + Math.toDegrees(dLng);
-        // 1. 조건에 맞는 Store 목록을 모두 조회합니다.
-        List<Store> limitedStores = storeRepository.findNearbyStoresRandomly(lat, lng, radiusMeters);
-        log.info("============ DB에서 랜덤 샘플링된 store 개수: {} =============", limitedStores.size());
+        // 1. 먼저 범위 내 데이터 개수를 파악합니다.
+        Map<String, Long> rangeInfo = storeRepository.getStoreIdRangeAndCount(lng, lat, radiusMeters);
+        Long count = rangeInfo.get("count");
+
+        List<Store> limitedStores;
+
+        // 2. 데이터가 150개 이하이면, 그냥 가까운 순으로 가져옵니다.
+        if (count == null || count <= 150) {
+            limitedStores = storeRepository.findNearbyStoresByDistance(lng, lat, radiusMeters);
+        } else {
+            // 3. 데이터가 많으면, ID 기반 랜덤 샘플링을 수행합니다.
+            Long minId = rangeInfo.get("minId");
+            Long maxId = rangeInfo.get("maxId");
+
+            List<Long> randomIds = new ArrayList<>();
+            if (minId != null && maxId != null && minId <= maxId) {
+                java.util.Random rand = new java.util.Random();
+                long range = maxId - minId;
+                // ID가 연속적이지 않을 수 있으므로, 넉넉하게 2배수 정도의 후보 ID를 생성합니다.
+                for (int i = 0; i < 300; i++) {
+                    if (range > 0) {
+                        long randomId = minId + rand.nextLong(range + 1);
+                        randomIds.add(randomId);
+                    } else {
+                        randomIds.add(minId);
+                    }
+                }
+            }
+
+            if (randomIds.isEmpty()) {
+                return Collections.emptyList();
+            }
+            // 생성된 랜덤 ID로 최종 데이터를 조회합니다.
+            limitedStores = storeRepository.findStoresByIdsInLocation(randomIds, lng, lat, radiusMeters);
+        }
+
+        log.info("============ 최종 선택된 store 개수: {} =============", limitedStores.size());
+
+        if (limitedStores.isEmpty()) {
+            return Collections.emptyList();
+        }
 
         // --- (이하 N+1 문제 해결 로직) ---
 
