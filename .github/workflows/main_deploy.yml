@@ -96,9 +96,7 @@ jobs:
             --include-only-statuses Created InProgress \
             --query 'deployments[0]' --output text)
           
-          if [[ -z "$existing" || "$existing" == "None" ]]; then
-            echo "진행 중인 배포 없음. 바로 생성합니다."
-          else
+          if [[ "$existing" == d-* ]]; then
             echo "진행 중인 배포가 있음: $existing. 끝날 때까지 대기합니다."
             max_wait=300
             interval=5
@@ -117,6 +115,8 @@ jobs:
               (( waited += interval ))
             done
             echo "기존 배포가 종료되었거나 타임아웃. 새 배포 생성 가능."
+          else
+            echo "진행 중인 배포 없음. 바로 생성합니다."
           fi
 
       - name: Create CodeDeploy Deployment
