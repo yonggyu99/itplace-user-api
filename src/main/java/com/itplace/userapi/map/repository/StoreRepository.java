@@ -11,6 +11,20 @@ public interface StoreRepository extends JpaRepository<Store, Long> {
 
     @Query(
             value = """
+                    SELECT storeId
+                    FROM store
+                    WHERE ST_Contains(ST_Buffer(ST_SRID(POINT(:lng, :lat), 4326), :radiusMeters), location)
+                    """,
+            nativeQuery = true
+    )
+    List<Long> findNearbyStoreIds(
+            @Param("lng") double lng,
+            @Param("lat") double lat,
+            @Param("radiusMeters") double radiusMeters
+    );
+
+    @Query(
+            value = """
                     SELECT *,
                            ST_Distance_Sphere(location, ST_SRID(POINT(:lat, :lng), 4326)) AS distance
                     FROM store

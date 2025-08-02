@@ -48,22 +48,25 @@ public class StoreServiceImpl implements StoreService {
         double maxLat = lat + Math.toDegrees(dLat);
         double minLng = lng - Math.toDegrees(dLng);
         double maxLng = lng + Math.toDegrees(dLng);
-        // 1. 조건에 맞는 Store 목록을 모두 조회합니다.
-        List<Store> stores = storeRepository.findNearbyStores(lat, lng, radiusMeters, minLat, maxLat, minLng, maxLng);
-        log.info("============ 조회된 전체 store 개수: {} =============", stores.size());
 
-        // 2. 150개가 넘으면 랜덤으로 섞어서 150개만 선택합니다.
-        List<Store> limitedStores;
-        if (stores.size() > 150) {
-            Collections.shuffle(stores); // 리스트를 무작위로 섞습니다.
-            limitedStores = stores.stream().limit(150).toList();
-        } else {
-            limitedStores = stores;
-        }
+        List<Long> allStoreIds = storeRepository.findNearbyStoreIds(lng, lat, radiusMeters);
+        log.info("============ 조회된 전체 store ID 개수: {} =============", allStoreIds.size());
 
-        if (limitedStores.isEmpty()) {
+        if (allStoreIds.isEmpty()) {
             return Collections.emptyList();
         }
+
+        // 2. 150개가 넘으면 ID 리스트를 무작위로 섞어서 150개만 선택합니다.
+        List<Long> selectedStoreIds;
+        if (allStoreIds.size() > 150) {
+            Collections.shuffle(allStoreIds); // ID 리스트를 무작위로 섞습니다.
+            selectedStoreIds = allStoreIds.subList(0, 150);
+        } else {
+            selectedStoreIds = allStoreIds;
+        }
+
+        // 3. 선택된 150개의 ID로 Store 상세 정보를 한 번에 조회합니다.
+        List<Store> limitedStores = storeRepository.findAllById(selectedStoreIds);
 
         // --- (이하 N+1 문제 해결 로직) ---
 
@@ -317,3 +320,4 @@ public class StoreServiceImpl implements StoreService {
 
 
 }
+
