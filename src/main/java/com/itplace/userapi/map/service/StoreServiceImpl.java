@@ -1,6 +1,7 @@
 package com.itplace.userapi.map.service;
 
 import com.itplace.userapi.benefit.entity.Benefit;
+import com.itplace.userapi.benefit.entity.TierBenefit;
 import com.itplace.userapi.benefit.repository.BenefitRepository;
 import com.itplace.userapi.benefit.repository.TierBenefitRepository;
 import com.itplace.userapi.map.StoreCode;
@@ -17,6 +18,8 @@ import com.itplace.userapi.partner.exception.PartnerNotFoundException;
 import com.itplace.userapi.partner.repository.PartnerRepository;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -45,34 +48,63 @@ public class StoreServiceImpl implements StoreService {
         double maxLat = lat + Math.toDegrees(dLat);
         double minLng = lng - Math.toDegrees(dLng);
         double maxLng = lng + Math.toDegrees(dLng);
-
+        // 1. 조건에 맞는 Store 목록을 모두 조회합니다.
         List<Store> stores = storeRepository.findNearbyStores(lat, lng, radiusMeters, minLat, maxLat, minLng, maxLng);
-        log.info("============store count: {}=============", stores.size());
+        log.info("============ 조회된 전체 store 개수: {} =============", stores.size());
+
+        // 2. 150개가 넘으면 랜덤으로 섞어서 150개만 선택합니다.
+        List<Store> limitedStores;
         if (stores.size() > 150) {
-            Collections.shuffle(stores);
+            Collections.shuffle(stores); // 리스트를 무작위로 섞습니다.
+            limitedStores = stores.stream().limit(150).toList();
+        } else {
+            limitedStores = stores;
         }
 
-        return stores.stream()
-                .limit(150)
+        if (limitedStores.isEmpty()) {
+            return Collections.emptyList();
+        }
+
+        // --- (이하 N+1 문제 해결 로직) ---
+
+        // 3. 선택된 150개 Store에 필요한 Partner ID와 Benefit 목록을 한 번에 수집합니다.
+        List<Long> partnerIds = limitedStores.stream()
+                .map(store -> store.getPartner().getPartnerId())
+                .distinct()
+                .toList();
+
+        // 4. Benefit 목록을 단 한 번의 쿼리로 조회합니다.
+        List<Benefit> allBenefits = benefitRepository.findAllByPartner_PartnerIdIn(partnerIds);
+
+        // 5. TierBenefit 목록을 단 한 번의 쿼리로 조회합니다.
+        List<TierBenefit> allTierBenefits = tierBenefitRepository.findAllByBenefitIn(allBenefits);
+
+        // 6. 빠른 조회를 위해 Map으로 데이터를 구조화합니다.
+        Map<Long, List<Benefit>> partnerToBenefitsMap = allBenefits.stream()
+                .collect(Collectors.groupingBy(b -> b.getPartner().getPartnerId()));
+
+        Map<Long, List<TierBenefit>> benefitToTiersMap = allTierBenefits.stream()
+                .collect(Collectors.groupingBy(tb -> tb.getBenefit().getBenefitId()));
+
+        // 7. 최종 데이터를 메모리에서 조합합니다. (추가 DB 접근 없음)
+        return limitedStores.stream()
                 .map(store -> {
                     Partner partner = store.getPartner();
-                    double storeLat = store.getLocation().getY();
-                    double storeLng = store.getLocation().getX();
-                    double distance = calculateDistance(lat, lng, storeLat, storeLng);
-
-                    List<Benefit> benefits = benefitRepository.findAllByPartner_PartnerId(partner.getPartnerId());
-
-                    List<Benefit> finalBenefits = selectBenefits(benefits, store.getStoreName());
+                    List<Benefit> benefitsForPartner = partnerToBenefitsMap.getOrDefault(partner.getPartnerId(), Collections.emptyList());
+                    List<Benefit> finalBenefits = selectBenefits(benefitsForPartner, store.getStoreName());
 
                     List<TierBenefitDto> tierBenefitDtos = finalBenefits.stream()
                             .flatMap(benefit ->
-                                    tierBenefitRepository.findAllByBenefit_BenefitId(benefit.getBenefitId()).stream()
+                                    benefitToTiersMap.getOrDefault(benefit.getBenefitId(), Collections.emptyList()).stream()
                                             .map(tierBenefit -> TierBenefitDto.builder()
                                                     .grade(tierBenefit.getGrade())
                                                     .context(tierBenefit.getContext())
                                                     .build())
                             )
                             .toList();
+
+                    double distance = calculateDistance(lat, lng, store.getLocation().getY(), store.getLocation().getX());
+
                     return StoreDetailDto.builder()
                             .store(StoreDto.builder()
                                     .storeId(store.getStoreId())

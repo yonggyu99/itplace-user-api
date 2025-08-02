@@ -21,6 +21,8 @@ public interface BenefitRepository extends JpaRepository<Benefit, Long> {
 
     List<Benefit> findAllByPartner_PartnerId(Long PartnerId);
 
+    List<Benefit> findAllByPartner_PartnerIdIn(List<Long> partnerIds);
+
     @Query("""
                 SELECT b
                 FROM Benefit b
