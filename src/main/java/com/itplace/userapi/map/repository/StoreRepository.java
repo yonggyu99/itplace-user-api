@@ -28,7 +28,7 @@ public interface StoreRepository extends JpaRepository<Store, Long> {
                     SELECT s.*
                     FROM store s
                     WHERE
-                      ST_Contains(ST_Buffer(ST_SRID(POINT(:lng, :lat), 4326), :radiusMeters), location)
+                      ST_Contains(ST_Buffer(ST_SRID(POINT(:lat, :lng), 4326), :radiusMeters), location)
                     ORDER BY RAND()
                     LIMIT 150
                     """,
