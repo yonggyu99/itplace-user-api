@@ -1,6 +1,7 @@
 package com.itplace.userapi.common.redis;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.data.redis.RedisProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -20,19 +21,23 @@ public class RedisConfig {
     // RedisProperties 객체 생성
     private final RedisProperties redisProperties;
 
+    @Value("${spring.data.redis.ssl.enabled:false}")
+    private boolean isSslEnabled;
+
     @Bean
     public RedisConnectionFactory redisConnectionFactory() {
-        // 1) Standalone 설정에 호스트/포트, 비밀번호(AUTH) 추가
-        RedisStandaloneConfiguration serverConfig =
-                new RedisStandaloneConfiguration();
-        serverConfig.setHostName(redisProperties.getHost());
-        serverConfig.setPort(redisProperties.getPort());
+        RedisStandaloneConfiguration serverConfig = new RedisStandaloneConfiguration(
+                redisProperties.getHost(),
+                redisProperties.getPort()
+        );
 
-        // 2) Lettuce 클라이언트에 SSL/TLS 활성화
-        LettuceClientConfiguration clientConfig =
-                LettuceClientConfiguration.builder()
-                        .useSsl()
-                        .build();
+        LettuceClientConfiguration clientConfig;
+        if (isSslEnabled) {
+            // SSL이 활성화된 경우에만 .useSsl()을 추가
+            clientConfig = LettuceClientConfiguration.builder().useSsl().build();
+        } else {
+            clientConfig = LettuceClientConfiguration.defaultConfiguration();
+        }
 
         return new LettuceConnectionFactory(serverConfig, clientConfig);
     }
