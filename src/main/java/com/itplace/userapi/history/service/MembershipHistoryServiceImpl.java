@@ -60,8 +60,8 @@ public class MembershipHistoryServiceImpl implements MembershipHistoryService {
     public PagedResponse<MembershipHistoryResponse> getUserHistory(
             Long userId,
             String keyword,
-            LocalDate startDate,
-            LocalDate endDate,
+            LocalDateTime startDate,
+            LocalDateTime endDate,
             Pageable pageable
     ) {
         User user = userRepository.findById(userId)
@@ -75,8 +75,8 @@ public class MembershipHistoryServiceImpl implements MembershipHistoryService {
         Page<MembershipHistory> page = historyRepository.findFiltered(
                 membershipId,
                 keyword,
-                startDate != null ? startDate.atStartOfDay() : null,
-                endDate != null ? endDate.atTime(LocalTime.MAX) : null,
+                startDate,
+                endDate,
                 pageable
         );
 
