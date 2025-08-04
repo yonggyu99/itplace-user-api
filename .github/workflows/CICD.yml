@@ -1,162 +1,162 @@
-## GitHub Actions 워크플로우 이름
-#name: CICD
-#
-## 워크플로우가 실행될 조건
-#on:
-#  push:
-#    branches: [ "develop" ]
-#  pull_request:
-#    branches: [ "develop" ]
-#
-## 워크플로우 실행에 필요한 권한
-#permissions:
-#  contents: read
-#
-## 실행될 작업들의 목록
-#jobs:
-#  # 'build' 작업
-#  build:
-#    runs-on: ubuntu-latest # 작업이 실행될 가상 환경
-#    steps:
-#      # 1. 소스 코드 체크아웃
-#      - uses: actions/checkout@v3
-#
-#      - name: Cache Gradle packages
-#        uses: actions/cache@v3
-#        with:
-#          path: |
-#            ~/.gradle/caches
-#            ~/.gradle/wrapper
-#          key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
-#          restore-keys: |
-#            ${{ runner.os }}-gradle-
-#
-#      - name: Set up QEMU
-#        uses: docker/setup-qemu-action@v2
-#
-#      - name: Set up Docker Buildx
-#        uses: docker/setup-buildx-action@v2
-#        with:
-#          driver: docker-container
-#
-#      # 2. OpenJDK 17 설치
-#      - name: Install JDK 17
-#        uses: actions/setup-java@v3
-#        with:
-#          java-version: '17'
-#          distribution: 'corretto'
-#
-#      # 3. Gradle 빌드
-#      - name: Build with Gradle
-#        run: |
-#          mkdir -p ./src/main/resources/prompt
-#
-#          echo ${{secrets.APPLICATION_SECRET}} | base64 --decode > ./src/main/resources/application-secret.yml
-#          echo ${{secrets.CATEGORIZE_PROMPT}} | base64 --decode > ./src/main/resources/prompt/categorizePrompt.txt
-#          echo ${{secrets.REASON_PROMPT}} | base64 --decode > ./src/main/resources/prompt/reasonPrompt.txt
-#          chmod +x ./gradlew
-#          ./gradlew build -x test --parallel --configure-on-demand
-#
-#      # 4. DockerHub 로그인
-#      - name: Login to DockerHub
-#        uses: docker/login-action@v2
-#        with:
-#          username: ${{ secrets.DOCKERHUB_USERNAME }}
-#          password: ${{ secrets.DOCKERHUB_TOKEN }}
-#
-#      # 5. Docker 이미지 빌드 및 푸시 (효율적인 방식으로 통합)
-#      - name: Build and push Docker image
-#        uses: docker/build-push-action@v4
-#        with:
-#          context: .
-#          platforms: linux/amd64
-#          push: ${{ github.event_name == 'push' }}
-#          tags: ${{ secrets.DOCKERHUB_USERNAME }}/live_server:latest
-#          cache-from: |
-#            type=registry,ref=${{ secrets.DOCKERHUB_USERNAME }}/live_server:cache
-#          cache-to: |
-#            type=registry,ref=${{ secrets.DOCKERHUB_USERNAME }}/live_server:cache,mode=max
-#
-#  # 'deploy' 작업
-#  deploy:
-#    needs: build # 'build' 작업이 성공해야 실행됨
-#    if: github.event_name == 'push'
-#    runs-on: ubuntu-latest
-#    steps:
-#      # 1. 배포 대상 서버 환경 설정 (Blue/Green)
-#      - name: Set target IP
-#        run: |
-#          STATUS=$(curl -L -o /dev/null -w "%{http_code}" "https://${{ secrets.LIVE_SERVER_DOMAIN }}/env") || true
-#          echo "Current status code: $STATUS"
-#          if [ $STATUS = 200 ]; then
-#            CURRENT_UPSTREAM=$(curl -L -s "https://${{ secrets.LIVE_SERVER_DOMAIN }}/env")
-#          else
-#            # /env 엔드포인트가 없거나 Nginx가 다운된 초기 상태. green부터 시작.
-#            echo "Could not determine current upstream or status was not 200. Defaulting to 'green'."
-#            CURRENT_UPSTREAM=green
-#          fi
-#          echo "CURRENT_UPSTREAM=$CURRENT_UPSTREAM" >> $GITHUB_ENV
-#
-#          if [ "$CURRENT_UPSTREAM" = "blue" ]; then
-#            echo "CURRENT_PORT=8080" >> $GITHUB_ENV
-#            echo "STOPPED_PORT=8081" >> $GITHUB_ENV
-#            echo "TARGET_UPSTREAM=green" >> $GITHUB_ENV
-#          elif [ "$CURRENT_UPSTREAM" = "green" ]; then
-#            echo "CURRENT_PORT=8081" >> $GITHUB_ENV
-#            echo "STOPPED_PORT=8080" >> $GITHUB_ENV
-#            echo "TARGET_UPSTREAM=blue" >> $GITHUB_ENV
-#          else
-#            echo "Invalid CURRENT_UPSTREAM: $CURRENT_UPSTREAM"
-#            exit 1
-#          fi
-#
-#      # 2. Docker Compose로 새로운 버전 실행
-#      - name: Docker compose
-#        uses: appleboy/ssh-action@v1.0.3 # 버전 고정 및 script_stop 제거
-#        with:
-#          username: ubuntu
-#          host: ${{ secrets.LIVE_SERVER_IP }}
-#          key: ${{ secrets.EC2_SSH_KEY }}
-#          script: |
-#            sudo docker pull ${{ secrets.DOCKERHUB_USERNAME }}/live_server:latest
-#            sudo docker-compose -f docker-compose-${{env.TARGET_UPSTREAM}}.yml up -d
-#
-#      # 3. 새로운 버전의 서버가 정상적으로 실행되었는지 확인
-#      - name: Check deploy server URL
-#        uses: jtalk/url-health-check-action@v3
-#        with:
-#          url: http://${{ secrets.LIVE_SERVER_IP }}:${{env.STOPPED_PORT}}/env
-#          max-attempts: 10
-#          retry-delay: 7s
-#
-#      # 4. Nginx Upstream 변경하여 트래픽 전환
-#      - name: Change nginx upstream
-#        uses: appleboy/ssh-action@v1.0.3 # 버전 고정 및 script_stop 제거
-#        with:
-#          username: ubuntu
-#          host: ${{ secrets.LIVE_SERVER_IP }}
-#          key: ${{ secrets.EC2_SSH_KEY }}
-#          script: |
-#            # Alpine 컨테이너를 위해 bash 대신 sh 사용
-#            sudo docker exec -i nginxserver sh -c 'echo "set \$service_url ${{ env.TARGET_UPSTREAM }};" > /etc/nginx/conf.d/service-env.inc && nginx -s reload'
-#
-#      # 5. 이전 버전의 서버 중지 및 제거 / 미사용 이미지 삭제
-#      - name: Stop current server and clean images
-#        uses: appleboy/ssh-action@v1.0.3 # 버전 고정 및 script_stop 제거
-#        with:
-#          username: ubuntu
-#          host: ${{ secrets.LIVE_SERVER_IP }}
-#          key: ${{ secrets.EC2_SSH_KEY }}
-#          script: |
-#            CONTAINER_NAME=${{env.CURRENT_UPSTREAM}}
-#            # 컨테이너가 실행 중인지 확인 후 중지/삭제
-#            if [ $(sudo docker ps -q -f "name=^${CONTAINER_NAME}$") ]; then
-#              echo "Stopping and removing container: ${CONTAINER_NAME}"
-#              sudo docker stop ${CONTAINER_NAME}
-#              sudo docker rm ${CONTAINER_NAME}
-#            else
-#              echo "Container ${CONTAINER_NAME} not found or not running. Skipping."
-#            fi
-#
-#            echo "Pruning unused Docker images..."
-#            sudo docker image prune -a -f
+name: Build, Push, and Deploy to EC2
+
+on:
+  push:
+    branches: [ "develop" ]
+  pull_request:
+    branches: [ "develop" ]
+
+jobs:
+  # ---------------------------------
+  #  Build Job (PR, Push 둘 다 실행)
+  # ---------------------------------
+  build:
+    runs-on: ubuntu-latest
+    outputs:
+      image_tag: ${{ steps.image-tag.outputs.sha }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Cache Gradle packages
+        uses: actions/cache@v3
+        with:
+          path: |
+            ~/.gradle/caches
+            ~/.gradle/wrapper
+          key: gradle-${{ runner.os }}-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
+          restore-keys: |
+            gradle-${{ runner.os }}-
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v3
+        with:
+          distribution: 'temurin'
+          java-version: '17'
+
+      - name: Prepare prompt resources
+        run: |
+          mkdir -p src/main/resources/prompt
+          echo "${{ secrets.CATEGORIZE_PROMPT }}" | base64 --decode > src/main/resources/prompt/categorizePrompt.txt
+          echo "${{ secrets.REASON_PROMPT }}"   | base64 --decode > src/main/resources/prompt/reasonPrompt.txt
+
+      - name: Build JAR with Gradle
+        run: |
+          chmod +x ./gradlew
+          ./gradlew bootJar --no-daemon -x test --parallel --configure-on-demand
+
+      - name: Set Image Tag
+        id: image-tag
+        run: echo "sha=${{ github.sha }}" >> $GITHUB_OUTPUT
+
+      - name: Upload JAR artifact
+        uses: actions/upload-artifact@v4 # <<< 버전 업데이트
+        with:
+          name: application-jar
+          path: build/libs/*.jar
+
+  # ---------------------------------
+  #  Deploy Job (Push시에만 실행)
+  # ---------------------------------
+  deploy:
+    needs: build
+    if: github.event_name == 'push' && github.ref == 'refs/heads/develop'
+    runs-on: ubuntu-latest
+
+    env:
+      AWS_REGION: ap-northeast-2
+      ECR_REPOSITORY: itplace-app
+      S3_BUCKET_NAME: itplace-codedeploy-artifacts
+      CODEDEPLOY_APP_NAME: itplace-app-codedeploy
+      CODEDEPLOY_DEPLOYMENT_GROUP: itplace-app-dg-bluegreen
+      AWS_ACCOUNT_ID: ${{ secrets.AWS_ACCOUNT_ID }}
+      IMAGE_TAG: ${{ needs.build.outputs.image_tag }}
+
+    permissions:
+      id-token: write
+      contents: read
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Download JAR artifact
+        uses: actions/download-artifact@v4 # <<< 버전 업데이트
+        with:
+          name: application-jar
+          path: build/libs
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: arn:aws:iam::${{ env.AWS_ACCOUNT_ID }}:role/GitHubActions-OIDC-Role-For-Main-UserAPI
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Login to Amazon ECR
+        id: login-ecr
+        uses: aws-actions/amazon-ecr-login@v2
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Build and push Docker image
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          push: true
+          tags: ${{ steps.login-ecr.outputs.registry }}/${{ env.ECR_REPOSITORY }}:${{ env.IMAGE_TAG }}
+          platforms: linux/arm64
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+      - name: Create application-secret.yml from GitHub Secret
+        run: |
+          echo "${{ secrets.APPLICATION_SECRET }}" | base64 --decode > application-secret.yml
+
+      - name: Create deployment artifact
+        run: |
+          echo "TAG=${{ env.IMAGE_TAG }}" > scripts/image.env
+          zip -r deploy.zip appspec.yml scripts/ application-secret.yml
+
+      - name: Upload artifact to S3
+        run: aws s3 cp deploy.zip s3://${{ env.S3_BUCKET_NAME }}/deploy-${{ env.IMAGE_TAG }}.zip
+
+      - name: Wait for existing CodeDeploy deployment to finish
+        run: |
+          existing=$(aws deploy list-deployments \
+            --application-name "${{ env.CODEDEPLOY_APP_NAME }}" \
+            --deployment-group-name "${{ env.CODEDEPLOY_DEPLOYMENT_GROUP }}" \
+            --include-only-statuses Created InProgress \
+            --query 'deployments[0]' --output text)
+          
+          if [[ "$existing" == d-* ]]; then
+            echo "진행 중인 배포가 있음: $existing. 끝날 때까지 대기합니다."
+            max_wait=300
+            interval=5
+            waited=0
+            while true; do
+              status=$(aws deploy get-deployment --deployment-id "$existing" --query 'deploymentInfo.status' --output text)
+              echo "현재 상태: $status"
+              if [[ "$status" =~ ^(Succeeded|Failed|Stopped)$ ]]; then
+                break
+              fi
+              if (( waited >= max_wait )); then
+                echo "대기 시간 초과 ($max_wait 초). 계속 진행합니다."
+                break
+              fi
+              sleep $interval
+              (( waited += interval ))
+            done
+            echo "기존 배포가 종료되었거나 타임아웃. 새 배포 생성 가능."
+          else
+            echo "진행 중인 배포 없음. 바로 생성합니다."
+          fi
+
+      - name: Create CodeDeploy Deployment
+        run: |
+          aws deploy create-deployment \
+            --application-name ${{ env.CODEDEPLOY_APP_NAME }} \
+            --deployment-group-name ${{ env.CODEDEPLOY_DEPLOYMENT_GROUP }} \
+            --s3-location bucket=${{ env.S3_BUCKET_NAME }},key=deploy-${{ env.IMAGE_TAG }}.zip,bundleType=zip \
+            --description "Deployment for commit ${{ env.IMAGE_TAG }}" \
+            --file-exists-behavior OVERWRITE
