@@ -5,7 +5,6 @@ import com.itplace.userapi.benefit.entity.Benefit;
 import com.itplace.userapi.benefit.entity.enums.Grade;
 import com.itplace.userapi.benefit.repository.BenefitRepository;
 import com.itplace.userapi.history.repository.MembershipHistoryRepository;
-import com.itplace.userapi.log.dto.LogScoreResult;
 import com.itplace.userapi.log.repository.LogRepository;
 import com.itplace.userapi.recommend.domain.UserFeature;
 import com.itplace.userapi.recommend.projection.BenefitCount;
@@ -19,7 +18,6 @@ import com.itplace.userapi.user.repository.UserRepository;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -42,20 +40,9 @@ public class UserFeatureServiceImpl implements UserFeatureService {
         String membershipId = user.getMembershipId();
 
         // 로그 기반 정보 수집 (클릭,상세,검색)
-        List<LogScoreResult> logScores = logRepository.aggregateUserLogScores(userId, 5);
-        Map<Long, Integer> logBenefitScores = logScores.stream()
-                .filter(score -> score.getBenefitId() != null)
-                .collect(Collectors.toMap(
-                        LogScoreResult::getBenefitId,
-                        LogScoreResult::getTotalScore
-                ));
-
-        List<String> logPartners = logScores.stream()
-                .map(LogScoreResult::getPartnerName)
-                .filter(Objects::nonNull)
-                .distinct()
-                .limit(5)
-                .toList();
+        List<String> clickPartners = logRepository.aggregateTopPartnerNamesByEvent(userId, "click", 3);
+        List<String> searchPartners = logRepository.aggregateTopPartnerNamesByEvent(userId, "search", 3);
+        List<String> detailPartners = logRepository.aggregateTopPartnerNamesByEvent(userId, "detail", 3);
 
         // 콜드 스타트 (멤버십 이용 내역 X)
         if (membershipId == null || membershipId.isBlank()) {
@@ -64,10 +51,11 @@ public class UserFeatureServiceImpl implements UserFeatureService {
                     .grade(null)
                     .recentCategoryScores(Map.of())
                     .topCategories(List.of())
-                    .benefitUsageCounts(Map.of()) // 없음
-                    .recentPartnerNames(List.of()) // 없음
-                    .logBasedBenefitScores(logBenefitScores)
-                    .logBasedPartnerNames(logPartners)
+                    .benefitUsageCounts(Map.of())
+                    .recentPartnerNames(List.of())
+                    .clickPartners(clickPartners)
+                    .searchPartners(searchPartners)
+                    .detailPartners(detailPartners)
                     .build();
         }
 
@@ -117,8 +105,9 @@ public class UserFeatureServiceImpl implements UserFeatureService {
                 .topCategories(topCats)
                 .benefitUsageCounts(benefitUsage)
                 .recentPartnerNames(topPartners)
-                .logBasedBenefitScores(logBenefitScores)
-                .logBasedPartnerNames(logPartners)
+                .clickPartners(clickPartners)
+                .searchPartners(searchPartners)
+                .detailPartners(detailPartners)
                 .build();
 
     }

@@ -2,7 +2,6 @@ package com.itplace.userapi.log.service;
 
 import com.itplace.userapi.benefit.entity.Benefit;
 import com.itplace.userapi.benefit.repository.BenefitRepository;
-import com.itplace.userapi.log.dto.LogScoreResult;
 import com.itplace.userapi.log.dto.RankResult;
 import com.itplace.userapi.log.dto.SearchRankResponse;
 import com.itplace.userapi.log.entity.LogDocument;
@@ -86,11 +85,6 @@ public class LogServiceImpl implements LogService {
                 .loggingAt(Instant.now())
                 .build();
         logRepository.save(logDocument);
-    }
-
-    @Override
-    public List<LogScoreResult> getUserLogScores(Long userId, int topK) {
-        return logRepository.aggregateUserLogScores(userId, topK);
     }
 
     @Override
