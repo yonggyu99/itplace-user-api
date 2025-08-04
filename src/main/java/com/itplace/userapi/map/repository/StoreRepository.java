@@ -12,12 +12,12 @@ public interface StoreRepository extends JpaRepository<Store, Long> {
     @Query(
             value = """
                     SELECT *,
-                           ST_Distance_Sphere(location, ST_SRID(POINT(:lat, :lng), 4326)) AS distance
+                           ST_Distance_Sphere(location, ST_SRID(POINT(:lng, :lat), 4326)) AS distance
                     FROM store
                     WHERE
                       longitude BETWEEN :minLng AND :maxLng
                       AND latitude BETWEEN :minLat AND :maxLat
-                      AND ST_Distance_Sphere(location, ST_SRID(POINT(:lat, :lng), 4326)) <= :radiusMeters
+                      AND ST_Distance_Sphere(location, ST_SRID(POINT(:lng, :lat), 4326)) <= :radiusMeters
                     ORDER BY RAND()
                     LIMIT 150
                     """,
@@ -38,15 +38,14 @@ public interface StoreRepository extends JpaRepository<Store, Long> {
                     SELECT s.*
                     FROM store s
                     JOIN partner p ON s.partnerId = p.partnerId
-                    WHERE s.location
+                    WHERE s.location IS NOT NULL
                       AND (:category IS NULL OR p.category = :category)
                       AND (
                             MATCH(s.storeName, s.business) AGAINST(:keyword IN NATURAL LANGUAGE MODE)
                          OR MATCH(p.partnerName, p.category) AGAINST(:keyword IN NATURAL LANGUAGE MODE)
                       )
-                    ORDER BY ST_Distance_Sphere(s.location, ST_SRID(Point(:lat, :lng), 4326))
+                    ORDER BY ST_Distance_Sphere(s.location, ST_SRID(Point(:lng, :lat), 4326)) ASC
                     LIMIT 30
-                    
                     """,
             nativeQuery = true
     )
