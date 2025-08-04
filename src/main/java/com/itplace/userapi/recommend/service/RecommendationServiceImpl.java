@@ -22,7 +22,7 @@ import org.springframework.stereotype.Service;
 @Service
 @RequiredArgsConstructor
 public class RecommendationServiceImpl implements RecommendationService {
-    private static final int EXPIRED_DAYS = 1;
+    private static final int EXPIRED_DAYS = 2;
 
     private final UserFeatureService userFeatureService;
     private final OpenAIService aiService;
