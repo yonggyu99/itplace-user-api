@@ -5,7 +5,9 @@ import com.itplace.userapi.benefit.entity.TierBenefit;
 import com.itplace.userapi.benefit.repository.BenefitRepository;
 import com.itplace.userapi.benefit.repository.TierBenefitRepository;
 import com.itplace.userapi.map.StoreCode;
+import com.itplace.userapi.map.dto.PartnerDto;
 import com.itplace.userapi.map.dto.StoreDetailDto;
+import com.itplace.userapi.map.dto.StoreDto;
 import com.itplace.userapi.map.dto.TierBenefitDto;
 import com.itplace.userapi.map.entity.Store;
 import com.itplace.userapi.map.exception.StoreKeywordException;
@@ -35,7 +37,8 @@ public class StoreServiceImpl implements StoreService {
 
     @Override
     @Transactional(readOnly = true)
-    public List<StoreDetailDto> findNearby(double lat, double lng, double radiusMeters) {
+    public List<StoreDetailDto> findNearby(double lat, double lng, double radiusMeters, double userLat,
+                                           double userLng) {
         // 지구 반지름 (미터)
         double earthRadius = 6378137.0;
 
@@ -92,7 +95,8 @@ public class StoreServiceImpl implements StoreService {
                             )
                             .toList();
 
-                    double distance = calculateDistance(lat, lng, store.getLocation().getY(), store.getLocation().getX());
+                    double distance = calculateDistance(userLat, userLng, store.getLocation().getY(),
+                            store.getLocation().getX());
 
                     return StoreDetailDto.of(store, partner, tierBenefitDtos, distance);
                 })
@@ -101,8 +105,9 @@ public class StoreServiceImpl implements StoreService {
 
     @Override
     @Transactional(readOnly = true)
-    public List<StoreDetailDto> findNearbyByCategory(double lat, double lng, double radiusMeters, String category) {
-        List<StoreDetailDto> allStores = findNearby(lat, lng, radiusMeters);
+    public List<StoreDetailDto> findNearbyByCategory(double lat, double lng, double radiusMeters, String category,
+                                                     double userLat, double userLng) {
+        List<StoreDetailDto> allStores = findNearby(lat, lng, radiusMeters, userLat, userLng);
 
         // "전체", null, 빈 문자열이면 전체 반환
         if (category == null || category.isBlank() || category.equalsIgnoreCase("전체")) {
@@ -118,7 +123,9 @@ public class StoreServiceImpl implements StoreService {
 
     @Override
     @Transactional(readOnly = true)
-    public List<StoreDetailDto> findNearbyByKeyword(double lat, double lng, String category, String keyword) {
+    public List<StoreDetailDto> findNearbyByKeyword(double lat, double lng, String category,
+                                                    String keyword, double userLat, double userLng) {
+
         if (keyword == null || keyword.isBlank()) {
             throw new StoreKeywordException(StoreCode.KEYWORD_REQUEST);
         }
@@ -160,7 +167,8 @@ public class StoreServiceImpl implements StoreService {
                     Partner partner = store.getPartner();
                     double storeLat = store.getLocation().getY();
                     double storeLng = store.getLocation().getX();
-                    double distance = calculateDistance(lat, lng, storeLat, storeLng);
+                    double distance = userLat == 0 || userLng == 0
+                            ? 0 : calculateDistance(userLat, userLng, storeLat, storeLng);
 
                     List<Benefit> benefitsForPartner = partnerToBenefitsMap.getOrDefault(partner.getPartnerId(), Collections.emptyList());
                     List<Benefit> finalBenefits = selectBenefits(benefitsForPartner, store.getStoreName());
@@ -185,7 +193,8 @@ public class StoreServiceImpl implements StoreService {
 
     @Override
     @Transactional(readOnly = true)
-    public List<StoreDetailDto> findNearbyByPartnerName(double lat, double lng, String partnerName) {
+    public List<StoreDetailDto> findNearbyByPartnerName(double lat, double lng, String partnerName, double userLat,
+                                                        double userLng) {
         if (partnerName == null || partnerName.isBlank()) {
             throw new StoreKeywordException(StoreCode.PARTNERNAME_REQUEST);
         }
@@ -201,7 +210,7 @@ public class StoreServiceImpl implements StoreService {
                 .map(store -> {
                     double storeLat = store.getLocation().getY();
                     double storeLng = store.getLocation().getX();
-                    double distance = calculateDistance(lat, lng, storeLat, storeLng);
+                    double distance = calculateDistance(userLat, userLng, storeLat, storeLng);
 
                     // 제휴사 혜택 조회
                     List<Benefit> benefits = benefitRepository.findAllByPartner_PartnerId(partner.getPartnerId());

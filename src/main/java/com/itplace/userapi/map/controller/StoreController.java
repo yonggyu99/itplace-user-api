@@ -23,9 +23,11 @@ public class StoreController {
     public ResponseEntity<ApiResponse<?>> getNearby(
             @RequestParam("lat") double lat,
             @RequestParam("lng") double lng,
-            @RequestParam("radiusMeters") double radiusMeters
+            @RequestParam("radiusMeters") double radiusMeters,
+            @RequestParam("userLat") double userLat,
+            @RequestParam("userLng") double userLng
     ) {
-        List<StoreDetailDto> stores = storeService.findNearby(lat, lng, radiusMeters);
+        List<StoreDetailDto> stores = storeService.findNearby(lat, lng, radiusMeters, userLat, userLng);
         ApiResponse<?> body = ApiResponse.of(StoreCode.STORE_LIST_SUCCESS, stores);
 
         return new ResponseEntity<>(body, body.getStatus());
@@ -37,9 +39,12 @@ public class StoreController {
             @RequestParam("lat") double lat,
             @RequestParam("lng") double lng,
             @RequestParam("radiusMeters") double radiusMeters,
-            @RequestParam(value = "category", required = false) String category
+            @RequestParam(value = "category", required = false) String category,
+            @RequestParam("userLat") double userLat,
+            @RequestParam("userLng") double userLng
     ) {
-        List<StoreDetailDto> stores = storeService.findNearbyByCategory(lat, lng, radiusMeters, category);
+        List<StoreDetailDto> stores = storeService.findNearbyByCategory(lat, lng, radiusMeters, category, userLat,
+                userLng);
         ApiResponse<?> body = ApiResponse.of(StoreCode.STORE_LIST_SUCCESS, stores);
 
         return new ResponseEntity<>(body, body.getStatus());
@@ -51,9 +56,11 @@ public class StoreController {
             @RequestParam("lat") double lat,
             @RequestParam("lng") double lng,
             @RequestParam(value = "category", required = false) String category,
-            @RequestParam("keyword") String keyword
+            @RequestParam("keyword") String keyword,
+            @RequestParam("userLat") double userLat,
+            @RequestParam("userLng") double userLng
     ) {
-        List<StoreDetailDto> stores = storeService.findNearbyByKeyword(lat, lng, category, keyword);
+        List<StoreDetailDto> stores = storeService.findNearbyByKeyword(lat, lng, category, keyword, userLat, userLng);
         ApiResponse<?> body = ApiResponse.of(StoreCode.STORE_LIST_SUCCESS, stores);
 
         return new ResponseEntity<>(body, body.getStatus());
@@ -63,9 +70,11 @@ public class StoreController {
     public ResponseEntity<ApiResponse<?>> getNearbyByPartner(
             @RequestParam("lat") double lat,
             @RequestParam("lng") double lng,
-            @RequestParam("partnerName") String partnerName
+            @RequestParam("partnerName") String partnerName,
+            @RequestParam("userLat") double userLat,
+            @RequestParam("userLng") double userLng
     ) {
-        List<StoreDetailDto> stores = storeService.findNearbyByPartnerName(lat, lng, partnerName);
+        List<StoreDetailDto> stores = storeService.findNearbyByPartnerName(lat, lng, partnerName, userLat, userLng);
         ApiResponse<?> body = ApiResponse.of(StoreCode.STORE_LIST_SUCCESS, stores);
 
         return ResponseEntity.status(body.getStatus()).body(body);
