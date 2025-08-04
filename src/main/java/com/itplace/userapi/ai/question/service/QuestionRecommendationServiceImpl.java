@@ -77,7 +77,7 @@ public class QuestionRecommendationServiceImpl implements QuestionRecommendation
 
         System.out.println("카테고리 분류: " + category);
         // 4. 제휴처 목록 조회
-        List<StoreDetailDto> stores = storeService.findNearbyByKeyword(lat, lng, null, category);
+        List<StoreDetailDto> stores = storeService.findNearbyByKeyword(lat, lng, null, category, 0, 0);
 
         if (stores.isEmpty()) {
             throw new QuestionException(QuestionCode.NO_STORE_FOUND);
