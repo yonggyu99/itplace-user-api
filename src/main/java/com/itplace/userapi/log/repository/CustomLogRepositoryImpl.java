@@ -1,18 +1,15 @@
 package com.itplace.userapi.log.repository;
 
-import com.itplace.userapi.log.dto.LogScoreResult;
+import com.itplace.userapi.log.dto.PartnerNameResult;
 import com.itplace.userapi.log.dto.RankResult;
 import java.time.Instant;
 import java.util.List;
+import java.util.Objects;
 import lombok.RequiredArgsConstructor;
-import org.bson.Document;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.domain.Sort.Direction;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.aggregation.Aggregation;
-import org.springframework.data.mongodb.core.aggregation.AggregationOperation;
-import org.springframework.data.mongodb.core.aggregation.AggregationResults;
-import org.springframework.data.mongodb.core.aggregation.Fields;
 import org.springframework.data.mongodb.core.aggregation.GroupOperation;
 import org.springframework.data.mongodb.core.aggregation.LimitOperation;
 import org.springframework.data.mongodb.core.aggregation.MatchOperation;
@@ -27,52 +24,6 @@ public class CustomLogRepositoryImpl implements CustomLogRepository {
 
     private final MongoTemplate mongoTemplate;
 
-    @Override
-    public List<LogScoreResult> aggregateUserLogScores(Long userId, int topK) {
-        MatchOperation match = Aggregation.match(Criteria.where("userId").is(userId));
-
-        AggregationOperation addScoreField = context -> new Document("$addFields",
-                new Document("score",
-                        new Document("$switch", new Document()
-                                .append("branches", List.of(
-                                        new Document("case", new Document("$eq", List.of("$event", "detail"))).append(
-                                                "then", 3),
-                                        new Document("case", new Document("$eq", List.of("$event", "search"))).append(
-                                                "then", 2),
-                                        new Document("case", new Document("$eq", List.of("$event", "click"))).append(
-                                                "then", 1)
-                                ))
-                                .append("default", 0)
-                        )
-                )
-        );
-
-        GroupOperation group = Aggregation.group(
-                Fields.fields("benefitId", "partnerName")
-        ).sum("score").as("totalScore");
-
-        ProjectionOperation project = Aggregation.project()
-                .and("_id.benefitId").as("benefitId")
-                .and("_id.partnerName").as("partnerName")
-                .and("totalScore").as("totalScore");
-
-        SortOperation sort = Aggregation.sort(Sort.by(Sort.Direction.DESC, "totalScore"));
-        LimitOperation limit = Aggregation.limit(topK);
-
-        Aggregation aggregation = Aggregation.newAggregation(
-                match,
-                addScoreField,
-                group,
-                project,
-                sort,
-                limit
-        );
-
-        AggregationResults<LogScoreResult> results =
-                mongoTemplate.aggregate(aggregation, "logs", LogScoreResult.class);
-
-        return results.getMappedResults();
-    }
 
     @Override
     public List<RankResult> findTopSearchRank(Instant from, Instant to) {
@@ -95,6 +46,33 @@ public class CustomLogRepositoryImpl implements CustomLogRepository {
         return mongoTemplate.aggregate(aggregation, "logs", RankResult.class)
                 .getMappedResults();
     }
+
+    @Override
+    public List<String> aggregateTopPartnerNamesByEvent(Long userId, String event, int topK) {
+        MatchOperation match = Aggregation.match(
+                Criteria.where("userId").is(userId).and("event").is(event)
+        );
+
+        GroupOperation group = Aggregation.group("partnerName").count().as("count");
+
+        SortOperation sort = Aggregation.sort(Sort.by(Sort.Direction.DESC, "count"));
+        LimitOperation limit = Aggregation.limit(topK);
+
+        ProjectionOperation project = Aggregation.project()
+                .and("_id").as("partnerName")
+                .and("count").as("count");
+
+        Aggregation aggregation = Aggregation.newAggregation(
+                match, group, sort, limit, project
+        );
+
+        return mongoTemplate.aggregate(aggregation, "logs", PartnerNameResult.class)
+                .getMappedResults().stream()
+                .map(PartnerNameResult::getPartnerName)
+                .filter(Objects::nonNull)
+                .toList();
+    }
+
 }
 
 

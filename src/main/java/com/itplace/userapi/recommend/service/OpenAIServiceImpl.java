@@ -76,8 +76,11 @@ public class OpenAIServiceImpl implements OpenAIService {
         String prompt = String.format("""
                         【사용자 성향 요약】
                         %s
+                        
                         【행동 로그 기반 관심 제휴사]
-                        - 최근 클릭/검색/상세 행동이 많았던 제휴사: %s
+                        - 최근 클릭한 제휴사: %s
+                        - 최근 검색한 제휴사: %s
+                        - 최근 상세보기한 제휴사: %s
                         
                         【멤버십 혜택 이용 이력】
                         - 실제로 혜택을 자주 사용한 제휴사: %s
@@ -88,7 +91,7 @@ public class OpenAIServiceImpl implements OpenAIService {
                         ※ 아래 후보 혜택들 중 사용자에게 적절한 혜택 %d개 이상을 골라주세요.
                         
                         반드시 다음 조건을 지켜주세요:
-                        - 추천 이유에는 해당 혜택의 설명뿐 아니라 '사용자가 최근 행동 로그에서 자주 본 제휴사' 또는 '혜택을 자주 이용한 제휴사'와의 관련성을 명시해야 합니다.
+                        - 추천 이유에는 해당 혜택의 설명뿐 아니라 '사용자가 최근 어떤 행동 로그(click/search/detail)에서 본 제휴사' 또는 '혜택을 자주 이용한 제휴사'와의 관련성을 명시해야 합니다.
                         - 예: "최근 CGV를 자주 클릭하셨더라구요!", "실제로 VIPS 혜택을 많이 사용하셨네요!"
                         - 반드시 제휴사는 중복되지 않도록 해주세요.
                         
@@ -109,7 +112,9 @@ public class OpenAIServiceImpl implements OpenAIService {
                           ]
                         }
                         """, uf.getLLMContext(),
-                String.join(", ", uf.getLogBasedPartnerNames()),
+                String.join(", ", uf.getClickPartners()),
+                String.join(", ", uf.getSearchPartners()),
+                String.join(", ", uf.getDetailPartners()),
                 String.join(", ", uf.getRecentPartnerNames()),
                 items,
                 topK);

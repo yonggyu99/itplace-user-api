@@ -42,8 +42,8 @@ public class ScratchServiceImpl implements ScratchService {
         user.setCoupon(user.getCoupon() - 1);
         userRepository.save(user);
 
-        // 당첨 확률 15%
-        boolean isSuccess = random.nextInt(100) < 15;
+        // 당첨 확률 5%
+        boolean isSuccess = random.nextInt(100) < 5;
 
         Gift selectedGift = null;
         if (isSuccess) {
