@@ -18,7 +18,8 @@ public interface StoreRepository extends JpaRepository<Store, Long> {
                       longitude BETWEEN :minLng AND :maxLng
                       AND latitude BETWEEN :minLat AND :maxLat
                       AND ST_Distance_Sphere(location, ST_SRID(POINT(:lat, :lng), 4326)) <= :radiusMeters
-                    ORDER BY distance
+                    ORDER BY RAND()
+                    LIMIT 150
                     """,
             nativeQuery = true
     )
