@@ -32,16 +32,23 @@ public class SignUpRequest {
 
     @NotBlank(message = "비밀번호는 필수 항목입니다.")
     @Size(min = 6, max = 30, message = "비밀번호는 6자 이상 30자 이하로 입력해주세요.")
+    @Pattern(
+            regexp = "^(?=.*[!@#$%^&*()_+{}\\[\\]:;<>,.?~/-]).*$",
+            message = "비밀번호에는 특수문자를 최소 1개 이상 포함해야 합니다."
+    )
     private String password;
 
     @NotBlank(message = "비밀번호 확인은 필수 항목입니다.")
     @Size(min = 6, max = 30, message = "비밀번호는 6자 이상 30자 이하로 입력해주세요.")
+    @Pattern(
+            regexp = "^(?=.*[!@#$%^&*()_+{}\\[\\]:;<>,.?~/-]).*$",
+            message = "비밀번호에는 특수문자를 최소 1개 이상 포함해야 합니다."
+    )
     private String passwordConfirm;
 
     @NotNull(message = "성별은 필수 항목입니다.")
     private Gender gender;
 
-    //    @NotBlank(message = "멤버십 번호는 필수 항목입니다.")
     private String membershipId;
 
     @NotNull(message = "생년월일은 필수 입력입니다.")
