@@ -5,9 +5,7 @@ import com.itplace.userapi.benefit.entity.TierBenefit;
 import com.itplace.userapi.benefit.repository.BenefitRepository;
 import com.itplace.userapi.benefit.repository.TierBenefitRepository;
 import com.itplace.userapi.map.StoreCode;
-import com.itplace.userapi.map.dto.PartnerDto;
 import com.itplace.userapi.map.dto.StoreDetailDto;
-import com.itplace.userapi.map.dto.StoreDto;
 import com.itplace.userapi.map.dto.TierBenefitDto;
 import com.itplace.userapi.map.entity.Store;
 import com.itplace.userapi.map.exception.StoreKeywordException;
@@ -110,31 +108,7 @@ public class StoreServiceImpl implements StoreService {
                     double distance = calculateDistance(userLat, userLng, store.getLocation().getY(),
                             store.getLocation().getX());
 
-                    return StoreDetailDto.builder()
-                            .store(StoreDto.builder()
-                                    .storeId(store.getStoreId())
-                                    .storeName(store.getStoreName())
-                                    .business(store.getBusiness())
-                                    .city(store.getCity())
-                                    .town(store.getTown())
-                                    .legalDong(store.getLegalDong())
-                                    .address(store.getAddress())
-                                    .roadName(store.getRoadName())
-                                    .roadAddress(store.getRoadAddress())
-                                    .postCode(store.getPostCode())
-                                    .longitude(store.getLocation().getX())
-                                    .latitude(store.getLocation().getY())
-                                    .hasCoupon(store.isHasCoupon())
-                                    .build())
-                            .partner(PartnerDto.builder()
-                                    .partnerId(partner.getPartnerId())
-                                    .partnerName(partner.getPartnerName())
-                                    .image(partner.getImage())
-                                    .category(partner.getCategory().trim())
-                                    .build())
-                            .tierBenefit(tierBenefitDtos)
-                            .distance(distance)
-                            .build();
+                    return StoreDetailDto.of(store, partner, tierBenefitDtos, distance);
                 })
                 .toList();
     }
@@ -192,31 +166,7 @@ public class StoreServiceImpl implements StoreService {
                                                     .build())
                             )
                             .toList();
-                    return StoreDetailDto.builder()
-                            .store(StoreDto.builder()
-                                    .storeId(store.getStoreId())
-                                    .storeName(store.getStoreName())
-                                    .business(store.getBusiness())
-                                    .city(store.getCity())
-                                    .town(store.getTown())
-                                    .legalDong(store.getLegalDong())
-                                    .address(store.getAddress())
-                                    .roadName(store.getRoadName())
-                                    .roadAddress(store.getRoadAddress())
-                                    .postCode(store.getPostCode())
-                                    .longitude(store.getLocation().getX())
-                                    .latitude(store.getLocation().getY())
-                                    .hasCoupon(store.isHasCoupon())
-                                    .build())
-                            .partner(PartnerDto.builder()
-                                    .partnerId(partner.getPartnerId())
-                                    .partnerName(partner.getPartnerName())
-                                    .image(partner.getImage())
-                                    .category(partner.getCategory().trim())
-                                    .build())
-                            .tierBenefit(tierBenefitDtos)
-                            .distance(distance)
-                            .build();
+                    return StoreDetailDto.of(store, partner, tierBenefitDtos, distance);
                 })
                 .toList();
     }
@@ -257,31 +207,7 @@ public class StoreServiceImpl implements StoreService {
                             )
                             .toList();
 
-                    return StoreDetailDto.builder()
-                            .store(StoreDto.builder()
-                                    .storeId(store.getStoreId())
-                                    .storeName(store.getStoreName())
-                                    .business(store.getBusiness())
-                                    .city(store.getCity())
-                                    .town(store.getTown())
-                                    .legalDong(store.getLegalDong())
-                                    .address(store.getAddress())
-                                    .roadName(store.getRoadName())
-                                    .roadAddress(store.getRoadAddress())
-                                    .postCode(store.getPostCode())
-                                    .longitude(store.getLocation().getX())
-                                    .latitude(store.getLocation().getY())
-                                    .hasCoupon(store.isHasCoupon())
-                                    .build())
-                            .partner(PartnerDto.builder()
-                                    .partnerId(partner.getPartnerId())
-                                    .partnerName(partner.getPartnerName())
-                                    .image(partner.getImage())
-                                    .category(partner.getCategory().trim())
-                                    .build())
-                            .tierBenefit(tierBenefitDtos)
-                            .distance(distance)
-                            .build();
+                    return StoreDetailDto.of(store, partner, tierBenefitDtos, distance);
                 })
                 .toList();
     }
@@ -322,7 +248,5 @@ public class StoreServiceImpl implements StoreService {
 
         return benefits;
     }
-
-
 }
 
