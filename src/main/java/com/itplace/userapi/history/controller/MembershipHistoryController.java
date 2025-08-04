@@ -8,7 +8,7 @@ import com.itplace.userapi.history.dto.MonthlyDiscountResponse;
 import com.itplace.userapi.history.exception.UnauthorizedAccessException;
 import com.itplace.userapi.history.service.MembershipHistoryService;
 import com.itplace.userapi.security.auth.common.PrincipalDetails;
-import java.time.LocalDate;
+import java.time.LocalDateTime;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -30,8 +30,10 @@ public class MembershipHistoryController {
     public ResponseEntity<ApiResponse<PagedResponse<MembershipHistoryResponse>>> getHistory(
             @AuthenticationPrincipal PrincipalDetails principalDetails,
             @RequestParam(required = false) String keyword,
-            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate,
-            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate,
+            @RequestParam(required = false)
+            @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime startDate,
+            @RequestParam(required = false)
+            @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime endDate,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size
     ) {
@@ -40,7 +42,8 @@ public class MembershipHistoryController {
         }
         Pageable pageable = PageRequest.of(page, size);
         PagedResponse<MembershipHistoryResponse> result =
-                membershipHistoryService.getUserHistory(principalDetails.getUserId(), keyword, startDate, endDate, pageable);
+                membershipHistoryService.getUserHistory(principalDetails.getUserId(), keyword, startDate, endDate,
+                        pageable);
         ApiResponse<PagedResponse<MembershipHistoryResponse>> body = ApiResponse.of(
                 MembershipHistoryCode.MEMBERSHIP_HISTORY_SUCCESS, result);
         return new ResponseEntity<>(body, body.getStatus());
@@ -53,7 +56,8 @@ public class MembershipHistoryController {
         if (principalDetails == null) {
             throw new UnauthorizedAccessException(MembershipHistoryCode.UNAUTHORIZED_MEMBERSHIP_ACCESS);
         }
-        MonthlyDiscountResponse result = membershipHistoryService.getMonthlyDiscountSummary(principalDetails.getUserId());
+        MonthlyDiscountResponse result = membershipHistoryService.getMonthlyDiscountSummary(
+                principalDetails.getUserId());
         ApiResponse<MonthlyDiscountResponse> body = ApiResponse.of(
                 MembershipHistoryCode.MEMBERSHIP_HISTORY_SUMMARY_SUCCESS,
                 result);
