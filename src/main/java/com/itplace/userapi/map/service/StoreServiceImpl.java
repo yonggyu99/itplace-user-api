@@ -48,18 +48,8 @@ public class StoreServiceImpl implements StoreService {
         double minLng = lng - Math.toDegrees(dLng);
         double maxLng = lng + Math.toDegrees(dLng);
 
-        // 1. 조건에 맞는 Store 목록을 모두 조회합니다.
-        List<Store> stores = storeRepository.findNearbyStores(lat, lng, radiusMeters, minLat, maxLat, minLng, maxLng);
-        log.info("============ 조회된 전체 store 개수: {} =============", stores.size());
-
-        // 2. 150개가 넘으면 랜덤으로 섞어서 150개만 선택합니다.
-        List<Store> limitedStores;
-        if (stores.size() > 150) {
-            Collections.shuffle(stores); // 리스트를 무작위로 섞습니다.
-            limitedStores = stores.stream().limit(150).toList();
-        } else {
-            limitedStores = stores;
-        }
+        List<Store> limitedStores = storeRepository.findNearbyStores(lat, lng, radiusMeters, minLat, maxLat, minLng, maxLng);
+        log.info("============ 조회된 전체 store 개수: {} =============", limitedStores.size());
 
         if (limitedStores.isEmpty()) {
             return Collections.emptyList();
@@ -90,14 +80,12 @@ public class StoreServiceImpl implements StoreService {
         return limitedStores.stream()
                 .map(store -> {
                     Partner partner = store.getPartner();
-                    List<Benefit> benefitsForPartner = partnerToBenefitsMap.getOrDefault(partner.getPartnerId(),
-                            Collections.emptyList());
+                    List<Benefit> benefitsForPartner = partnerToBenefitsMap.getOrDefault(partner.getPartnerId(), Collections.emptyList());
                     List<Benefit> finalBenefits = selectBenefits(benefitsForPartner, store.getStoreName());
 
                     List<TierBenefitDto> tierBenefitDtos = finalBenefits.stream()
                             .flatMap(benefit ->
-                                    benefitToTiersMap.getOrDefault(benefit.getBenefitId(), Collections.emptyList())
-                                            .stream()
+                                    benefitToTiersMap.getOrDefault(benefit.getBenefitId(), Collections.emptyList()).stream()
                                             .map(tierBenefit -> TierBenefitDto.builder()
                                                     .grade(tierBenefit.getGrade())
                                                     .context(tierBenefit.getContext())
@@ -139,11 +127,38 @@ public class StoreServiceImpl implements StoreService {
         if (keyword == null || keyword.isBlank()) {
             throw new StoreKeywordException(StoreCode.KEYWORD_REQUEST);
         }
-        if (category != null && category.isBlank()) {
+
+        if (category != null && (category.isBlank() || category.equalsIgnoreCase("전체"))) {
             category = null;
+        } else if (category != null) {
+            category = category.trim();
         }
 
         List<Store> stores = storeRepository.searchNearbyStores(lng, lat, category, keyword);
+
+        if (stores.isEmpty()) {
+            return Collections.emptyList();
+        }
+
+        // 파트너 ID 수집
+        List<Long> partnerIds = stores.stream()
+                .map(store -> store.getPartner().getPartnerId())
+                .distinct()
+                .toList();
+
+        // 혜택 일괄 조회
+        List<Benefit> allBenefits = benefitRepository.findAllByPartner_PartnerIdIn(partnerIds);
+        List<TierBenefit> allTierBenefits = tierBenefitRepository.findAllByBenefitIn(allBenefits);
+
+        // 맵 구성
+        Map<Long, List<Benefit>> partnerToBenefitsMap = allBenefits.stream()
+                .collect(Collectors.groupingBy(b -> b.getPartner().getPartnerId()));
+
+        Map<Long, List<TierBenefit>> benefitToTiersMap = allTierBenefits.stream()
+                .collect(Collectors.groupingBy(tb -> tb.getBenefit().getBenefitId()));
+
+        // 선택 결과 캐시 (partnerId + storeName 기준) — 같은 파트너/상점 조합에 대해 재사용
+        Map<String, List<TierBenefitDto>> benefitDtoCache = new java.util.HashMap<>();
 
         return stores.stream()
                 .map(store -> {
@@ -153,10 +168,8 @@ public class StoreServiceImpl implements StoreService {
                     double distance = userLat == 0 || userLng == 0
                             ? 0 : calculateDistance(userLat, userLng, storeLat, storeLng);
 
-                    List<Benefit> benefits = benefitRepository.findAllByPartner_PartnerId(partner.getPartnerId());
-
-                    List<Benefit> finalBenefits = selectBenefits(benefits, store.getStoreName());
-
+                    List<Benefit> benefitsForPartner = partnerToBenefitsMap.getOrDefault(partner.getPartnerId(), Collections.emptyList());
+                    List<Benefit> finalBenefits = selectBenefits(benefitsForPartner, store.getStoreName());
                     List<TierBenefitDto> tierBenefitDtos = finalBenefits.stream()
                             .flatMap(benefit ->
                                     tierBenefitRepository.findAllByBenefit_BenefitId(benefit.getBenefitId()).stream()
@@ -229,24 +242,26 @@ public class StoreServiceImpl implements StoreService {
     }
 
     private List<Benefit> selectBenefits(List<Benefit> benefits, String storeName) {
-        // 오프라인/온라인이 나뉘어져 있는 경우
-        List<Benefit> offlineBenefit = benefits.stream()
+        if (benefits == null || benefits.isEmpty()) {
+            return Collections.emptyList();
+        }
+
+        // 오프라인 우선
+        return benefits.stream()
                 .filter(b -> b.getBenefitName().contains("오프라인"))
                 .findFirst()
                 .map(List::of)
-                .orElse(null);
-
-        if (offlineBenefit != null) {
-            return offlineBenefit;
-        }
-
-        if (benefits.size() >= 3) {
-            return benefits.stream()
-                    .filter(b -> b.getBenefitName().equals(storeName))
-                    .toList();
-        }
-
-        return benefits;
+                .orElseGet(() -> {
+                    if (benefits.size() >= 3) {
+                        List<Benefit> matched = benefits.stream()
+                                .filter(b -> b.getBenefitName().equals(storeName))
+                                .toList();
+                        if (!matched.isEmpty()) {
+                            return matched;
+                        }
+                    }
+                    return benefits;
+                });
     }
 }
 

@@ -18,7 +18,8 @@ public interface StoreRepository extends JpaRepository<Store, Long> {
                       longitude BETWEEN :minLng AND :maxLng
                       AND latitude BETWEEN :minLat AND :maxLat
                       AND ST_Distance_Sphere(location, ST_SRID(POINT(:lat, :lng), 4326)) <= :radiusMeters
-                    ORDER BY distance
+                    ORDER BY RAND()
+                    LIMIT 150
                     """,
             nativeQuery = true
     )
@@ -37,15 +38,15 @@ public interface StoreRepository extends JpaRepository<Store, Long> {
                     SELECT s.*
                     FROM store s
                     JOIN partner p ON s.partnerId = p.partnerId
-                    WHERE s.location IS NOT NULL
-                    AND (:category IS NULL OR p.category = :category)
-                    AND (LOWER(s.storeName) LIKE CONCAT('%',LOWER(:keyword),'%') OR
-                        LOWER(s.business) LIKE CONCAT('%',LOWER(:keyword),'%') OR
-                        LOWER(p.partnerName) LIKE CONCAT('%',LOWER(:keyword),'%') OR
-                        LOWER(p.category) LIKE CONCAT('%',LOWER(:keyword),'%')
-                    )
-                    ORDER BY ST_Distance_Sphere(location, ST_SRID(Point(:lng, :lat),4326)) ASC
+                    WHERE s.location
+                      AND (:category IS NULL OR p.category = :category)
+                      AND (
+                            MATCH(s.storeName, s.business) AGAINST(:keyword IN NATURAL LANGUAGE MODE)
+                         OR MATCH(p.partnerName, p.category) AGAINST(:keyword IN NATURAL LANGUAGE MODE)
+                      )
+                    ORDER BY ST_Distance_Sphere(s.location, ST_SRID(Point(:lat, :lng), 4326))
                     LIMIT 30
+                    
                     """,
             nativeQuery = true
     )
