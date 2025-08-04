@@ -5,9 +5,7 @@ import com.itplace.userapi.benefit.entity.TierBenefit;
 import com.itplace.userapi.benefit.repository.BenefitRepository;
 import com.itplace.userapi.benefit.repository.TierBenefitRepository;
 import com.itplace.userapi.map.StoreCode;
-import com.itplace.userapi.map.dto.PartnerDto;
 import com.itplace.userapi.map.dto.StoreDetailDto;
-import com.itplace.userapi.map.dto.StoreDto;
 import com.itplace.userapi.map.dto.TierBenefitDto;
 import com.itplace.userapi.map.entity.Store;
 import com.itplace.userapi.map.exception.StoreKeywordException;
@@ -172,20 +170,15 @@ public class StoreServiceImpl implements StoreService {
 
                     List<Benefit> benefitsForPartner = partnerToBenefitsMap.getOrDefault(partner.getPartnerId(), Collections.emptyList());
                     List<Benefit> finalBenefits = selectBenefits(benefitsForPartner, store.getStoreName());
-
-                    String cacheKey = partner.getPartnerId() + "::" + store.getStoreName();
-                    List<TierBenefitDto> tierBenefitDtos = benefitDtoCache.computeIfAbsent(cacheKey, key ->
-                            finalBenefits.stream()
-                                    .flatMap(benefit ->
-                                            benefitToTiersMap.getOrDefault(benefit.getBenefitId(), Collections.emptyList()).stream()
-                                                    .map(tierBenefit -> TierBenefitDto.builder()
-                                                            .grade(tierBenefit.getGrade())
-                                                            .context(tierBenefit.getContext())
-                                                            .build())
-                                    )
-                                    .toList()
-                    );
-
+                    List<TierBenefitDto> tierBenefitDtos = finalBenefits.stream()
+                            .flatMap(benefit ->
+                                    tierBenefitRepository.findAllByBenefit_BenefitId(benefit.getBenefitId()).stream()
+                                            .map(tierBenefit -> TierBenefitDto.builder()
+                                                    .grade(tierBenefit.getGrade())
+                                                    .context(tierBenefit.getContext())
+                                                    .build())
+                            )
+                            .toList();
                     return StoreDetailDto.of(store, partner, tierBenefitDtos, distance);
                 })
                 .toList();
