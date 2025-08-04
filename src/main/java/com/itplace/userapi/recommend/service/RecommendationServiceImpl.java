@@ -22,7 +22,7 @@ import org.springframework.stereotype.Service;
 @Service
 @RequiredArgsConstructor
 public class RecommendationServiceImpl implements RecommendationService {
-    private static final int EXPIRED_DAYS = 3;
+    private static final int EXPIRED_DAYS = 1;
 
     private final UserFeatureService userFeatureService;
     private final OpenAIService aiService;
@@ -31,7 +31,7 @@ public class RecommendationServiceImpl implements RecommendationService {
     private final BenefitRepository benefitRepository;
 
     public List<Recommendations> recommend(Long userId, int topK) throws Exception {
-        LocalDateTime threshold = LocalDateTime.now().minusDays(EXPIRED_DAYS); // 3일 기준으로 추천 갱신
+        LocalDateTime threshold = LocalDateTime.now().minusDays(EXPIRED_DAYS); // n일 기준으로 추천 갱신
 
         // 최근 추천 기록 있으면 캐시된 추천 반환
         LocalDate latestRecommendationDate = recommendationRepository.findLatestRecommendationDate(userId, threshold);

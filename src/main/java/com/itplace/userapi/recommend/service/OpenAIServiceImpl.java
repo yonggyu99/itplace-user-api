@@ -64,7 +64,7 @@ public class OpenAIServiceImpl implements OpenAIService {
             String context = c.getContext() != null ? c.getContext().replaceAll("[\\r\\n]+", " ") : "추가 정보 없음";
 
             items.append(String.format(
-                    "%d. [%s] %s - %s / 혜택: %s\n",
+                    "%d. [%s] 제휴처: %s / 설명: %s / 혜택: %s\n",
                     i + 1,
                     c.getCategory(),
                     c.getPartnerName(),
