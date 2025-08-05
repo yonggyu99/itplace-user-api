@@ -9,57 +9,47 @@ import org.springframework.data.jpa.repository.Query;
 
 public interface StoreRepository extends JpaRepository<Store, Long> {
 
-    @Query(value = """
-            SELECT s.*
-              FROM (
-                     SELECT
-                       *,
-                       -- POINT(x=lng, y=lat) + SRID 설정
-                       ST_Distance_Sphere(
-                         location,
-                         ST_SRID(
-                           POINT(:lng, :lat),
-                           4326
-                         )
-                       ) AS distance
-                     FROM store
-                    WHERE longitude BETWEEN :minLng AND :maxLng
-                      AND latitude  BETWEEN :minLat AND :maxLat
-                      AND ST_Distance_Sphere(
-                            location,
-                            ST_SRID(
-                              POINT(:lng, :lat),
-                              4326
-                            )
-                          ) <= :radiusMeters
-                   ) AS s
-             ORDER BY RAND()    -- 반경 내에서 완전 랜덤
-             LIMIT 150
-            """,
-            nativeQuery = true)
+    @Query(
+            value = """
+                    SELECT *,
+                           ST_Distance_Sphere(location, ST_SRID(POINT(:lng, :lat), 4326)) AS distance
+                    FROM store
+                    WHERE
+                      longitude BETWEEN :minLng AND :maxLng
+                      AND latitude BETWEEN :minLat AND :maxLat
+                      AND ST_Distance_Sphere(location, ST_SRID(POINT(:lng, :lat), 4326)) <= :radiusMeters
+                    ORDER BY RAND()
+                    LIMIT 150
+                    """,
+            nativeQuery = true
+    )
     List<Store> findNearbyStores(
-            @Param("lng") double lng,
             @Param("lat") double lat,
-            @Param("minLng") double minLng,
-            @Param("maxLng") double maxLng,
+            @Param("lng") double lng,
+            @Param("radiusMeters") double radiusMeters,
             @Param("minLat") double minLat,
             @Param("maxLat") double maxLat,
-            @Param("radiusMeters") double radiusMeters
+            @Param("minLng") double minLng,
+            @Param("maxLng") double maxLng
     );
 
     @Query(
             value = """
-                     SELECT s.*, CASE WHEN s.storeName = :keyword THEN 1 ELSE 0 END AS is_exact,
-                     (MATCH(s.storeName, s.business) AGAINST(:keyword IN NATURAL LANGUAGE MODE)
-                     + MATCH(p.partnerName, p.category) AGAINST(:keyword IN NATURAL LANGUAGE MODE)) AS relevance,
-                     ST_Distance_Sphere(s.location, ST_SRID(Point(:lng, :lat), 4326)) AS distance FROM store s
+                    SELECT s.*, CASE WHEN s.storeName = :keyword THEN 1 ELSE 0 END AS is_exact,
+                    (MATCH(s.storeName, s.business) AGAINST(:keyword IN NATURAL LANGUAGE MODE)
+                    + MATCH(p.partnerName, p.category) AGAINST(:keyword IN NATURAL LANGUAGE MODE)) AS relevance,
+                    ST_Distance_Sphere(s.location, ST_SRID(Point(:lng, :lat), 4326)) AS distance
+                    FROM store s
                     JOIN partner p ON s.partnerId = p.partnerId
                     WHERE s.location IS NOT NULL
                     AND (:category IS NULL OR p.category = :category)
                     AND (MATCH(s.storeName, s.business) AGAINST(CONCAT('+', :keyword, '*') IN BOOLEAN MODE)
                     OR MATCH(p.partnerName, p.category) AGAINST(CONCAT('+', :keyword, '*') IN BOOLEAN MODE))
-                     ORDER BY is_exact DESC, distance ASC, relevance DESC
-                     LIMIT 30
+                    ORDER BY
+                        is_exact DESC,
+                        distance ASC,
+                        relevance DESC
+                    LIMIT 30
                     """,
             nativeQuery = true
     )
