@@ -21,7 +21,7 @@ public class LogController {
 
     @GetMapping("/partners/search-ranking")
     public ResponseEntity<ApiResponse<?>> getPartnerRanking(
-            @RequestParam(defaultValue = "2") int recentDay,
+            @RequestParam(defaultValue = "30") int recentDay,
             @RequestParam(defaultValue = "3") int prevDay) {
         List<SearchRankResponse> searchRank = logService.searchRank(recentDay, prevDay);
         ApiResponse<?> body = ApiResponse.of(LogCode.PARTNERS_SEARCH_RANKING_SUCCESS, searchRank);
