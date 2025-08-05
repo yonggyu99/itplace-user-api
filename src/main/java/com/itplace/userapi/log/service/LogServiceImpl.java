@@ -90,7 +90,7 @@ public class LogServiceImpl implements LogService {
     @Override
     public List<SearchRankResponse> searchRank(int recentDay, int prevDay) {
         Instant now = Instant.now();
-        Instant from = now.minus(Duration.ofMinutes(recentDay));
+        Instant from = now.minus(Duration.ofDays(recentDay));
         Instant prevFrom = from.minus(Duration.ofDays(prevDay));
         Instant prevTo = from;
 
