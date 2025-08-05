@@ -16,6 +16,4 @@ public interface RecommendationRepository extends JpaRepository<Recommendation, 
     @Query("SELECT r FROM Recommendation r WHERE r.user.id = :userId AND DATE(r.createdDate) = :createdDate ORDER BY r.rank ASC")
     List<Recommendation> findByUserIdAndCreatedDate(@Param("userId") Long userId,
                                                     @Param("createdDate") LocalDate createdDate);
-
-
 }
