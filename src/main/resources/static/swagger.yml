@@ -2587,7 +2587,7 @@ paths:
   /questions/recommend:
     get:
       tags:
-        - question
+        - Question
       summary: 질문 기반 제휴처 추천
       description: |
         사용자의 질문에 기반하여 유사 질문 카테고리를 분석하고, 해당 카테고리의 주변 제휴처를 추천합니다.  
