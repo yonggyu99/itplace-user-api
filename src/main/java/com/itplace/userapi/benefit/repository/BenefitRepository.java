@@ -58,8 +58,6 @@ public interface BenefitRepository extends JpaRepository<Benefit, Long> {
             """)
     Optional<Benefit> findBenefitWithPartnerById(@Param("benefitId") Long benefitId);
 
-    List<Benefit> findByPartner_PartnerIdAndMainCategory(Long partnerId, MainCategory mainCategory);
-
     //ElasticSearch Indexer 사용
     @Query("""
                 SELECT b FROM Benefit b
@@ -72,4 +70,17 @@ public interface BenefitRepository extends JpaRepository<Benefit, Long> {
 
     @Query("SELECT b FROM Benefit b JOIN FETCH b.benefitPolicy WHERE b.benefitId = :benefitId")
     Optional<Benefit> findByIdWithPolicy(@Param("benefitId") Long benefitId);
+
+    @Query("""
+                SELECT DISTINCT b 
+                FROM Benefit b
+                JOIN FETCH b.partner p
+                LEFT JOIN FETCH b.tierBenefits tb
+                WHERE b.partner.partnerId = :partnerId 
+                  AND b.mainCategory = :mainCategory
+            """)
+    List<Benefit> findBenefitsWithPartnerAndTierBenefits(
+            @Param("partnerId") Long partnerId,
+            @Param("mainCategory") MainCategory mainCategory
+    );
 }
