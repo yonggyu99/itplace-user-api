@@ -39,13 +39,12 @@ public interface StoreRepository extends JpaRepository<Store, Long> {
                     FROM store s
                     JOIN partner p ON s.partnerId = p.partnerId
                     WHERE s.location IS NOT NULL
-                    AND (:category IS NULL OR p.category = :category)
-                    AND (LOWER(s.storeName) LIKE CONCAT('%',LOWER(:keyword),'%') OR
-                        LOWER(s.business) LIKE CONCAT('%',LOWER(:keyword),'%') OR
-                        LOWER(p.partnerName) LIKE CONCAT('%',LOWER(:keyword),'%') OR
-                        LOWER(p.category) LIKE CONCAT('%',LOWER(:keyword),'%')
-                    )
-                    ORDER BY ST_Distance_Sphere(location, ST_SRID(Point(:lng, :lat),4326)) ASC
+                      AND (:category IS NULL OR p.category = :category)
+                      AND (
+                            MATCH(s.storeName, s.business) AGAINST(:keyword IN NATURAL LANGUAGE MODE)
+                         OR MATCH(p.partnerName, p.category) AGAINST(:keyword IN NATURAL LANGUAGE MODE)
+                      )
+                    ORDER BY ST_Distance_Sphere(s.location, ST_SRID(Point(:lng, :lat), 4326)) ASC
                     LIMIT 30
                     """,
             nativeQuery = true
