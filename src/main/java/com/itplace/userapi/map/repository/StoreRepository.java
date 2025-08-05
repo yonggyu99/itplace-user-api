@@ -53,9 +53,6 @@ public interface StoreRepository extends JpaRepository<Store, Long> {
     List<Store> searchNearbyStores(@Param("lng") double lng, @Param("lat") double lat,
                                    @Param("category") String category, @Param("keyword") String keyword);
 
-    @Query("SELECT s FROM Store s JOIN FETCH s.partner WHERE s.storeId = :storeId")
-    Optional<Store> findByIdWithPartner(@Param("storeId") Long storeId);
-
     Store findByStoreName(String storeName);
 
     @Query(
@@ -74,4 +71,13 @@ public interface StoreRepository extends JpaRepository<Store, Long> {
             @Param("lat") double lat,
             @Param("partnerId") Long partnerId
     );
+
+    @Query("""
+                SELECT s FROM Store s
+                JOIN FETCH s.partner p
+                WHERE s.storeId = :storeId AND p.partnerId = :partnerId
+            """)
+    Optional<Store> findByIdAndPartnerId(
+            @Param("storeId") Long storeId,
+            @Param("partnerId") Long partnerId);
 }

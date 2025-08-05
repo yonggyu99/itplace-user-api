@@ -17,7 +17,6 @@ import com.itplace.userapi.benefit.repository.TierBenefitRepository;
 import com.itplace.userapi.favorite.repository.FavoriteRepository;
 import com.itplace.userapi.map.StoreCode;
 import com.itplace.userapi.map.entity.Store;
-import com.itplace.userapi.map.exception.StoreNotFoundException;
 import com.itplace.userapi.map.exception.StorePartnerMismatchException;
 import com.itplace.userapi.map.repository.StoreRepository;
 import java.util.Collections;
@@ -143,54 +142,45 @@ public class BenefitServiceImpl implements BenefitService {
     @Transactional(readOnly = true)
     public MapBenefitDetailResponse getMapBenefitDetail(Long storeId, Long partnerId, MainCategory mainCategory,
                                                         Long userId) {
-        log.info("[getMapBenefitDetail] storeId: {}, partnerId: {}, mainCategory: {}", storeId, partnerId,
-                mainCategory);
+        // Store + Partner 체크
+        Store store = storeRepository.findByIdAndPartnerId(storeId, partnerId)
+                .orElseThrow(() -> new StorePartnerMismatchException(StoreCode.STORE_PARTNER_MISMATCH));
 
-        Store store = storeRepository.findByIdWithPartner(storeId)
-                .orElseThrow(() -> new StoreNotFoundException(StoreCode.STORE_NOT_FOUND));
-
-        if (!store.getPartner().getPartnerId().equals(partnerId)) {
-            throw new StorePartnerMismatchException(StoreCode.STORE_PARTNER_MISMATCH);
-        }
-
-        List<Benefit> benefits = benefitRepository.findByPartner_PartnerIdAndMainCategory(partnerId, mainCategory);
-        log.info("[benefits size] found: {}", benefits.size());
+        // Benefit + TierBenefit 조회
+        List<Benefit> benefits = benefitRepository.findBenefitsWithPartnerAndTierBenefits(partnerId, mainCategory);
 
         if (benefits.isEmpty()) {
             throw new BenefitNotFoundException(BenefitCode.BENEFIT_DETAIL_NOT_FOUND);
         }
 
-        Benefit selectedBenefit;
-
+        // Benefit 선택 로직
+        Benefit selected;
         if (benefits.size() == 1) {
-            selectedBenefit = benefits.get(0);
-
+            selected = benefits.get(0);
         } else {
-            selectedBenefit = benefits.stream()
+            selected = benefits.stream()
                     .filter(b -> b.getUsageType() == UsageType.OFFLINE || b.getUsageType() == UsageType.BOTH)
                     .findFirst()
                     .orElseThrow(() -> new BenefitOfflineNotFoundException(BenefitCode.BENEFIT_OFFLINE_NOT_FOUND));
         }
 
-        log.info("[selectedBenefit] id: {}, name: {}", selectedBenefit.getBenefitId(),
-                selectedBenefit.getBenefitName());
+        // Favorite 여부 체크 (선택된 Benefit에 대해서만)
+        boolean isFavorite = false;
+        if (userId != null) {
+            isFavorite = favoriteRepository.existsByUser_IdAndBenefit_BenefitId(userId, selected.getBenefitId());
+        }
 
-        List<TierBenefitInfo> tierDtos = tierBenefitRepository.findAllByBenefit_BenefitId(
-                        selectedBenefit.getBenefitId()).stream()
+        // TierBenefit 변환
+        List<TierBenefitInfo> tierDtos = selected.getTierBenefits().stream()
                 .map(tb -> new TierBenefitInfo(tb.getGrade(), tb.getContext(), tb.getIsAll()))
                 .toList();
 
-        boolean isFavorite = false;
-        if (userId != null) {
-            isFavorite = favoriteRepository.existsByUser_IdAndBenefit_BenefitId(userId, selectedBenefit.getBenefitId());
-        }
-
         return MapBenefitDetailResponse.builder()
-                .benefitId(selectedBenefit.getBenefitId())
-                .benefitName(selectedBenefit.getBenefitName())
-                .mainCategory(selectedBenefit.getMainCategory())
-                .manual(selectedBenefit.getManual())
-                .url(selectedBenefit.getUrl().trim())
+                .benefitId(selected.getBenefitId())
+                .benefitName(selected.getBenefitName())
+                .mainCategory(selected.getMainCategory())
+                .manual(selected.getManual())
+                .url(selected.getUrl().trim())
                 .tierBenefits(tierDtos)
                 .isFavorite(isFavorite)
                 .build();
