@@ -35,31 +35,32 @@ public interface StoreRepository extends JpaRepository<Store, Long> {
 
     @Query(
             value = """
-                                      SELECT
-                                        s.*,
-                                        CASE WHEN s.storeName = :keyword THEN 1 ELSE 0 END AS is_exact,
-                                        (
-                                          MATCH(s.storeName, s.business) AGAINST(:keyword IN NATURAL LANGUAGE MODE)
-                                          + MATCH(p.partnerName, p.category) AGAINST(:keyword IN NATURAL LANGUAGE MODE)
-                                        ) AS relevance,
-                                        ST_Distance_Sphere(
-                                          s.location,
-                                          ST_SRID(Point(:lng, :lat), 4326)
-                                        ) AS distance
-                                      FROM store s
-                                      JOIN partner p ON s.partnerId = p.partnerId
-                                      WHERE s.location IS NOT NULL
-                    AND (
-                      MATCH(s.storeName, s.business)
-                        AGAINST(CONCAT('+', :keyword, '*') IN BOOLEAN MODE)
-                      OR MATCH(p.partnerName, p.category)
-                        AGAINST(CONCAT('+', :keyword, '*') IN BOOLEAN MODE)
-                    )
-                                      ORDER BY
-                                        is_exact DESC,
-                                        distance ASC,
-                                        relevance DESC
-                                      LIMIT 30
+                                                          SELECT
+                                                            s.*,
+                                                            CASE WHEN s.storeName = :keyword THEN 1 ELSE 0 END AS is_exact,
+                                                            (
+                                                              MATCH(s.storeName, s.business) AGAINST(:keyword IN NATURAL LANGUAGE MODE)
+                                                              + MATCH(p.partnerName, p.category) AGAINST(:keyword IN NATURAL LANGUAGE MODE)
+                                                            ) AS relevance,
+                                                            ST_Distance_Sphere(
+                                                              s.location,
+                                                              ST_SRID(Point(:lng, :lat), 4326)
+                                                            ) AS distance
+                                                          FROM store s
+                                                          JOIN partner p ON s.partnerId = p.partnerId
+                                                          WHERE s.location IS NOT NULL
+                                                          AND (:category IS NULL OR p.category = :category)
+                                        AND (
+                                          MATCH(s.storeName, s.business)
+                                            AGAINST(CONCAT('+', :keyword, '*') IN BOOLEAN MODE)
+                                          OR MATCH(p.partnerName, p.category)
+                                            AGAINST(CONCAT('+', :keyword, '*') IN BOOLEAN MODE)
+                                        )
+                                                          ORDER BY
+                                                            is_exact DESC,
+                                                            distance ASC,
+                                                            relevance DESC
+                                                          LIMIT 30
                     """,
             nativeQuery = true
     )
