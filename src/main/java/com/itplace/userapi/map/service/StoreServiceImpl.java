@@ -48,7 +48,7 @@ public class StoreServiceImpl implements StoreService {
         double minLng = lng - Math.toDegrees(dLng);
         double maxLng = lng + Math.toDegrees(dLng);
 
-        List<Store> limitedStores = storeRepository.findNearbyStores(lat, lng, radiusMeters, minLat, maxLat, minLng, maxLng);
+        List<Store> limitedStores = storeRepository.findNearbyStores(lng, lat, radiusMeters, minLat, maxLat, minLng, maxLng);
         log.info("============ 조회된 전체 store 개수: {} =============", limitedStores.size());
 
         if (limitedStores.isEmpty()) {
