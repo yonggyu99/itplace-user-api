@@ -16,6 +16,7 @@ import com.itplace.userapi.partner.exception.PartnerNotFoundException;
 import com.itplace.userapi.partner.repository.PartnerRepository;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
@@ -106,6 +107,7 @@ public class StoreServiceImpl implements StoreService {
 
                     return StoreDetailDto.of(store, partner, tierBenefitDtos, distance);
                 })
+                .sorted(Comparator.comparing(StoreDetailDto::getDistance))
                 .toList();
     }
 
