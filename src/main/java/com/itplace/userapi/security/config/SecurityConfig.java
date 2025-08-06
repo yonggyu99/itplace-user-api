@@ -16,6 +16,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.data.redis.core.StringRedisTemplate;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -82,8 +83,20 @@ public class SecurityConfig {
         // 경로별 인가 작업
         http
                 .authorizeHttpRequests((auth) -> auth
-                        .requestMatchers("/**").permitAll()
-                        .anyRequest().authenticated());
+                        .requestMatchers(HttpMethod.GET, "/api/v1/users").authenticated()
+                        .requestMatchers(HttpMethod.DELETE, "/api/v1/users").authenticated()
+                        .requestMatchers(
+                                "/api/v1/questions/search",
+                                "/api/v1/questions/recommend",
+                                "/api/v1/questions/save",
+                                "/api/v1/users/changePassword",
+                                "/api/v1/users/checkUplusData",
+                                "/api/v1/users/linkUplusData",
+                                "/api/v1/favorites/**",
+                                "/api/v1/gifts/**"
+                        ).authenticated()
+
+                        .anyRequest().permitAll());
 
         http
                 .oauth2Login(oauth2 -> oauth2
