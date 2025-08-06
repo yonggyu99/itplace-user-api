@@ -38,7 +38,7 @@ public class StoreServiceImpl implements StoreService {
 
     private static final int GRID_SIZE = 10; // 10x10 그리드
     private static final int STORES_PER_CELL = 5; // 각 셀에서 가져올 상점 수
-    private static final int FINAL_LIMIT = 150; // 최종 반환할 상점 수
+    private static final int FINAL_LIMIT = 300; // 최종 반환할 상점 수
 
     private static final int WIDE_RADIUS_THRESHOLD = 5000; // 5km
 
