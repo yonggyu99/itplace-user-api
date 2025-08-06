@@ -61,20 +61,20 @@ public class EmailServiceImpl implements EmailService {
                                 <td align="center">
                                     <table width="600" border="0" cellspacing="0" cellpadding="0" style="border-collapse: collapse; border: 1px solid #ddd; margin-top: 20px;">
                                         <tr>
-                                            <td align="center" style="background-color: #4A90E2; padding: 20px 0;">
-                                                <h1 style="color: #ffffff; margin: 0;">[itPlace]</h1>
+                                            <td align="center" style="background-color: #7638FA; padding: 20px 0;">
+                                                <h1 style="color: #ffffff; margin: 0;">IT:PLACE</h1>
                                             </td>
                                         </tr>
                                         <tr>
                                             <td style="padding: 40px 30px;">
                                                 <h2 style="color: #333;">이메일 주소를 인증해주세요</h2>
                                                 <p style="margin: 20px 0;">
-                                                    안녕하세요, itPlace에 가입해 주셔서 감사합니다.<br>
+                                                    안녕하세요, IT:PLACE에 가입해 주셔서 감사합니다.<br>
                                                     회원가입을 완료하려면 아래 인증 번호를 입력해주세요.
                                                 </p>
                                                 <div style="margin: 30px auto; padding: 20px; background-color: #f4f4f4; border-radius: 5px; text-align: center;">
                                                     <p style="font-size: 16px; margin: 0; color: #555;">인증 번호</p>
-                                                    <p style="font-size: 32px; font-weight: bold; color: #4A90E2; margin: 10px 0; letter-spacing: 5px;">
+                                                    <p style="font-size: 32px; font-weight: bold; color: #7638FA; margin: 10px 0; letter-spacing: 5px;">
                                                         %s
                                                     </p>
                                                 </div>
