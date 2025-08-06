@@ -82,8 +82,8 @@ public interface StoreRepository extends JpaRepository<Store, Long> {
                     OR MATCH(p.partnerName, p.category) AGAINST(CONCAT('+', :keyword, '*') IN BOOLEAN MODE))
                     ORDER BY
                         is_exact DESC,
-                        relevance DESC,
-                        distance ASC
+                        distance ASC,
+                        relevance DESC
                     LIMIT 30
                     """,
             nativeQuery = true
