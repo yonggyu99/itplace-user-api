@@ -11,19 +11,15 @@ public interface StoreRepository extends JpaRepository<Store, Long> {
 
     @Query(
             value = """
-                    SELECT *,
-                           ST_Distance_Sphere(location, ST_SRID(POINT(:lng, :lat), 4326)) AS distance
-                    FROM store
+                    SELECT storeId FROM store
                     WHERE
-                      longitude BETWEEN :minLng AND :maxLng
-                      AND latitude BETWEEN :minLat AND :maxLat
-                      AND ST_Distance_Sphere(location, ST_SRID(POINT(:lng, :lat), 4326)) <= :radiusMeters
-                    ORDER BY RAND()
-                    LIMIT 150
+                        longitude BETWEEN :minLng AND :maxLng
+                        AND latitude BETWEEN :minLat AND :maxLat
+                        AND ST_Distance_Sphere(location, ST_SRID(POINT(:lng, :lat), 4326)) <= :radiusMeters
                     """,
             nativeQuery = true
     )
-    List<Store> findNearbyStores(
+    List<Long> findStoreIdsInRadius(
             @Param("lat") double lat,
             @Param("lng") double lng,
             @Param("radiusMeters") double radiusMeters,
@@ -31,6 +27,25 @@ public interface StoreRepository extends JpaRepository<Store, Long> {
             @Param("maxLat") double maxLat,
             @Param("minLng") double minLng,
             @Param("maxLng") double maxLng
+    );
+
+    @Query(
+            value = """
+                    SELECT storeId FROM store
+                    WHERE
+                        longitude BETWEEN :minLng AND :maxLng
+                        AND latitude BETWEEN :minLat AND :maxLat
+                    ORDER BY RAND()
+                    LIMIT :limit
+                    """,
+            nativeQuery = true
+    )
+    List<Long> findRandomStoreIdsInBounds(
+            @Param("minLat") double minLat,
+            @Param("maxLat") double maxLat,
+            @Param("minLng") double minLng,
+            @Param("maxLng") double maxLng,
+            @Param("limit") int limit
     );
 
     @Query(

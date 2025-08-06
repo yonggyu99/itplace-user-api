@@ -14,9 +14,11 @@ import com.itplace.userapi.partner.PartnerCode;
 import com.itplace.userapi.partner.entity.Partner;
 import com.itplace.userapi.partner.exception.PartnerNotFoundException;
 import com.itplace.userapi.partner.repository.PartnerRepository;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -33,50 +35,56 @@ public class StoreServiceImpl implements StoreService {
     private final TierBenefitRepository tierBenefitRepository;
     private final PartnerRepository partnerRepository;
 
+    private static final int GRID_SIZE = 10; // 10x10 그리드
+    private static final int STORES_PER_CELL = 5; // 각 셀에서 가져올 상점 수
+    private static final int FINAL_LIMIT = 150; // 최종 반환할 상점 수
+
+    private static final int WIDE_RADIUS_THRESHOLD = 5000; // 5km
+
     @Override
     @Transactional(readOnly = true)
     public List<StoreDetailDto> findNearby(double lat, double lng, double radiusMeters, double userLat,
                                            double userLng) {
-        // 지구 반지름 (미터)
-        double earthRadius = 6378137.0;
 
-        double dLat = radiusMeters / earthRadius;
-        double dLng = radiusMeters / (earthRadius * Math.cos(Math.toRadians(lat)));
+        List<Long> allStoreIds;
 
-        double minLat = lat - Math.toDegrees(dLat);
-        double maxLat = lat + Math.toDegrees(dLat);
-        double minLng = lng - Math.toDegrees(dLng);
-        double maxLng = lng + Math.toDegrees(dLng);
+        // 1. 반경에 따라 전략 선택
+        if (radiusMeters <= WIDE_RADIUS_THRESHOLD) {
+            // 좁은 반경: 단일 쿼리로 모든 ID 조회 후 앱에서 셔플
+            log.info("좁은 반경 검색 실행 ({}m)", radiusMeters);
+            allStoreIds = findNearbyWithSingleQuery(lat, lng, radiusMeters);
+        } else {
+            // 넓은 반경: 그리드 기반 샘플링
+            log.info("넓은 반경 검색 실행 ({}m)", radiusMeters);
+            allStoreIds = findNearbyWithGridSampling(lat, lng, radiusMeters);
+        }
 
-        List<Store> limitedStores = storeRepository.findNearbyStores(lat, lng, radiusMeters, minLat, maxLat, minLng, maxLng);
-        log.info("============ 조회된 전체 store 개수: {} =============", limitedStores.size());
+        log.info("============ 샘플링된 전체 store ID 개수: {} =============", allStoreIds.size());
 
-        if (limitedStores.isEmpty()) {
+        if (allStoreIds.isEmpty()) {
             return Collections.emptyList();
         }
 
-        // --- (이하 N+1 문제 해결 로직) ---
+        // 2. 최종 150개 선택 및 상세 정보 조회
+        Collections.shuffle(allStoreIds);
+        List<Long> limitedStoreIds = allStoreIds.subList(0, Math.min(allStoreIds.size(), FINAL_LIMIT));
+        List<Store> limitedStores = storeRepository.findAllById(limitedStoreIds);
 
-        // 3. 선택된 150개 Store에 필요한 Partner ID와 Benefit 목록을 한 번에 수집합니다.
+        // --- (이하 N+1 문제 해결 로직은 기존과 동일) ---
         List<Long> partnerIds = limitedStores.stream()
                 .map(store -> store.getPartner().getPartnerId())
                 .distinct()
                 .toList();
 
-        // 4. Benefit 목록을 단 한 번의 쿼리로 조회합니다.
         List<Benefit> allBenefits = benefitRepository.findAllByPartner_PartnerIdIn(partnerIds);
-
-        // 5. TierBenefit 목록을 단 한 번의 쿼리로 조회합니다.
         List<TierBenefit> allTierBenefits = tierBenefitRepository.findAllByBenefitIn(allBenefits);
 
-        // 6. 빠른 조회를 위해 Map으로 데이터를 구조화합니다.
         Map<Long, List<Benefit>> partnerToBenefitsMap = allBenefits.stream()
                 .collect(Collectors.groupingBy(b -> b.getPartner().getPartnerId()));
 
         Map<Long, List<TierBenefit>> benefitToTiersMap = allTierBenefits.stream()
                 .collect(Collectors.groupingBy(tb -> tb.getBenefit().getBenefitId()));
 
-        // 7. 최종 데이터를 메모리에서 조합합니다. (추가 DB 접근 없음)
         return limitedStores.stream()
                 .map(store -> {
                     Partner partner = store.getPartner();
@@ -99,6 +107,54 @@ public class StoreServiceImpl implements StoreService {
                     return StoreDetailDto.of(store, partner, tierBenefitDtos, distance);
                 })
                 .toList();
+    }
+
+    private List<Long> findNearbyWithSingleQuery(double lat, double lng, double radiusMeters) {
+        double earthRadius = 6378137.0;
+        double dLat = radiusMeters / earthRadius;
+        double dLng = radiusMeters / (earthRadius * Math.cos(Math.toRadians(lat)));
+
+        double minLat = lat - Math.toDegrees(dLat);
+        double maxLat = lat + Math.toDegrees(dLat);
+        double minLng = lng - Math.toDegrees(dLng);
+        double maxLng = lng + Math.toDegrees(dLng);
+
+        return storeRepository.findStoreIdsInRadius(lat, lng, radiusMeters, minLat, maxLat, minLng, maxLng);
+    }
+
+    private List<Long> findNearbyWithGridSampling(double lat, double lng, double radiusMeters) {
+        double earthRadius = 6378137.0;
+        double dLat = radiusMeters / earthRadius;
+        double dLng = radiusMeters / (earthRadius * Math.cos(Math.toRadians(lat)));
+
+        double minLat = lat - Math.toDegrees(dLat);
+        double maxLat = lat + Math.toDegrees(dLat);
+        double minLng = lng - Math.toDegrees(dLng);
+        double maxLng = lng + Math.toDegrees(dLng);
+
+        double latStep = (maxLat - minLat) / GRID_SIZE;
+        double lngStep = (maxLng - minLng) / GRID_SIZE;
+
+        List<CompletableFuture<List<Long>>> futures = new ArrayList<>();
+
+        for (int i = 0; i < GRID_SIZE; i++) {
+            for (int j = 0; j < GRID_SIZE; j++) {
+                double cellMinLat = minLat + i * latStep;
+                double cellMaxLat = cellMinLat + latStep;
+                double cellMinLng = minLng + j * lngStep;
+                double cellMaxLng = cellMinLng + lngStep;
+
+                futures.add(CompletableFuture.supplyAsync(() ->
+                        storeRepository.findRandomStoreIdsInBounds(cellMinLat, cellMaxLat, cellMinLng, cellMaxLng, STORES_PER_CELL)
+                ));
+            }
+        }
+
+        return futures.stream()
+                .map(CompletableFuture::join)
+                .flatMap(List::stream)
+                .distinct()
+                .collect(Collectors.toList());
     }
 
     @Override
