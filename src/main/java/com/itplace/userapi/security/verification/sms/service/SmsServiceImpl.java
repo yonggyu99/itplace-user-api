@@ -13,8 +13,6 @@ import com.itplace.userapi.user.repository.UserRepository;
 import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -23,22 +21,15 @@ import org.springframework.transaction.annotation.Transactional;
 @RequiredArgsConstructor
 public class SmsServiceImpl implements SmsService {
 
-    private final StringRedisTemplate redisTemplate;
     private final UserRepository userRepository;
     private final UplusDataRepository uplusDataRepository;
+    private final CoolSmsService coolSmsService;
     private final OtpUtil otpUtil;
-
-    @Value("${twilio.from-phone}")
-    private String fromPhone;
-
-    private static final long KEY_TTL_SECONDS = 180; // 3분
-    private static final long VERIFIED_TTL_SECONDS = 1800; // 30분
 
     @Override
     public void send(SmsVerificationRequest request) {
         log.info("SmsVerificationRequest: {}", request);
 
-        String name = request.getName();
         String phoneNumber = request.getPhoneNumber();
 
         String key = "sms:" + phoneNumber;
@@ -47,12 +38,7 @@ public class SmsServiceImpl implements SmsService {
         log.info("sms key: {}", key);
         log.info("sms code: {}", code);
 
-        // 비용 문제로 실제 문자 보내는 로직은 현재는 주석처리
-//        Message.creator(
-//                new PhoneNumber(phoneNumber),
-//                new PhoneNumber(fromPhone),
-//                "[itPlace] 인증번호: " + code + " (3분 이내 유효)"
-//        ).create();
+        coolSmsService.sendMessage(code, phoneNumber);
     }
 
     @Override

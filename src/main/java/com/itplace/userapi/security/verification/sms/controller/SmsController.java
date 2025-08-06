@@ -25,7 +25,6 @@ public class SmsController {
 
     @PostMapping("/sms")
     public ResponseEntity<ApiResponse<Void>> send(@RequestBody @Validated SmsVerificationRequest request) {
-        log.info("문자쪽 request:{}", request);
         smsService.send(request);
         ApiResponse<Void> body = ApiResponse.of(SecurityCode.SMS_SEND_SUCCESS, null);
         return new ResponseEntity<>(body, body.getStatus());
