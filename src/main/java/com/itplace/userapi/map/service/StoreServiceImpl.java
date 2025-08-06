@@ -161,17 +161,56 @@ public class StoreServiceImpl implements StoreService {
     @Transactional(readOnly = true)
     public List<StoreDetailDto> findNearbyByCategory(double lat, double lng, double radiusMeters, String category,
                                                      double userLat, double userLng) {
-        List<StoreDetailDto> allStores = findNearby(lat, lng, radiusMeters, userLat, userLng);
-
-        // "전체", null, 빈 문자열이면 전체 반환
+        // "전체", null, 빈 문자열이면 findNearby의 로직을 따름
         if (category == null || category.isBlank() || category.equalsIgnoreCase("전체")) {
-            return allStores;
+            return findNearby(lat, lng, radiusMeters, userLat, userLng);
         }
 
-        return allStores.stream()
-                .filter(storeDetailDto ->
-                        storeDetailDto.getPartner() != null &&
-                                category.equalsIgnoreCase(storeDetailDto.getPartner().getCategory()))
+        log.info("카테고리 기반 전국 단위 검색 실행: {}", category);
+
+        // 1. DB에서 직접 카테고리로 필터링된 무작위 상점 목록 조회
+        List<Store> limitedStores = storeRepository.findRandomStoresByCategory(category, FINAL_LIMIT);
+
+        if (limitedStores.isEmpty()) {
+            return Collections.emptyList();
+        }
+
+        // --- (이하 N+1 문제 해결 및 DTO 변환 로직) ---
+        List<Long> partnerIds = limitedStores.stream()
+                .map(store -> store.getPartner().getPartnerId())
+                .distinct()
+                .toList();
+
+        List<Benefit> allBenefits = benefitRepository.findAllByPartner_PartnerIdIn(partnerIds);
+        List<TierBenefit> allTierBenefits = tierBenefitRepository.findAllByBenefitIn(allBenefits);
+
+        Map<Long, List<Benefit>> partnerToBenefitsMap = allBenefits.stream()
+                .collect(Collectors.groupingBy(b -> b.getPartner().getPartnerId()));
+
+        Map<Long, List<TierBenefit>> benefitToTiersMap = allTierBenefits.stream()
+                .collect(Collectors.groupingBy(tb -> tb.getBenefit().getBenefitId()));
+
+        return limitedStores.stream()
+                .map(store -> {
+                    Partner partner = store.getPartner();
+                    List<Benefit> benefitsForPartner = partnerToBenefitsMap.getOrDefault(partner.getPartnerId(), Collections.emptyList());
+                    List<Benefit> finalBenefits = selectBenefits(benefitsForPartner, store.getStoreName());
+
+                    List<TierBenefitDto> tierBenefitDtos = finalBenefits.stream()
+                            .flatMap(benefit ->
+                                    benefitToTiersMap.getOrDefault(benefit.getBenefitId(), Collections.emptyList()).stream()
+                                            .map(tierBenefit -> TierBenefitDto.builder()
+                                                    .grade(tierBenefit.getGrade())
+                                                    .context(tierBenefit.getContext())
+                                                    .build())
+                            )
+                            .toList();
+
+                    double distance = calculateDistance(userLat, userLng, store.getLocation().getY(),
+                            store.getLocation().getX());
+
+                    return StoreDetailDto.of(store, partner, tierBenefitDtos, distance);
+                })
                 .toList();
     }
 

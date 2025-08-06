@@ -50,6 +50,19 @@ public interface StoreRepository extends JpaRepository<Store, Long> {
 
     @Query(
             value = """
+                    SELECT s.*
+                    FROM store s
+                    JOIN partner p ON s.partnerId = p.partnerId
+                    WHERE p.category = :category
+                    ORDER BY RAND()
+                    LIMIT :limit
+                    """,
+            nativeQuery = true
+    )
+    List<Store> findRandomStoresByCategory(@Param("category") String category, @Param("limit") int limit);
+
+    @Query(
+            value = """
                     SELECT s.*, CASE WHEN s.storeName = :keyword THEN 1 ELSE 0 END AS is_exact,
                     (MATCH(s.storeName, s.business) AGAINST(:keyword IN NATURAL LANGUAGE MODE)
                     + MATCH(p.partnerName, p.category) AGAINST(:keyword IN NATURAL LANGUAGE MODE)) AS relevance,
