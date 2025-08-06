@@ -54,12 +54,19 @@ public interface StoreRepository extends JpaRepository<Store, Long> {
                     FROM store s
                     JOIN partner p ON s.partnerId = p.partnerId
                     WHERE p.category = :category
+                    AND ST_Distance_Sphere(s.location, ST_SRID(POINT(:lng, :lat), 4326)) <= :radiusMeters
                     ORDER BY RAND()
                     LIMIT :limit
                     """,
             nativeQuery = true
     )
-    List<Store> findRandomStoresByCategory(@Param("category") String category, @Param("limit") int limit);
+    List<Store> findRandomStoresByCategory(
+            @Param("category") String category,
+            @Param("lat") double lat,
+            @Param("lng") double lng,
+            @Param("radiusMeters") double radiusMeters,
+            @Param("limit") int limit
+    );
 
     @Query(
             value = """

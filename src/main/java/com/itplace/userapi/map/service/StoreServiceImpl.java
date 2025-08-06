@@ -166,10 +166,10 @@ public class StoreServiceImpl implements StoreService {
             return findNearby(lat, lng, radiusMeters, userLat, userLng);
         }
 
-        log.info("카테고리 기반 전국 단위 검색 실행: {}", category);
+        log.info("카테고리 기반 반경 검색 실행: {}, 반경: {}m", category, radiusMeters);
 
-        // 1. DB에서 직접 카테고리로 필터링된 무작위 상점 목록 조회
-        List<Store> limitedStores = storeRepository.findRandomStoresByCategory(category, FINAL_LIMIT);
+        // 1. DB에서 직접 카테고리와 반경으로 필터링된 무작위 상점 목록 조회
+        List<Store> limitedStores = storeRepository.findRandomStoresByCategory(category, lat, lng, radiusMeters, FINAL_LIMIT);
 
         if (limitedStores.isEmpty()) {
             return Collections.emptyList();
