@@ -6,7 +6,6 @@ import co.elastic.clients.elasticsearch.core.SearchRequest;
 import co.elastic.clients.elasticsearch.core.SearchResponse;
 import co.elastic.clients.json.JsonData;
 import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.itplace.userapi.benefit.entity.Benefit;
 import com.itplace.userapi.benefit.entity.enums.Grade;
 import com.itplace.userapi.benefit.repository.BenefitRepository;
@@ -21,7 +20,6 @@ import org.springframework.stereotype.Service;
 public class BenefitSearchServiceImpl implements BenefitSearchService {
 
     private final ElasticsearchClient esClient;
-    private final ObjectMapper objectMapper;
     private final BenefitRepository benefitRepository;
 
     public List<Candidate> queryVector(Grade grade, List<Float> userEmbedding, int CandidateSize) {
