@@ -64,29 +64,38 @@
 <p align="center">
 <table>
   <tr>
-    <td align="center">
+    <td align="center" valign="top">
       <img src="https://avatars.githubusercontent.com/u/173465217?v=4" width="100" alt="허승현"/><br>
-      <strong>허승현</strong><br><sub>팀장 · AI 추천</sub><br>
+      <strong>허승현</strong>
+      <hr style="width:80%; border-color:gray;">
+      <sub>팀장<br>AI 추천<br></sub><br>
       <a href="https://github.com/HSH-11"><img src="https://img.shields.io/badge/GitHub-181717?style=flat-square&logo=GitHub&logoColor=white"></a>
     </td>
-    <td align="center">
+    <td align="center" valign="top">
       <img src="https://avatars.githubusercontent.com/u/50799519?v=4" width="100" alt="이희용"/><br>
-      <strong>이희용</strong><br><sub>인증·인가, 인프라, 지도 구축</sub><br>
+      <strong>이희용</strong>
+      <hr style="width:80%; border-color:gray;">
+      <sub>인증·인가<br>인프라<br>지도 서비스</sub><br>
       <a href="https://github.com/eddie-backdev"><img src="https://img.shields.io/badge/GitHub-181717?style=flat-square&logo=GitHub&logoColor=white"></a>
     </td>
-    <td align="center">
+    <td align="center" valign="top">
       <img src="https://avatars.githubusercontent.com/u/135448774?v=4" width="100" alt="정현경"/><br>
-      <strong>정현경</strong><br><sub>제휴처 시스템, 이벤트 기능, 관리자 페이지</sub><br>
+      <strong>정현경</strong>
+      <hr style="width:80%; border-color:gray;">
+      <sub>제휴처 시스템<br>이벤트 서비스<br>관리자 페이지</sub><br>
       <a href="https://github.com/hyunnk"><img src="https://img.shields.io/badge/GitHub-181717?style=flat-square&logo=GitHub&logoColor=white"></a>
     </td>
-    <td align="center">
+    <td align="center" valign="top">
       <img src="https://avatars.githubusercontent.com/u/130213698?v=4" width="100" alt="하령경"/><br>
-      <strong>하령경</strong><br><sub>로그 저장, 관리자 대시보드, 지도 서비스</sub><br>
+      <strong>하령경</strong>
+      <hr style="width:80%; border-color:gray;">
+      <sub>로그 저장<br>관리자 대시보드<br>지도 서비스</sub><br>
       <a href="https://github.com/rxgx424"><img src="https://img.shields.io/badge/GitHub-181717?style=flat-square&logo=GitHub&logoColor=white"></a>
     </td>
   </tr>
 </table>
 </p>
+
 
 ---
 
