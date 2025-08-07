@@ -220,7 +220,6 @@ public class StoreServiceImpl implements StoreService {
     @Transactional(readOnly = true)
     public List<StoreDetailDto> findNearbyByKeyword(double lat, double lng, String category,
                                                     String keyword, double userLat, double userLng) {
-
         if (keyword == null || keyword.isBlank()) {
             throw new StoreKeywordException(StoreCode.KEYWORD_REQUEST);
         }
