@@ -249,10 +249,8 @@ public class StoreServiceImpl implements StoreService {
         // 맵 구성
         Map<Long, List<Benefit>> partnerToBenefitsMap = allBenefits.stream()
                 .collect(Collectors.groupingBy(b -> b.getPartner().getPartnerId()));
-
         Map<Long, List<TierBenefit>> benefitToTiersMap = allTierBenefits.stream()
                 .collect(Collectors.groupingBy(tb -> tb.getBenefit().getBenefitId()));
-
         // 선택 결과 캐시 (partnerId + storeName 기준) — 같은 파트너/상점 조합에 대해 재사용
         Map<String, List<TierBenefitDto>> benefitDtoCache = new java.util.HashMap<>();
 
