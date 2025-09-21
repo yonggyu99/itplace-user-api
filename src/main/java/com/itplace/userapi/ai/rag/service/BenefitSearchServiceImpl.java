@@ -13,10 +13,12 @@ import com.itplace.userapi.recommend.dto.Candidate;
 import java.io.IOException;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
+import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Service;
 
 @Service
 @RequiredArgsConstructor
+@Profile("!render & !local")
 public class BenefitSearchServiceImpl implements BenefitSearchService {
 
     private final ElasticsearchClient esClient;

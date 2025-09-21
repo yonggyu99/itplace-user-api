@@ -6,6 +6,7 @@ import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
 import org.springframework.data.mongodb.repository.config.EnableMongoRepositories;
+import org.springframework.data.redis.repository.configuration.EnableRedisRepositories;
 import org.springframework.retry.annotation.EnableRetry;
 
 @EnableRetry
@@ -27,6 +28,9 @@ import org.springframework.retry.annotation.EnableRetry;
 )
 @EnableMongoRepositories(  // mongo 사용되는 패키지
         basePackages = "com.itplace.userapi.log"
+)
+@EnableRedisRepositories(  // redis 사용되는 패키지 (현재는 없음)
+        basePackages = "com.itplace.userapi.redis"
 )
 @OpenAPIDefinition(servers = {@Server(url = "/", description = "Default Server URL")})
 public class ItplaceUserApiApplication {

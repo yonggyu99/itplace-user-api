@@ -3,10 +3,12 @@ package com.itplace.userapi.ai.rag.service;
 import co.elastic.clients.elasticsearch.ElasticsearchClient;
 import java.io.IOException;
 import lombok.RequiredArgsConstructor;
+import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Service;
 
 @Service
 @RequiredArgsConstructor
+@Profile("!render & !local")
 public class ElasticServiceImpl implements ElasticService {
 
     private final ElasticsearchClient esClient;
