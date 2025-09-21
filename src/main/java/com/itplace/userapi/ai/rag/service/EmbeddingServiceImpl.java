@@ -5,6 +5,7 @@ import java.util.Map;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.annotation.Profile;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
@@ -12,6 +13,7 @@ import org.springframework.web.reactive.function.client.WebClient;
 
 @Service
 @RequiredArgsConstructor
+@Profile("!render") // render 프로필에서는 비활성화
 public class EmbeddingServiceImpl implements EmbeddingService {
 
     @Value("${spring.ai.openai.api-key}")

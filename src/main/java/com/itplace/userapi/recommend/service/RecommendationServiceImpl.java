@@ -17,10 +17,12 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
+import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Service;
 
 @Service
 @RequiredArgsConstructor
+@Profile("!render") // render 프로필에서는 비활성화
 public class RecommendationServiceImpl implements RecommendationService {
     private static final int EXPIRED_DAYS = 1;
 
