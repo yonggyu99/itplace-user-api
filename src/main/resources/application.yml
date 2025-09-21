@@ -87,7 +87,7 @@ management:
       enabled: false
     redis:
       enabled: false
-
+---
 spring:
     config:
       activate:
