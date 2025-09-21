@@ -25,24 +25,26 @@ public class DataSourceConfig {
         return DataSourceBuilder.create().type(HikariDataSource.class).build();
     }
 
-    // Read replica 정보로 만든 DataSource
+    // Read replica 정보로 만든 DataSource - 메모리 절약을 위해 주석처리
+    /*
     @Bean
     @ConfigurationProperties(prefix = "spring.datasource.replica")
     public DataSource replicaDataSource() {
         return DataSourceBuilder.create().type(HikariDataSource.class).build();
     }
+    */
 
-    // 읽기 모드인지 여부로 DataSource 분기 처리
+    // 읽기 모드인지 여부로 DataSource 분기 처리 - replica 제거로 단순화
     @Bean
-    @DependsOn({"sourceDataSource", "replicaDataSource"})
+    @DependsOn({"sourceDataSource"})
     public DataSource routeDataSource() {
         DataSourceRouter dataSourceRouter = new DataSourceRouter();
         DataSource sourceDataSource = sourceDataSource();
-        DataSource replicaDataSource = replicaDataSource();
+        // DataSource replicaDataSource = replicaDataSource(); // 주석처리
 
         HashMap<Object, Object> dataSourceMap = new HashMap<>();
         dataSourceMap.put("source", sourceDataSource);
-        dataSourceMap.put("replica", replicaDataSource);
+        // dataSourceMap.put("replica", replicaDataSource); // 주석처리
         dataSourceRouter.setTargetDataSources(dataSourceMap);
         dataSourceRouter.setDefaultTargetDataSource(sourceDataSource);
         return dataSourceRouter;
