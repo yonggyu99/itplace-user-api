@@ -19,12 +19,14 @@ import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.annotation.Profile;
 import org.springframework.http.HttpHeaders;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
 
 @Service
 @RequiredArgsConstructor
+@Profile("!render") // render 프로필에서는 비활성화
 public class OpenAIServiceImpl implements OpenAIService {
     private final ObjectMapper mapper;
     @Qualifier("openAiWebClient")
