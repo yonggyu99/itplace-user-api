@@ -107,29 +107,18 @@ spring:
       - org.springframework.ai.model.openai.autoconfigure.OpenAiAutoConfiguration
       - org.springframework.ai.model.openai.autoconfigure.OpenAiChatAutoConfiguration
       - org.springframework.boot.autoconfigure.webflux.WebFluxAutoConfiguration
+      - org.springframework.boot.autoconfigure.actuate.management.ManagementContextAutoConfiguration
   datasource:
-    source:
-      jdbc-url: ${MYSQL_URL}
-      username: ${MYSQL_USERNAME}
-      password: ${MYSQL_PASSWORD}
-      driver-class-name: com.mysql.cj.jdbc.Driver
-      hikari:
-        maximum-pool-size: 5
-        minimum-idle: 2
-        connection-timeout: 20000
-        idle-timeout: 300000
-        max-lifetime: 1200000
-    replica:
-      jdbc-url: ${MYSQL_URL}
-      username: ${MYSQL_USERNAME}
-      password: ${MYSQL_PASSWORD}
-      driver-class-name: com.mysql.cj.jdbc.Driver
-      hikari:
-        maximum-pool-size: 3
-        minimum-idle: 1
-        connection-timeout: 20000
-        idle-timeout: 300000
-        max-lifetime: 1200000
+    jdbc-url: ${MYSQL_URL}
+    username: ${MYSQL_USERNAME}
+    password: ${MYSQL_PASSWORD}
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    hikari:
+      maximum-pool-size: 5
+      minimum-idle: 2
+      connection-timeout: 20000
+      idle-timeout: 300000
+      max-lifetime: 1200000
   jpa:
     hibernate:
       ddl-auto: validate
