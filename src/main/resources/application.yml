@@ -110,7 +110,5 @@ spring:
           registration:
             kakao:
               redirect-uri: https://your-app-name.onrender.com/login/oauth2/code/kakao
-  server:
-    port: ${PORT:8080}
-  server:
-    port: ${PORT:8080}
+server:
+  port: ${PORT:8080}
