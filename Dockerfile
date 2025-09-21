@@ -11,4 +11,4 @@ WORKDIR /app
 COPY --from=builder /app/build/libs/*.jar application.jar
 COPY src/main/resources/prompt/ /app/prompt/
 EXPOSE 8080
-ENTRYPOINT ["java", "-Xmx350m", "-Xms128m", "-XX:+UseContainerSupport", "-XX:MaxMetaspaceSize=100m", "-XX:+UseG1GC", "-XX:MaxGCPauseMillis=100", "-jar", "application.jar"]
+ENTRYPOINT ["java", "-Xmx256m", "-Xms128m", "-XX:+UseContainerSupport", "-XX:MaxMetaspaceSize=64m", "-XX:+UseG1GC", "-XX:MaxDirectMemorySize=32m", "-XX:ReservedCodeCacheSize=32m", "-jar", "application.jar"]
