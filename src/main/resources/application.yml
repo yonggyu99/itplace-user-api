@@ -41,10 +41,19 @@ spring:
 
   jpa:
     hibernate:
-      ddl-auto: update
+      ddl-auto: validate
       naming:
         physical-strategy: org.hibernate.boot.model.naming.PhysicalNamingStrategyStandardImpl
     database-platform: org.hibernate.dialect.MySQLDialect
+    properties:
+      hibernate:
+        jdbc:
+          batch_size: 20
+        order_inserts: true
+        order_updates: true
+        cache:
+          use_second_level_cache: false
+          use_query_cache: false
 
   mail:
     host: smtp.gmail.com
@@ -62,9 +71,11 @@ springdoc:
 
 logging:
   level:
-    org.springframework.web: DEBUG
-    org.springframework.web.servlet.DispatcherServlet: DEBUG
-    com.fasterxml.jackson.databind: DEBUG
+    org.springframework.web: WARN
+    org.springframework.web.servlet.DispatcherServlet: WARN
+    com.fasterxml.jackson.databind: WARN
+    org.hibernate: WARN
+    org.springframework.data: WARN
 
 management:
   endpoints:
@@ -108,10 +119,19 @@ spring:
       driver-class-name: com.mysql.cj.jdbc.Driver
   jpa:
     hibernate:
-      ddl-auto: update
+      ddl-auto: validate
       naming:
         physical-strategy: org.hibernate.boot.model.naming.PhysicalNamingStrategyStandardImpl
     database-platform: org.hibernate.dialect.MySQLDialect
+    properties:
+      hibernate:
+        jdbc:
+          batch_size: 20
+        order_inserts: true
+        order_updates: true
+        cache:
+          use_second_level_cache: false
+          use_query_cache: false
   data:
     redis:
       url: ${REDIS_URL}
