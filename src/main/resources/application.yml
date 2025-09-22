@@ -3,7 +3,6 @@ spring:
     active: local
     group:
       local: local, common, secret
-      render: render, common
 ---
 spring:
   config:
@@ -41,7 +40,7 @@ spring:
 
   jpa:
     hibernate:
-      ddl-auto: validate
+      ddl-auto: create
       naming:
         physical-strategy: org.hibernate.boot.model.naming.PhysicalNamingStrategyStandardImpl
     database-platform: org.hibernate.dialect.MySQLDialect
@@ -94,66 +93,3 @@ management:
       enabled: false
     redis:
       enabled: false
----
-spring:
-  config:
-    activate:
-      on-profile: render
-  autoconfigure:
-    exclude:
-      - org.springframework.boot.autoconfigure.mongo.MongoAutoConfiguration
-      - org.springframework.boot.autoconfigure.data.mongo.MongoDataAutoConfiguration
-      - org.springframework.ai.model.chat.memory.repository.jdbc.autoconfigure.JdbcChatMemoryRepositoryAutoConfiguration
-      - org.springframework.ai.model.openai.autoconfigure.OpenAiAutoConfiguration
-      - org.springframework.ai.model.openai.autoconfigure.OpenAiChatAutoConfiguration
-      - org.springframework.boot.autoconfigure.webflux.WebFluxAutoConfiguration
-      - org.springframework.boot.autoconfigure.actuate.management.ManagementContextAutoConfiguration
-  datasource:
-    source:
-      jdbc-url: ${MYSQL_URL}
-      username: ${MYSQL_USERNAME}
-      password: ${MYSQL_PASSWORD}
-      driver-class-name: com.mysql.cj.jdbc.Driver
-      hikari:
-        maximum-pool-size: 2
-        minimum-idle: 1
-        connection-timeout: 20000
-        idle-timeout: 300000
-        max-lifetime: 1200000
-    replica:
-      jdbc-url: ${MYSQL_URL}
-      username: ${MYSQL_USERNAME}
-      password: ${MYSQL_PASSWORD}
-      driver-class-name: com.mysql.cj.jdbc.Driver
-      hikari:
-        maximum-pool-size: 1
-        minimum-idle: 1
-        connection-timeout: 20000
-        idle-timeout: 300000
-        max-lifetime: 1200000
-  jpa:
-    hibernate:
-      ddl-auto: validate
-      naming:
-        physical-strategy: org.hibernate.boot.model.naming.PhysicalNamingStrategyStandardImpl
-    database-platform: org.hibernate.dialect.MySQLDialect
-    properties:
-      hibernate:
-        jdbc:
-          batch_size: 20
-        order_inserts: true
-        order_updates: true
-        cache:
-          use_second_level_cache: false
-          use_query_cache: false
-  data:
-    redis:
-      url: ${REDIS_URL}
-  security:
-    oauth2:
-      client:
-        registration:
-          kakao:
-            redirect-uri: https://your-app-name.onrender.com/login/oauth2/code/kakao
-server:
-  port: ${PORT:8080}
